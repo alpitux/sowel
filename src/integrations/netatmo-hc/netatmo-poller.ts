@@ -385,23 +385,38 @@ export class NetatmoPoller {
   private async pollEnergyMeters(): Promise<void> {
     if (this.energyMeters.size === 0) return;
 
+    // New measure types (post-firmware migration) — sum_energy_elec is deprecated and returns null
+    const ENERGY_MEASURE_TYPES = ["sum_energy_buy_from_grid"] as const;
+
     for (const [moduleId, { bridge, friendlyName }] of this.energyMeters) {
-      try {
-        // device_id = gateway, module_id = NLPC, no date_begin = oldest available
-        const res = await this.bridge.getMeasure(bridge, moduleId, "sum_energy_elec", "1day");
-        // body is Record<timestamp, (number|null)[]> — get the last non-null value
-        const timestamps = Object.keys(res.body).sort();
-        for (let i = timestamps.length - 1; i >= 0; i--) {
-          const values = res.body[timestamps[i]];
-          if (values.length > 0 && values[0] !== null) {
-            this.deviceManager.updateDeviceData("netatmo_hc", friendlyName, {
-              sum_energy_elec: values[0],
-            });
-            break;
+      for (const measureType of ENERGY_MEASURE_TYPES) {
+        try {
+          const res = await this.bridge.getMeasure(bridge, moduleId, measureType, "1day");
+          // body is Record<timestamp, (number|null)[]> — get the last non-null value
+          const timestamps = Object.keys(res.body).sort();
+          this.logger.debug(
+            { moduleId, friendlyName, measureType, timestampCount: timestamps.length },
+            "Energy measure response",
+          );
+          for (let i = timestamps.length - 1; i >= 0; i--) {
+            const values = res.body[timestamps[i]];
+            if (values.length > 0 && values[0] !== null) {
+              this.deviceManager.updateDeviceData("netatmo_hc", friendlyName, {
+                [measureType]: values[0],
+              });
+              this.logger.debug(
+                { moduleId, friendlyName, measureType, value: values[0], timestamp: timestamps[i] },
+                "Energy measure updated",
+              );
+              break;
+            }
           }
+        } catch (err) {
+          this.logger.warn(
+            { err, moduleId, friendlyName, measureType },
+            "Failed to fetch energy measure",
+          );
         }
-      } catch (err) {
-        this.logger.warn({ err, moduleId, friendlyName }, "Failed to fetch energy measure");
       }
     }
   }
