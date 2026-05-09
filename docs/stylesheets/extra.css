@@ -162,6 +162,10 @@
    Landing — section + eyebrow + paragraph utilities
    ============================================================ */
 
+/* Match Material's content grid to the landing's section width so prose
+ * pages and the landing share the same horizontal canvas. */
+.md-grid { max-width: 72rem; }
+
 .sowel-section {
   max-width: 72rem;
   margin: 2rem auto 0;
