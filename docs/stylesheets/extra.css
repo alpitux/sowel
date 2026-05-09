@@ -147,27 +147,27 @@
    ============================================================ */
 
 .sowel-section {
-  max-width: 56rem;
-  margin: 4rem auto 0;
-  padding: 0 1rem;
+  max-width: 72rem;
+  margin: 2.75rem auto 0;
+  padding: 0 1.25rem;
 }
 
 .sowel-eyebrow {
   font-family: var(--sowel-display);
-  font-size: 1.55rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  letter-spacing: -0.022em;
-  line-height: 1.18;
+  letter-spacing: -0.018em;
+  line-height: 1.22;
   color: var(--md-primary-fg-color);
-  margin: 0 0 1rem;
+  margin: 0 0 0.75rem;
   position: relative;
-  padding-left: 1rem;
+  padding-left: 0.75rem;
 }
 .sowel-eyebrow::before {
   content: "";
   position: absolute;
-  left: 0; top: 0.4em;
-  width: 4px; height: 1.2em;
+  left: 0; top: 0.35em;
+  width: 3px; height: 1.15em;
   background: var(--md-accent-fg-color);
   border-radius: 2px;
 }
@@ -176,11 +176,11 @@
 }
 
 .sowel-paragraph {
-  font-size: 1rem;
-  line-height: 1.7;
+  font-size: 0.9rem;
+  line-height: 1.6;
   color: var(--md-default-fg-color);
-  margin: 0 0 1rem;
-  max-width: 42rem;
+  margin: 0 0 0.75rem;
+  max-width: 52rem;
 }
 .sowel-paragraph strong {
   color: var(--md-primary-fg-color);
@@ -193,6 +193,58 @@
   font-style: italic;
   color: var(--md-accent-fg-color);
   font-weight: 500;
+}
+
+/* ============================================================
+   Story block — narrative section with a subtle frame
+   ============================================================ */
+
+.sowel-story {
+  background: linear-gradient(180deg, var(--sowel-cream) 0%, transparent 100%);
+  border: 1px solid color-mix(in srgb, var(--md-accent-fg-color) 22%, transparent);
+  border-radius: 14px;
+  padding: 1.6rem 1.75rem 1.25rem;
+  position: relative;
+}
+
+.sowel-story::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 1.6rem;
+  width: 4px;
+  height: calc(100% - 3.2rem);
+  background: var(--md-accent-fg-color);
+  border-radius: 2px;
+}
+
+.sowel-story .sowel-eyebrow {
+  padding-left: 1rem;
+  margin-top: 0;
+}
+.sowel-story .sowel-eyebrow::before {
+  display: none; /* the parent already has the accent bar */
+}
+
+.sowel-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 1rem;
+}
+.sowel-bullets li {
+  position: relative;
+  padding-left: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 0.35rem;
+  color: var(--md-default-fg-color);
+}
+.sowel-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.7em;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--md-accent-fg-color);
 }
 
 /* ============================================================
@@ -218,8 +270,8 @@
   position: relative;
   background: var(--md-default-bg-color);
   border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 11%, transparent);
-  border-radius: 14px;
-  padding: 1.5rem 1.5rem 1.4rem;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem 1.1rem;
   transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
               box-shadow 280ms ease,
               border-color 240ms ease;
@@ -252,10 +304,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.6rem;
-  height: 2.6rem;
-  margin-bottom: 1rem;
-  border-radius: 10px;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-bottom: 0.7rem;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--md-accent-fg-color) 14%, transparent);
   color: var(--md-primary-fg-color);
 }
@@ -263,17 +315,17 @@
   color: #C9DCE7;
 }
 .sowel-card__icon svg {
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .sowel-card h3 {
   font-family: var(--sowel-display);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.01em;
   line-height: 1.3;
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.4rem;
   color: var(--md-primary-fg-color);
 }
 [data-md-color-scheme="slate"] .sowel-card h3 {
@@ -281,10 +333,10 @@
 }
 
 .sowel-card p {
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   line-height: 1.55;
   color: var(--md-default-fg-color);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
 }
 .sowel-card p:last-child {
   margin-bottom: 0;
@@ -311,20 +363,20 @@
 .sowel-hero {
   position: relative;
   text-align: center;
-  padding: 4rem 1rem 2.5rem;
-  margin: 0 -1rem 3rem;
+  padding: 2.5rem 1rem 1.75rem;
+  margin: 0 0 1.5rem;
   background:
-    radial-gradient(ellipse 1200px 400px at 50% -10%, var(--sowel-cream) 0%, transparent 70%),
-    radial-gradient(ellipse 600px 300px at 80% 80%, color-mix(in srgb, var(--md-accent-fg-color) 8%, transparent) 0%, transparent 60%);
+    radial-gradient(ellipse 1200px 360px at 50% -10%, var(--sowel-cream) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 280px at 80% 80%, color-mix(in srgb, var(--md-accent-fg-color) 8%, transparent) 0%, transparent 60%);
 }
 
 .sowel-hero h1 {
   font-family: var(--sowel-display);
-  font-size: clamp(2.8rem, 5.5vw, 4.4rem);
+  font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1.02;
-  margin: 0.5rem 0 0.8rem;
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+  margin: 0.25rem 0 0.5rem;
   border-bottom: none;
   color: var(--md-primary-fg-color);
   font-feature-settings: "cv05", "cv08", "cv11", "ss01";
@@ -335,10 +387,10 @@
 }
 
 .sowel-hero p {
-  font-size: 1.05rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.55;
   color: var(--md-default-fg-color);
-  margin: 0.5rem auto 0.8rem;
+  margin: 0.4rem auto 0.6rem;
   max-width: 38rem;
   font-weight: 400;
 }
@@ -360,10 +412,10 @@
 
 /* Logo */
 .sowel-logo {
-  width: 132px;
-  height: 132px;
-  filter: drop-shadow(0 8px 20px rgba(26, 79, 110, 0.18));
-  margin-bottom: 0.5rem;
+  width: 96px;
+  height: 96px;
+  filter: drop-shadow(0 6px 16px rgba(26, 79, 110, 0.16));
+  margin-bottom: 0.25rem;
 }
 
 .sowel-logo path {
@@ -372,12 +424,12 @@
   stroke-linecap: round;
 }
 
-/* House outline keeps the deep ocean blue; eyes + smile take the lighter
- * sky-blue accent so the face reads at a glance. */
+/* House in deep ocean blue; eyes + smile in the soft logo blue.
+ * Independent from the page accent (which can change). */
 .sowel-logo .house     { stroke: var(--md-primary-fg-color); stroke-width: 12; }
-.sowel-logo .smile     { stroke: var(--md-accent-fg-color); stroke-width: 9; }
+.sowel-logo .smile     { stroke: #6FB3D9; stroke-width: 9; }
 .sowel-logo .left-eye,
-.sowel-logo .right-eye { stroke: var(--md-accent-fg-color); stroke-width: 8; }
+.sowel-logo .right-eye { stroke: #6FB3D9; stroke-width: 8; }
 
 [data-md-color-scheme="slate"] .sowel-logo .house { stroke: #C9DCE7; }
 
@@ -444,9 +496,9 @@
 
 .sowel-pill {
   background: var(--sowel-cream);
-  border-radius: 12px;
-  padding: 1rem 1.1rem;
-  font-size: 0.93rem;
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
   line-height: 1.5;
   border: 1px solid color-mix(in srgb, var(--md-accent-fg-color) 22%, transparent);
   color: var(--md-default-fg-color);
