@@ -39,6 +39,29 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <div class="sowel-section">
 
+<div class="sowel-story">
+
+<p class="sowel-eyebrow">A small story</p>
+
+<p class="sowel-paragraph">Take <em>Constant Light</em>. A kitchen lit at a comfortable brightness whatever the time of day. To do it right you need:</p>
+
+<ul class="sowel-bullets">
+  <li>several motion sensors that all extend the same timer, without fighting each other</li>
+  <li>a brightness target that bends with the natural lux coming in through the window</li>
+  <li>dimming throttled by your live solar production (more sun overhead, more generous; less, save it)</li>
+  <li>exemptions for meals, for nighttime, for when someone explicitly hits a switch</li>
+</ul>
+
+<p class="sowel-paragraph">Each rule on its own is trivial. The hard part is the <strong>combinations</strong>: what happens when a sensor fires while production drops, while someone leaves the room, while sunset crosses the threshold? IFTTT-style rules fall apart on the first overlap. Hand-built automations get debugged for a week, then quietly accumulate corner cases nobody dares touch.</p>
+
+<p class="sowel-paragraph"><strong>Sowel encodes this complexity once</strong>, road-tested, and ships it as a recipe. You drop <em>Constant Light</em> on the kitchen zone and move on.</p>
+
+</div>
+
+</div>
+
+<div class="sowel-section">
+
 <p class="sowel-eyebrow">What makes Sowel singular</p>
 
 <p class="sowel-paragraph">Sowel starts by <strong>standardizing what's in your house</strong>: lights, shutters, thermostats, sensors, energy meters. Once your home is described in those terms, everything else (zones, modes, recipes) follows naturally.</p>
