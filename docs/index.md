@@ -129,7 +129,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
     <strong>One Docker container.</strong> <code>docker compose up -d</code>. That's the install.
   </div>
   <div class="sowel-pill">
-    <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware.
+    <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware: a Raspberry Pi, an old PC, a Proxmox VM, whatever you've got lying around.
   </div>
   <div class="sowel-pill">
     <strong>Plug in what you own.</strong> Zigbee, Panasonic, Netatmo, Shelly, Legrand, MQTT-anything. Install integrations like you install apps, skip what you don't need.
