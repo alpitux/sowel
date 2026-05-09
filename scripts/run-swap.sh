@@ -175,7 +175,6 @@ cmd_remote() {
   echo -e "${GREEN} ✓ Remote prod mode active${NC}"
   echo -e "${GREEN}════════════════════════════════════════════${NC}"
   echo "  Sowel: http://192.168.0.230:3000"
-  echo "  Also : "
   echo
 }
 
