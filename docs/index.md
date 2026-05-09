@@ -65,7 +65,22 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <p class="sowel-eyebrow">What makes Sowel singular</p>
 
-<p class="sowel-paragraph">Sowel layers your home from the network up. <strong>Devices</strong> are auto-discovered and normalized into one data model. <strong>Equipments</strong> name what those devices actually do. <strong>Zones</strong> group equipments by space. <strong>Modes</strong> flip the whole house in one tap. <strong>Recipes</strong> make it run on its own.</p>
+<p class="sowel-paragraph">Sowel layers your home from the network up:</p>
+
+<ul class="sowel-bullets">
+  <li><strong>Devices</strong> are auto-discovered and normalized into one data model.</li>
+  <li><strong>Equipments</strong> name what those devices actually do.</li>
+  <li><strong>Zones</strong> group equipments by space, with auto-aggregated metrics.</li>
+  <li><strong>Modes</strong> flip the whole house in one tap.</li>
+  <li><strong>Recipes</strong> make it run on its own.</li>
+</ul>
+
+<p class="sowel-paragraph">And the cherry on top:</p>
+
+<ul class="sowel-bullets">
+  <li>Integrations and recipes ship as <strong>first-class plugins</strong>, distributed from GitHub: <em>Zigbee2MQTT</em>, <em>Netatmo</em>, <em>Shelly</em>, <em>Panasonic Comfort Cloud</em>, <em>weather forecasts</em>, and many more. Install what you need, ignore the rest.</li>
+  <li>Everything sits on a small, typed <strong>API and event bus</strong>, so extending Sowel is a single TypeScript file, not a fork.</li>
+</ul>
 
 <div class="sowel-cards">
 
