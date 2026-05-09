@@ -64,11 +64,35 @@ markdown_extensions:
 
 plugins:
   - search
-  # - i18n:  # Uncomment when adding French translation
-  #     default_language: en
-  #     languages:
-  #       en: English
-  #       fr: Français
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: fr
+          name: Français
+          build: true
+          nav_translations:
+            Home: Accueil
+            Technical Guide: Guide technique
+            Architecture: Architecture
+            Deployment: Déploiement
+            API Reference: Référence API
+            Plugin Development: Développement de plugins
+            Recipe Development: Développement de recettes
+            Data Model: Modèle de données
+            Contributing: Contribuer
+            Specs Index: Index des specs
+            User Guide: Guide utilisateur
+            Getting Started: Premiers pas
+            Equipments: Équipements
+            Dashboard: Tableau de bord
+            Zones & Rooms: Zones et pièces
+            Modes & Calendar: Modes et calendrier
+            Energy Monitoring: Suivi énergétique
+            Remote Access: Accès distant
 
 nav:
   - Home: index.md

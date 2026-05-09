@@ -1,0 +1,258 @@
+# Équipements
+
+Les équipements sont le concept central de Sowel. Un équipement est une **unité fonctionnelle** avec laquelle vous interagissez au quotidien : "Spots Salon", "Volets Chambre", "Capteur Cuisine".
+
+**Un device est ce qui est sur le réseau, un équipement est ce qui est dans la pièce.** Vous ne pensez jamais au module variateur Zigbee installé derrière le mur, vous pensez aux lumières de votre salon.
+
+## Créer un équipement
+
+Allez dans **Administration > Équipements** et cliquez sur **Ajouter un équipement**.
+
+### Étape 1 : Informations de base
+
+| Champ       | Obligatoire | Description                                                                             |
+| ----------- | ----------- | --------------------------------------------------------------------------------------- |
+| Type        | Oui         | La catégorie de l'équipement (voir [Types d'équipements](#types-dequipements) plus bas) |
+| Nom         | Oui         | Un nom parlant comme "Spots Salon" ou "Capteur Cuisine"                                 |
+| Zone        | Oui         | À quelle pièce ou zone cet équipement appartient                                        |
+| Description | Non         | Une note pour vous-même                                                                 |
+
+!!! info "Le type ne peut pas être modifié après création"
+Choisissez le type avec soin, il détermine quels devices sont compatibles et comment l'équipement est affiché.
+
+### Étape 2 : Sélectionner les devices
+
+Cliquez sur **Suivant : Sélectionner les devices** pour voir la liste des devices compatibles. Sowel filtre automatiquement les devices selon le type d'équipement.
+
+- Sélectionnez un ou plusieurs devices
+- Cliquez sur **Créer**
+
+**C'est tout.** Sowel crée automatiquement toutes les liaisons de données et de commandes. Chaque valeur que le device expose (température, humidité, batterie...) devient immédiatement disponible sur l'équipement.
+
+!!! tip "Vous pouvez ignorer la sélection de device"
+Vous pouvez créer un équipement sans device et en lier un plus tard depuis la page de détail.
+
+### Liaison multi-devices
+
+Un seul équipement peut se lier à **plusieurs devices**. C'est une des fonctionnalités les plus puissantes de Sowel.
+
+**Exemple :** Trois modules variateurs IKEA séparés alimentent les spots de votre salon. Créez un seul équipement "Spots Salon" et liez les trois. Un seul interrupteur allume les trois. Un seul curseur les variégradue tous les trois.
+
+---
+
+## Types d'équipements
+
+### Lumières
+
+#### Lumière (On/Off)
+
+Contrôle simple on/off d'une lumière.
+
+- **Contrôles :** Bascule ON/OFF
+- **Données attendues :** état (on/off)
+
+#### Lumière (Variateur)
+
+Lumière à luminosité réglable.
+
+- **Contrôles :** Bascule ON/OFF + curseur de luminosité
+- **Données attendues :** état, niveau de luminosité
+
+#### Lumière (Couleur)
+
+Lumière à couleur réglable, avec température de couleur en option.
+
+- **Contrôles :** Bascule + curseur de luminosité + contrôles de couleur
+- **Données attendues :** état, luminosité, couleur, température de couleur
+
+---
+
+### Volets
+
+#### Volet
+
+Volet roulant motorisé, store ou volet.
+
+- **Contrôles :** Boutons Ouvrir / Stop / Fermer, affichage de la position
+- **Données attendues :** position (0 % = fermé, 100 % = ouvert)
+
+---
+
+### Climatisation
+
+#### Thermostat
+
+Contrôle de chauffage ou de climatisation : climatiseur, poêle à granulés, pompe à chaleur.
+
+- **Contrôles :** Affichage de la température, ajustement de la consigne (+/-), allumage/extinction
+- **Données attendues :** température courante, consigne cible, état d'alimentation
+- **Données additionnelles** (selon le device) : mode de fonctionnement, vitesse du ventilateur, mode éco
+
+#### Radiateur
+
+Radiateur électrique individuel piloté par relais fil pilote.
+
+- **Contrôles :** Bascule Confort / Éco
+- **Données attendues :** état du relais (ON = éco, OFF = confort)
+
+---
+
+### Accès
+
+#### Portail
+
+Portail, portail coulissant, ou porte de garage.
+
+- **Contrôles :** Bouton Ouvrir/Fermer avec indicateur d'état
+- **Données attendues :** état du portail (ouvert, fermé, en ouverture, en fermeture)
+
+!!! tip "Icône du tableau de bord"
+Vous pouvez choisir une icône spécifique pour les portails sur le tableau de bord : portail standard, portail coulissant, ou porte de garage.
+
+---
+
+### Capteurs
+
+#### Capteur
+
+Capteur générique qui affiche une ou plusieurs valeurs mesurées. Sowel adapte l'affichage automatiquement selon ce que le device expose.
+
+- **Contrôles :** Affichage en lecture seule avec icônes et unités appropriées
+- **Données typiques :** température, humidité, pression, CO2, COV, luminosité, bruit, batterie
+- **Capteurs booléens :** mouvement (Mouvement/Calme), contact (Ouvert/Fermé), fuite d'eau, fumée
+
+#### Station météo
+
+Capteur météo extérieur qui fournit les conditions actuelles.
+
+- **Contrôles :** Affichage multi-valeurs
+- **Données typiques :** température, humidité, pression, pluie, vent, bruit, batterie
+
+#### Prévision météo
+
+Prévision météo sur plusieurs jours depuis une intégration API (par ex. plugin Open-Meteo).
+
+- **Contrôles :** Cartes de prévisions jour par jour avec icônes des conditions
+- **Données par jour (J+1 à J+5) :** condition météo, températures min/max, probabilité de pluie, rafales de vent
+
+#### Bouton / Télécommande
+
+Bouton physique ou télécommande. Pas piloté directement, utilisé comme déclencheur d'automatisations.
+
+- **Données :** événements d'action (appui simple, double appui, appui long)
+- **Usage :** Déclencher des [recettes](../technical/recipe-development.md) ou basculer des [modes](modes.md)
+
+---
+
+### Énergie
+
+#### Compteur d'énergie
+
+Suit la consommation d'énergie d'un circuit ou d'un device spécifique. Souvent utilisé comme **sous-compteur** sur une ligne dédiée (pompe à chaleur, piscine, borne VE) pour alimenter la [ventilation par usage](energy.md#bouton-total-par-usage) sur la page Énergie.
+
+- **Contrôles :** Affichage de la puissance (W) et de l'énergie quotidienne (Wh/kWh)
+- **Données attendues :** énergie cumulée (Wh)
+
+#### Compteur d'énergie principal
+
+Le compteur principal du réseau de votre maison. Un seul autorisé par système.
+
+- **Contrôles :** Identique au compteur d'énergie, plus alimentation de la page [Suivi énergétique](energy.md)
+- **Données attendues :** puissance, énergie (avec classification tarifaire HP/HC)
+
+#### Compteur d'énergie de production
+
+Panneau solaire ou autre source de production. Un seul autorisé par système.
+
+- **Contrôles :** Affichage de la production avec calcul d'autoconsommation
+- **Données attendues :** puissance de production, production cumulée
+
+---
+
+### Multimédia
+
+#### Lecteur multimédia
+
+TV, barre de son, ou appareil multimédia (par ex. TV Samsung SmartThings).
+
+- **Contrôles :** Allumage/extinction, volume, mute, sélecteur de source d'entrée
+- **Données attendues :** état d'alimentation, niveau de volume, mute, source d'entrée courante, mode image
+- **Ordres :** allumer/éteindre, régler le volume, basculer mute, changer de source d'entrée
+
+---
+
+### Électroménager
+
+#### Appareil électroménager
+
+Appareil électroménager connecté tel que lave-linge, sèche-linge ou lave-vaisselle (par ex. Samsung SmartThings Washer).
+
+- **Contrôles :** Affichage de statut en lecture seule
+- **Données attendues :** état d'alimentation, état de fonctionnement (prêt/en cours/en pause), phase courante (lavage/rinçage/essorage), progression (%), temps restant, consommation d'énergie
+
+!!! tip "Notification de fin de cycle"
+Utilisez une recette de surveillance d'état pour être notifié quand l'état de fonctionnement passe de `running` à `ready`.
+
+---
+
+### Eau
+
+#### Vanne d'eau
+
+Vanne d'arrosage connectée pour le jardin. Conçue pour des devices comme la SONOFF SWV qui exposent `state`, `flow`, et les propriétés `irrigation_*`.
+
+- **Contrôles :** Bascule ON/OFF, action minutée "Arroser pendant X min" qui ouvre la vanne et laisse le firmware du device la refermer automatiquement après la durée configurée
+- **Métriques live affichées si liées :** débit (m³/h), batterie, statut device (normal / manque d'eau / fuite)
+- **Alias standards :** `state`, `flow`, `battery`, `status`, `duration`, `cycles`, `interval`, `capacity`, `autoCloseOnShortage`, seul `state` est requis, l'UI s'adapte à ce qui est lié
+- **Agrégation de zone :** compte les vannes ouvertes/totales et somme le débit live sur l'arbre des zones
+- **Base pour** de futures recettes d'arrosage automatique (planification consciente de la pluie)
+
+### Autre
+
+#### Interrupteur / Prise
+
+Simple interrupteur on/off ou prise connectée.
+
+- **Contrôles :** Bascule ON/OFF avec badge d'état
+- **Données attendues :** état (on/off)
+
+---
+
+## Gérer les équipements
+
+### Page de détail
+
+Cliquez sur n'importe quel équipement pour voir sa page de détail :
+
+- **Données live** : toutes les valeurs sont mises à jour en temps réel via WebSocket
+- **Contrôles** : contrôles interactifs adaptés au type d'équipement
+- **Graphique d'historique** : tendances des données dans le temps (si l'historisation est activée)
+- **Configuration** : devices liés, liaisons de données, liaisons d'ordres
+
+### Changer le device
+
+Depuis la page de détail, cliquez sur **Changer de device** pour relier l'équipement à un ou plusieurs devices différents. Sowel supprime toutes les liaisons existantes et les recrée automatiquement à partir des nouveaux devices.
+
+### Historisation
+
+Chaque valeur de donnée est historisée vers InfluxDB par défaut, selon sa catégorie (température, humidité, puissance...). Depuis la page de détail, vous pouvez surcharger ce comportement par liaison :
+
+- **Défaut** : suit la règle de la catégorie
+- **Forcer ON** : toujours historiser cette valeur
+- **Forcer OFF** : ne jamais historiser cette valeur
+
+### Désactiver un équipement
+
+Un équipement désactivé :
+
+- N'apparaît pas dans la vue Accueil
+- Est exclu de l'[agrégation de zone](zones.md)
+- Ne déclenche pas les recettes ni les impacts de mode
+- Reste consultable et modifiable
+
+### Supprimer un équipement
+
+La suppression retire l'équipement de Sowel. Les devices sous-jacents ne sont **pas** affectés, ils restent disponibles pour de nouveaux équipements.
+
+!!! warning
+Supprimer un équipement supprime également toutes les instances de recettes et impacts de mode qui le référencent.
