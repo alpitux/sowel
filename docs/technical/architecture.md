@@ -215,6 +215,7 @@ Settings for integrations are stored in SQLite `settings` under `integration.<id
 | `presence-heater`       | `mchacher/sowel-recipe-presence-heater`       | recipe      |
 | `presence-thermostat`   | `mchacher/sowel-recipe-presence-thermostat`   | recipe      |
 | `state-watch`           | `mchacher/sowel-recipe-state-watch`           | recipe      |
+| `state-trigger-light`   | `mchacher/sowel-recipe-state-trigger-light`   | recipe      |
 
 The live list is in `plugins/registry.json` at the repo root.
 

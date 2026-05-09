@@ -56,7 +56,19 @@ Go to **Settings > Tariff Configuration**:
 !!! tip
 If no tariff is configured, all consumption is classified as HP by default. The Energy page still works -- you just do not see the HP/HC breakdown.
 
-### Step 4: (Optional) Set up production tracking
+### Step 4: (Optional) Set up submeters for a by-usage breakdown
+
+You can add **submeter equipments** of type `energy_meter` on dedicated circuits (heat pump, pool, EV charger, etc.) to break down what your main meter measures into named usages.
+
+To set up a submeter:
+
+1. Bind a Zigbee or Wi-Fi energy meter / energy plug to the relevant circuit.
+2. Go to **Administration > Equipments** and create an equipment of type **Energy Meter**.
+3. Bind it to the device's `energy` (Wh) data.
+
+Once at least one submeter is configured, the Energy page shows a **Total / By usage** toggle. The "By usage" view renders a stacked bar chart with one stack per submeter, plus an **Other** stack for the residual not captured by any submeter (i.e. `main meter - sum of submeters`).
+
+### Step 5: (Optional) Set up production tracking
 
 If you have solar panels, create an equipment of type **energy_production_meter** and bind it to your production meter device. Sowel will then track:
 
@@ -87,6 +99,15 @@ A bar chart showing energy consumption over the selected period. Each bar is col
 - **Blue** -- grid consumption
 - **Light blue** -- off-peak (HC) portion, if HP/HC is configured
 - **Green** -- autoconsumption, if production tracking is configured
+
+#### Total / By usage toggle
+
+If you have configured at least one submeter (see [Step 4](#step-4-optional-set-up-submeters-for-a-by-usage-breakdown)), a **Total / By usage** toggle appears above the chart:
+
+- **Total** -- the standard HP/HC/production view described above
+- **By usage** -- a stacked bar chart with one color per submeter (e.g. PAC, Pool) plus an **Other** residual that represents what the main meter saw but no submeter accounted for
+
+The toggle is hidden when no submeter is configured. Totals widgets (HP/HC, autoconsumption) keep their values across both views.
 
 ### Totals
 
