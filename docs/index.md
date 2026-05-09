@@ -65,7 +65,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <p class="sowel-eyebrow">What makes Sowel singular</p>
 
-<p class="sowel-paragraph">Start with what you own, your <strong>equipments</strong>. Stack <strong>zones</strong> on top to know what's where. Add <strong>modes</strong> to flip the whole house in one tap. Drop <strong>recipes</strong> to make it run on its own.</p>
+<p class="sowel-paragraph">Sowel layers your home from the network up. <strong>Devices</strong> are auto-discovered and normalized into one data model. <strong>Equipments</strong> name what those devices actually do. <strong>Zones</strong> group equipments by space. <strong>Modes</strong> flip the whole house in one tap. <strong>Recipes</strong> make it run on its own.</p>
 
 <div class="sowel-cards">
 
