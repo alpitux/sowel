@@ -542,12 +542,6 @@
   opacity: 1;
 }
 
-/* Tweak the search input */
-.md-search__input {
-  background: var(--md-default-bg-color);
-  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 14%, transparent);
-  border-radius: 999px;
-}
 
 /* ============================================================
    Admonitions (callouts) — warmer, softer
