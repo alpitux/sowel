@@ -384,9 +384,7 @@
   text-align: center;
   padding: 2.5rem 1rem 1.75rem;
   margin: 0 0 1.5rem;
-  background:
-    radial-gradient(ellipse 1200px 360px at 50% -10%, var(--sowel-cream) 0%, transparent 70%),
-    radial-gradient(ellipse 600px 280px at 80% 80%, color-mix(in srgb, var(--md-accent-fg-color) 8%, transparent) 0%, transparent 60%);
+  background: radial-gradient(ellipse 1200px 360px at 50% -10%, var(--sowel-cream) 0%, transparent 70%);
 }
 
 .sowel-hero h1 {
