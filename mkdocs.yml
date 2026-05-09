@@ -117,6 +117,13 @@ nav:
     - Remote Access: user/remote-access.md
 
 extra:
+  alternate:
+    - name: English
+      link: /
+      lang: en
+    - name: Français
+      link: /fr/
+      lang: fr
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/mchacher/sowel
