@@ -60,36 +60,47 @@
 
 .md-typeset h1 {
   font-weight: 700;
-  font-size: 2.4rem;
+  font-size: 1.5rem;
   line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin-bottom: 1.2rem;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.9rem;
 }
 
 .md-typeset h2 {
   font-weight: 700;
-  font-size: 1.55rem;
+  font-size: 1.1rem;
   line-height: 1.2;
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
-  letter-spacing: -0.022em;
+  margin-top: 1.8rem;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.018em;
 }
 
 .md-typeset h3 {
   font-weight: 600;
-  font-size: 1.15rem;
-  margin-top: 2rem;
-  letter-spacing: -0.012em;
+  font-size: 0.92rem;
+  margin-top: 1.4rem;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.01em;
 }
 
-/* Body sets a tighter rhythm */
+.md-typeset h4 {
+  font-weight: 600;
+  font-size: 0.82rem;
+  margin-top: 1.1rem;
+}
+
+/* Body sets a tighter rhythm — matches the landing scale */
 .md-typeset {
-  font-size: 0.78rem;
-  line-height: 1.65;
+  font-size: 0.72rem;
+  line-height: 1.6;
 }
 
 .md-typeset p {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.md-typeset li {
+  margin-bottom: 0.2rem;
 }
 
 /* Inline code: warmer tint */
