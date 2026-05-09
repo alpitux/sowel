@@ -226,6 +226,15 @@
   border-radius: 50%;
   background: var(--md-primary-fg-color);
 }
+.sowel-bullets li strong {
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
+}
+.sowel-bullets li em {
+  color: var(--md-accent-fg-color);
+  font-style: italic;
+  font-weight: 500;
+}
 
 /* ============================================================
    Sowel cards (custom — replaces Material grid.cards)
