@@ -243,7 +243,7 @@
 }
 
 .sowel-cards--two {
-  max-width: 48rem;
+  /* Span the full section width like the four-pillar grid above. */
 }
 
 /* "Take a tour" cards: minimal layout, subtle accent gradient. */
