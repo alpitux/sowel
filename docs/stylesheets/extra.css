@@ -228,6 +228,89 @@
 }
 
 /* ============================================================
+   Sowel layered-cake stack viz (devices -> recipes, bottom up)
+   ============================================================ */
+
+.sowel-stack {
+  display: flex;
+  flex-direction: column-reverse;  /* devices visually at bottom */
+  gap: 5px;
+  align-items: center;
+  margin: 1.25rem auto 0.5rem;
+  max-width: 460px;
+}
+
+.sowel-stack-layer {
+  width: 100%;
+  border-radius: 10px;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+}
+/* Source order: 1=Devices (bottom widest), 5=Recipes (top narrowest) */
+.sowel-stack-layer:nth-child(1) { width: 100%; }
+.sowel-stack-layer:nth-child(2) { width: 92%; }
+.sowel-stack-layer:nth-child(3) { width: 84%; }
+.sowel-stack-layer:nth-child(4) { width: 76%; }
+.sowel-stack-layer:nth-child(5) {
+  width: 68%;
+  border-color: color-mix(in srgb, var(--md-accent-fg-color) 35%, transparent);
+}
+
+.sowel-stack-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--md-primary-fg-color);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sowel-stack-layer:nth-child(5) .sowel-stack-num {
+  background: var(--md-accent-fg-color);
+}
+
+.sowel-stack-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.sowel-stack-title {
+  font-weight: 700;
+  color: var(--md-primary-fg-color);
+  font-size: 0.78rem;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.sowel-stack-layer:nth-child(5) .sowel-stack-title {
+  color: var(--md-accent-fg-color);
+}
+.sowel-stack-sub {
+  font-size: 0.65rem;
+  color: var(--md-default-fg-color);
+  opacity: 0.72;
+  line-height: 1.35;
+}
+
+[data-md-color-scheme="slate"] .sowel-stack-title {
+  color: #C9DCE7;
+}
+[data-md-color-scheme="slate"] .sowel-stack-layer:nth-child(5) .sowel-stack-title {
+  color: var(--md-accent-fg-color);
+}
+
+@media (max-width: 480px) {
+  .sowel-stack-layer { width: 100% !important; }
+}
+
+/* ============================================================
    Sowel cards (custom — replaces Material grid.cards)
    ============================================================ */
 

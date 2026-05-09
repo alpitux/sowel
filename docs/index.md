@@ -65,7 +65,45 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <p class="sowel-eyebrow">What makes Sowel singular</p>
 
-<p class="sowel-paragraph">Sowel layers your home from the network up. <strong>Devices</strong> are auto-discovered and normalized into one data model. <strong>Equipments</strong> name what those devices actually do. <strong>Zones</strong> group equipments by space. <strong>Modes</strong> flip the whole house in one tap. <strong>Recipes</strong> make it run on its own.</p>
+<p class="sowel-paragraph">Sowel layers your home from the network up:</p>
+
+<div class="sowel-stack">
+  <div class="sowel-stack-layer">
+    <span class="sowel-stack-num">1</span>
+    <div class="sowel-stack-body">
+      <span class="sowel-stack-title">Devices</span>
+      <span class="sowel-stack-sub">auto-discovered, normalized into one data model</span>
+    </div>
+  </div>
+  <div class="sowel-stack-layer">
+    <span class="sowel-stack-num">2</span>
+    <div class="sowel-stack-body">
+      <span class="sowel-stack-title">Equipments</span>
+      <span class="sowel-stack-sub">named, functional units bound to one or more devices</span>
+    </div>
+  </div>
+  <div class="sowel-stack-layer">
+    <span class="sowel-stack-num">3</span>
+    <div class="sowel-stack-body">
+      <span class="sowel-stack-title">Zones</span>
+      <span class="sowel-stack-sub">spaces grouping equipments, with auto-aggregated metrics</span>
+    </div>
+  </div>
+  <div class="sowel-stack-layer">
+    <span class="sowel-stack-num">4</span>
+    <div class="sowel-stack-body">
+      <span class="sowel-stack-title">Modes</span>
+      <span class="sowel-stack-sub">flip the whole house at once, on a calendar or by tap</span>
+    </div>
+  </div>
+  <div class="sowel-stack-layer">
+    <span class="sowel-stack-num">5</span>
+    <div class="sowel-stack-body">
+      <span class="sowel-stack-title">Recipes</span>
+      <span class="sowel-stack-sub">curated automation patterns dropped on a zone</span>
+    </div>
+  </div>
+</div>
 
 <div class="sowel-cards">
 
