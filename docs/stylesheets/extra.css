@@ -14,9 +14,9 @@
   --md-primary-fg-color--light: #E8F1F6;
   --md-primary-fg-color--dark:  #13405A;
 
-  /* Sky-blue accent — pulled from the Sowel logo strokes (dark-mode tint) */
-  --md-accent-fg-color:             #3676A0;
-  --md-accent-fg-color--transparent: rgba(54, 118, 160, 0.10);
+  /* Brick red accent — strong, warm, distinct from the deep ocean blue */
+  --md-accent-fg-color:             #A83232;
+  --md-accent-fg-color--transparent: rgba(168, 50, 50, 0.10);
 
   /* Custom Sowel tokens */
   --sowel-cream:        #FCF7F0;
@@ -32,8 +32,8 @@
   --md-primary-fg-color:        #1A4F6E;
   --md-primary-fg-color--light: #1e5a7d;
   --md-primary-fg-color--dark:  #13405A;
-  --md-accent-fg-color:             #6FB3D9;
-  --md-accent-fg-color--transparent: rgba(111, 179, 217, 0.14);
+  --md-accent-fg-color:             #D46868;
+  --md-accent-fg-color--transparent: rgba(212, 104, 104, 0.14);
   --sowel-cream:        #2A3540;
   --sowel-cream-soft:   #232C36;
   --sowel-ink:          #E5E7EB;
@@ -368,16 +368,18 @@
 
 .sowel-logo path {
   fill: none;
-  stroke: var(--md-primary-fg-color);
   stroke-linejoin: round;
   stroke-linecap: round;
 }
-[data-md-color-scheme="slate"] .sowel-logo path { stroke: #6FB3D9; }
 
-.sowel-logo .house     { stroke-width: 12; }
-.sowel-logo .smile     { stroke-width: 9; }
+/* House outline keeps the deep ocean blue; eyes + smile take the lighter
+ * sky-blue accent so the face reads at a glance. */
+.sowel-logo .house     { stroke: var(--md-primary-fg-color); stroke-width: 12; }
+.sowel-logo .smile     { stroke: var(--md-accent-fg-color); stroke-width: 9; }
 .sowel-logo .left-eye,
-.sowel-logo .right-eye { stroke-width: 8; }
+.sowel-logo .right-eye { stroke: var(--md-accent-fg-color); stroke-width: 8; }
+
+[data-md-color-scheme="slate"] .sowel-logo .house { stroke: #C9DCE7; }
 
 /* Wink */
 .sowel-logo .right-eye {
