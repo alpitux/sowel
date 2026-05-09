@@ -16,7 +16,7 @@ hide:
 <h1 class="sowel-wordmark">Sowel</h1>
 
 <p class="sowel-lede"><strong>Don't program your home. <em>Apply recipes to it.</em></strong><br/>
-A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy efficiency</em> — without writing a single line of code.</p>
+A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy efficiency</em>, without writing a single line of code.</p>
 
 <p class="sowel-cta">
   <a class="md-button md-button--primary" href="user/getting-started/">Get started <span class="md-icon md-icon--arrow">→</span></a>
@@ -31,7 +31,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <p class="sowel-paragraph">Most home automation tools turn you into a part-time developer: YAML files, scripts, flows, conditions, edge cases. The result is fragile spaghetti that only one person in the household can debug.</p>
 
-<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Instead of writing automations, you <strong>pick a recipe</strong> — <em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Pool Pump Schedule</em>, <em>Sunset Shutters</em> — and <strong>apply it to a zone</strong>. Each recipe encodes a thoughtful, road-tested pattern for a specific need: comfort, safety, or energy efficiency. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
+<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Instead of writing automations, you <strong>pick a recipe</strong> (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Pool Pump Schedule</em>, <em>Sunset Shutters</em>) and <strong>apply it to a zone</strong>. Each recipe encodes a thoughtful, road-tested pattern for a specific need: comfort, safety, or energy efficiency. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
 
 <p class="sowel-paragraph">Your house stops being a side project. It just works.</p>
 
@@ -41,7 +41,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <p class="sowel-eyebrow">What makes Sowel singular</p>
 
-<p class="sowel-paragraph">Sowel starts by <strong>standardizing what's in your house</strong> — lights, shutters, thermostats, sensors, energy meters. Once your home is described in those terms, everything else — zones, modes, recipes — follows naturally.</p>
+<p class="sowel-paragraph">Sowel starts by <strong>standardizing what's in your house</strong>: lights, shutters, thermostats, sensors, energy meters. Once your home is described in those terms, everything else (zones, modes, recipes) follows naturally.</p>
 
 <div class="sowel-cards">
 
@@ -49,8 +49,8 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
   </div>
-  <h3>Equipments — a standard vocabulary for your home</h3>
-  <p>Sowel turns the wiring of your house into a small, well-defined catalogue: lights, shutters, thermostats, motion sensors, energy meters. Three switches and a motion sensor in your kitchen become one <em>Kitchen Lights</em> equipment — something you can name, group, and reason about.</p>
+  <h3>Equipments. A standard vocabulary for your home.</h3>
+  <p>Sowel turns the wiring of your house into a small, well-defined catalogue: lights, shutters, thermostats, motion sensors, energy meters. Three switches and a motion sensor in your kitchen become one <em>Kitchen Lights</em> equipment, something you can name, group, and reason about.</p>
 </div>
 
 <div class="sowel-card">
@@ -58,7 +58,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   </div>
   <h3>Zones that aggregate themselves</h3>
-  <p>Group equipments into zones — by room, by floor, by purpose. A zone called <em>Ground Floor</em> tells you the average temperature, the brightest room, the highest humidity — automatically. No formulas, no glue code, no dashboards to wire.</p>
+  <p>Group equipments into zones, by room, by floor, by purpose. A zone called <em>Ground Floor</em> tells you the average temperature, the brightest room, the highest humidity, automatically. No formulas, no glue code, no dashboards to wire.</p>
 </div>
 
 <div class="sowel-card">
@@ -66,7 +66,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
   </div>
   <h3>Modes that switch the whole house</h3>
-  <p>Day, Night, Holiday, Cocoon — one tap flips your home over: dimmer lights, lower thermostats, closed shutters. Modes follow a calendar that knows when you're away.</p>
+  <p>Day, Night, Holiday, Cocoon. One tap flips your home over: dimmer lights, lower thermostats, closed shutters. Schedule them or trigger them by hand.</p>
 </div>
 
 <div class="sowel-card">
@@ -74,7 +74,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.13-7.59 5 5 0 0 0-9.2 0 4 4 0 0 0-2.13 7.59c.41.2.73.58.73 1.04V20a1 1 0 0 0 1 1z"/><path d="M6 17h12"/></svg>
   </div>
   <h3>Recipes, not scripts</h3>
-  <p>Drop a curated automation pattern onto a zone — motion-triggered lighting, presence-based heating, scheduled irrigation, sunset shutters — set a few values, and it runs. No flows to wire. No edge cases to chase.</p>
+  <p>Drop a curated automation pattern onto a zone (motion-triggered lighting, presence-based heating, scheduled irrigation, sunset shutters), set a few values, and it runs. No flows to wire. No logic programming.</p>
 </div>
 
 </div>
@@ -83,7 +83,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <div class="sowel-section">
 
-<p class="sowel-eyebrow">Deploy in minutes — yours from day one</p>
+<p class="sowel-eyebrow">Deploy in minutes. Yours from day one.</p>
 
 <div class="sowel-pills">
   <div class="sowel-pill">
@@ -93,7 +93,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
     <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware.
   </div>
   <div class="sowel-pill">
-    <strong>Plug in what you own.</strong> Zigbee, Panasonic, Netatmo, Shelly, Legrand, MQTT-anything — install integrations like you install apps. Skip what you don't need.
+    <strong>Plug in what you own.</strong> Zigbee, Panasonic, Netatmo, Shelly, Legrand, MQTT-anything. Install integrations like you install apps, skip what you don't need.
   </div>
   <div class="sowel-pill">
     <strong>Self-updating.</strong> Plugins and the engine update from GitHub. No SSH, no fiddling, no reboots scheduled at 3 a.m.
