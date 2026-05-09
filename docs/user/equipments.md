@@ -148,10 +148,10 @@ Physical button or remote control. Not directly controlled -- used as a trigger 
 
 #### Energy Meter
 
-Tracks energy consumption for a specific circuit or device.
+Tracks energy consumption for a specific circuit or device. Often used as a **submeter** on a dedicated line (heat pump, pool, EV charger) to feed the [by-usage breakdown](energy.md#total-by-usage-toggle) on the Energy page.
 
 - **Controls:** Power (W) and daily energy (Wh/kWh) display
-- **Expected data:** instantaneous power, cumulative energy
+- **Expected data:** cumulative energy (Wh)
 
 #### Main Energy Meter
 
