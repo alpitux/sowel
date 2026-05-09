@@ -78,7 +78,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 <p class="sowel-paragraph">And the cherry on top:</p>
 
 <ul class="sowel-bullets">
-  <li>Integrations and recipes ship as <strong>first-class plugins</strong>, distributed from GitHub: <em>Zigbee2MQTT</em>, <em>Netatmo</em>, <em>Shelly</em>, <em>Panasonic Comfort Cloud</em>, <em>weather forecasts</em>, and many more. Install what you need, ignore the rest.</li>
+  <li>Integrations and recipes ship as <strong>plugins</strong>, distributed from GitHub: <em>Zigbee2MQTT</em>, <em>Netatmo</em>, <em>Shelly</em>, <em>Panasonic Comfort Cloud</em>, <em>weather forecasts</em>, and many more. Install what you need, ignore the rest.</li>
   <li>Everything sits on a small, typed <strong>API and event bus</strong>, so extending Sowel is a single TypeScript file, not a fork.</li>
 </ul>
 
