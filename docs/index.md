@@ -4,7 +4,7 @@ hide:
   - toc
 ---
 
-<div class="sowel-hero" markdown>
+<div class="sowel-hero">
 
 <svg class="sowel-logo" xmlns="http://www.w3.org/2000/svg" viewBox="25 15 150 155" aria-label="Sowel logo">
   <path class="house"     d="M100 30 L160 90 Q165 95 160 100 L160 150 Q160 158 152 158 L48 158 Q40 158 40 150 L40 100 Q35 95 40 90 Z"/>
@@ -13,90 +13,120 @@ hide:
   <path class="right-eye" d="M112 95 Q117 87 122 95"/>
 </svg>
 
-# Sowel
+<h1 class="sowel-wordmark">Sowel</h1>
 
-**Don't program your home. _Apply recipes to it._**<br/>
-A home automation engine for _comfort_, _safety_ and _energy efficiency_ — without writing a single line of code.
+<p class="sowel-lede"><strong>Don't program your home. <em>Apply recipes to it.</em></strong><br/>
+A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy efficiency</em> — without writing a single line of code.</p>
 
-[Get started :material-arrow-right:](user/getting-started.md){ .md-button .md-button--primary }
-[See it on GitHub](https://github.com/mchacher/sowel){ .md-button }
-
-</div>
-
-## A different way to automate your home
-
-Most home automation tools turn you into a part-time developer: YAML files, scripts, flows, conditions, edge cases. The result is fragile spaghetti that only one person in the household can debug.
-
-**Sowel takes the opposite path.**
-
-Instead of writing automations, you **pick a recipe** — _Motion Light_, _Presence Thermostat_, _Pool Pump Schedule_, _Sunset Shutters_ — and **apply it to a zone**. Each recipe encodes a thoughtful, road-tested pattern for a specific need: comfort, safety, or energy efficiency. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.
-
-Your house stops being a side project. It just works.
-
-## What makes Sowel singular
-
-Sowel starts by **standardizing what's in your house**: lights, shutters, thermostats, sensors, energy meters. Once your home is described in those terms, everything else — zones, modes, recipes — follows naturally.
-
-<div class="grid cards" markdown>
-
-- :material-home-outline:{ .lg .middle } **Equipments — a standard vocabulary for your home**
-
-  ***
-
-  Sowel turns the wiring of your house into a small, well-defined catalogue: lights, shutters, thermostats, motion sensors, energy meters. Three switches and a motion sensor in your kitchen become one _Kitchen Lights_ equipment — something you can name, group, and reason about.
-
-- :material-shape-outline:{ .lg .middle } **Zones that aggregate themselves**
-
-  ***
-
-  Group equipments into zones — by room, by floor, by purpose. A zone called _Ground Floor_ tells you the average temperature, the brightest room, the highest humidity — automatically. No formulas, no glue code, no dashboards to wire.
-
-- :material-weather-night:{ .lg .middle } **Modes that switch the whole house**
-
-  ***
-
-  Day, Night, Holiday, Cocoon — one tap flips your home over: dimmer lights, lower thermostats, closed shutters. Modes follow a calendar that knows when you're away.
-
-- :material-chef-hat:{ .lg .middle } **Recipes, not scripts**
-
-  ***
-
-  Drop a curated automation pattern onto a zone — motion-triggered lighting, presence-based heating, scheduled irrigation, sunset shutters — set a few values, and it runs.
-
-  No flows to wire. No edge cases to chase.
+<p class="sowel-cta">
+  <a class="md-button md-button--primary" href="user/getting-started/">Get started <span class="md-icon md-icon--arrow">→</span></a>
+  <a class="md-button" href="https://github.com/mchacher/sowel">See it on GitHub</a>
+</p>
 
 </div>
 
-## Deploy in minutes — yours from day one
+<div class="sowel-section">
 
-<div class="sowel-pills" markdown>
+<p class="sowel-eyebrow">A different way to automate your home</p>
 
-- :material-docker: **One Docker container.** `docker compose up -d`. That's the install.
-- :material-shield-check-outline: **Stays at home.** No cloud, no telemetry, no third-party account. Your data lives on your hardware.
-- :material-puzzle-outline: **Plug in what you own.** Zigbee, Panasonic, Netatmo, Shelly, Legrand, MQTT-anything — install integrations like you install apps. Skip what you don't need.
-- :material-update: **Self-updating.** Plugins and the engine update from GitHub. No SSH, no fiddling, no reboots scheduled at 3 a.m.
+<p class="sowel-paragraph">Most home automation tools turn you into a part-time developer: YAML files, scripts, flows, conditions, edge cases. The result is fragile spaghetti that only one person in the household can debug.</p>
+
+<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Instead of writing automations, you <strong>pick a recipe</strong> — <em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Pool Pump Schedule</em>, <em>Sunset Shutters</em> — and <strong>apply it to a zone</strong>. Each recipe encodes a thoughtful, road-tested pattern for a specific need: comfort, safety, or energy efficiency. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
+
+<p class="sowel-paragraph">Your house stops being a side project. It just works.</p>
 
 </div>
 
-## Take a tour
+<div class="sowel-section">
 
-<div class="grid cards" markdown>
+<p class="sowel-eyebrow">What makes Sowel singular</p>
 
-- :material-book-account-outline:{ .lg .middle } **For users**
+<p class="sowel-paragraph">Sowel starts by <strong>standardizing what's in your house</strong> — lights, shutters, thermostats, sensors, energy meters. Once your home is described in those terms, everything else — zones, modes, recipes — follows naturally.</p>
 
-  ***
+<div class="sowel-cards">
 
-  Set up your home, configure equipments, and apply your first recipes.
+<div class="sowel-card">
+  <div class="sowel-card__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  </div>
+  <h3>Equipments — a standard vocabulary for your home</h3>
+  <p>Sowel turns the wiring of your house into a small, well-defined catalogue: lights, shutters, thermostats, motion sensors, energy meters. Three switches and a motion sensor in your kitchen become one <em>Kitchen Lights</em> equipment — something you can name, group, and reason about.</p>
+</div>
 
-  [User guide :octicons-arrow-right-24:](user/getting-started.md)
+<div class="sowel-card">
+  <div class="sowel-card__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  </div>
+  <h3>Zones that aggregate themselves</h3>
+  <p>Group equipments into zones — by room, by floor, by purpose. A zone called <em>Ground Floor</em> tells you the average temperature, the brightest room, the highest humidity — automatically. No formulas, no glue code, no dashboards to wire.</p>
+</div>
 
-- :material-cog-outline:{ .lg .middle } **For builders**
+<div class="sowel-card">
+  <div class="sowel-card__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+  </div>
+  <h3>Modes that switch the whole house</h3>
+  <p>Day, Night, Holiday, Cocoon — one tap flips your home over: dimmer lights, lower thermostats, closed shutters. Modes follow a calendar that knows when you're away.</p>
+</div>
 
-  ***
+<div class="sowel-card">
+  <div class="sowel-card__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.13-7.59 5 5 0 0 0-9.2 0 4 4 0 0 0-2.13 7.59c.41.2.73.58.73 1.04V20a1 1 0 0 0 1 1z"/><path d="M6 17h12"/></svg>
+  </div>
+  <h3>Recipes, not scripts</h3>
+  <p>Drop a curated automation pattern onto a zone — motion-triggered lighting, presence-based heating, scheduled irrigation, sunset shutters — set a few values, and it runs. No flows to wire. No edge cases to chase.</p>
+</div>
 
-  Architecture, plugin development, recipes, and the data model.
+</div>
 
-  [Technical guide :octicons-arrow-right-24:](technical/index.md)
+</div>
+
+<div class="sowel-section">
+
+<p class="sowel-eyebrow">Deploy in minutes — yours from day one</p>
+
+<div class="sowel-pills">
+  <div class="sowel-pill">
+    <strong>One Docker container.</strong> <code>docker compose up -d</code>. That's the install.
+  </div>
+  <div class="sowel-pill">
+    <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware.
+  </div>
+  <div class="sowel-pill">
+    <strong>Plug in what you own.</strong> Zigbee, Panasonic, Netatmo, Shelly, Legrand, MQTT-anything — install integrations like you install apps. Skip what you don't need.
+  </div>
+  <div class="sowel-pill">
+    <strong>Self-updating.</strong> Plugins and the engine update from GitHub. No SSH, no fiddling, no reboots scheduled at 3 a.m.
+  </div>
+</div>
+
+</div>
+
+<div class="sowel-section">
+
+<p class="sowel-eyebrow">Take a tour</p>
+
+<div class="sowel-cards sowel-cards--two">
+
+<div class="sowel-card">
+  <div class="sowel-card__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+  </div>
+  <h3>For users</h3>
+  <p>Set up your home, configure equipments, and apply your first recipes.</p>
+  <p><a href="user/getting-started/">User guide →</a></p>
+</div>
+
+<div class="sowel-card">
+  <div class="sowel-card__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>
+  </div>
+  <h3>For builders</h3>
+  <p>Architecture, plugin development, recipes, and the data model.</p>
+  <p><a href="technical/">Technical guide →</a></p>
+</div>
+
+</div>
 
 </div>
 

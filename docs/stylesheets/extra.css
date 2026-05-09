@@ -1,12 +1,10 @@
 /* ============================================================
-   Sowel docs — "warm editorial" theme
-   Display: Fraunces (humanist serif, soft optical sizing)
-   Body:    Manrope (loaded via mkdocs theme.font.text)
-   Mono:    JetBrains Mono
-   Accent:  terracotta (replaces the old amber)
+   Sowel docs — themed to match the Sowel app design system
+   Body / display: Inter (loaded via mkdocs theme.font.text)
+   Mono:           JetBrains Mono
+   Primary:        #1A4F6E ocean blue
+   Accent:         terracotta (refined replacement for #D4963F amber)
    ============================================================ */
-
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap");
 
 /* ----- Brand variables ----- */
 
@@ -16,9 +14,9 @@
   --md-primary-fg-color--light: #E8F1F6;
   --md-primary-fg-color--dark:  #13405A;
 
-  /* Terracotta — accent (replaces #D4963F amber) */
-  --md-accent-fg-color:             #C5613A;
-  --md-accent-fg-color--transparent: rgba(197, 97, 58, 0.10);
+  /* Sky-blue accent — pulled from the Sowel logo strokes (dark-mode tint) */
+  --md-accent-fg-color:             #3676A0;
+  --md-accent-fg-color--transparent: rgba(54, 118, 160, 0.10);
 
   /* Custom Sowel tokens */
   --sowel-cream:        #FCF7F0;
@@ -27,16 +25,16 @@
   --sowel-ink-muted:    #5C6A75;
   --sowel-warm-shadow:  rgba(60, 40, 25, 0.08);
   --sowel-warm-shadow-strong: rgba(60, 40, 25, 0.14);
-  --sowel-display: "Fraunces", ui-serif, "Iowan Old Style", "Apple Garamond", Georgia, serif;
+  --sowel-display: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 [data-md-color-scheme="slate"] {
   --md-primary-fg-color:        #1A4F6E;
   --md-primary-fg-color--light: #1e5a7d;
   --md-primary-fg-color--dark:  #13405A;
-  --md-accent-fg-color:             #E08866;
-  --md-accent-fg-color--transparent: rgba(224, 136, 102, 0.12);
-  --sowel-cream:        #1B232B;
+  --md-accent-fg-color:             #6FB3D9;
+  --md-accent-fg-color--transparent: rgba(111, 179, 217, 0.14);
+  --sowel-cream:        #2A3540;
   --sowel-cream-soft:   #232C36;
   --sowel-ink:          #E5E7EB;
   --sowel-ink-muted:    #A0AAB4;
@@ -53,31 +51,32 @@
 .md-typeset h3,
 .md-typeset h4 {
   font-family: var(--sowel-display);
-  font-feature-settings: "ss01", "ss02";
-  letter-spacing: -0.012em;
+  font-feature-settings: "cv05", "cv08", "cv11", "ss01";
+  letter-spacing: -0.018em;
 }
 
 .md-typeset h1 {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 2.4rem;
-  line-height: 1.12;
-  letter-spacing: -0.025em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   margin-bottom: 1.2rem;
 }
 
 .md-typeset h2 {
-  font-weight: 600;
-  font-size: 1.6rem;
-  line-height: 1.18;
+  font-weight: 700;
+  font-size: 1.55rem;
+  line-height: 1.2;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
-  letter-spacing: -0.018em;
+  letter-spacing: -0.022em;
 }
 
 .md-typeset h3 {
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   margin-top: 2rem;
+  letter-spacing: -0.012em;
 }
 
 /* Body sets a tighter rhythm */
@@ -144,40 +143,165 @@
 }
 
 /* ============================================================
-   Cards (.grid.cards)
+   Landing — section + eyebrow + paragraph utilities
    ============================================================ */
 
-.md-typeset .grid.cards > ul > li,
-.md-typeset .grid.cards > ol > li {
-  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 9%, transparent);
-  border-radius: 14px;
-  padding: 1.4rem 1.4rem 1.5rem;
-  background: var(--md-default-bg-color);
-  transition: transform 220ms ease, box-shadow 280ms ease, border-color 220ms ease;
-  position: relative;
-  overflow: hidden;
+.sowel-section {
+  max-width: 56rem;
+  margin: 4rem auto 0;
+  padding: 0 1rem;
 }
-.md-typeset .grid.cards > ul > li::before {
+
+.sowel-eyebrow {
+  font-family: var(--sowel-display);
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.18;
+  color: var(--md-primary-fg-color);
+  margin: 0 0 1rem;
+  position: relative;
+  padding-left: 1rem;
+}
+.sowel-eyebrow::before {
   content: "";
   position: absolute;
-  inset: auto auto 0 0;
-  width: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--md-accent-fg-color), color-mix(in srgb, var(--md-accent-fg-color) 50%, transparent));
-  transition: width 320ms ease;
+  left: 0; top: 0.4em;
+  width: 4px; height: 1.2em;
+  background: var(--md-accent-fg-color);
+  border-radius: 2px;
 }
-.md-typeset .grid.cards > ul > li:hover,
-.md-typeset .grid.cards > ol > li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 30px var(--sowel-warm-shadow), 0 4px 8px var(--sowel-warm-shadow);
-  border-color: color-mix(in srgb, var(--md-accent-fg-color) 35%, transparent);
+[data-md-color-scheme="slate"] .sowel-eyebrow {
+  color: #C9DCE7;
 }
-.md-typeset .grid.cards > ul > li:hover::before {
-  width: 100%;
+
+.sowel-paragraph {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--md-default-fg-color);
+  margin: 0 0 1rem;
+  max-width: 42rem;
 }
-.md-typeset .grid.cards .twemoji,
-.md-typeset .grid.cards svg {
+.sowel-paragraph strong {
+  color: var(--md-primary-fg-color);
+  font-weight: 600;
+}
+[data-md-color-scheme="slate"] .sowel-paragraph strong {
+  color: #C9DCE7;
+}
+.sowel-paragraph em {
+  font-style: italic;
   color: var(--md-accent-fg-color);
+  font-weight: 500;
+}
+
+/* ============================================================
+   Sowel cards (custom — replaces Material grid.cards)
+   ============================================================ */
+
+.sowel-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem;
+  margin: 1.75rem 0 0;
+}
+
+@media (min-width: 720px) {
+  .sowel-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+.sowel-cards--two {
+  max-width: 48rem;
+}
+
+.sowel-card {
+  position: relative;
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 11%, transparent);
+  border-radius: 14px;
+  padding: 1.5rem 1.5rem 1.4rem;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 280ms ease,
+              border-color 240ms ease;
+  overflow: hidden;
+}
+
+.sowel-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--md-accent-fg-color) 0%, color-mix(in srgb, var(--md-accent-fg-color) 35%, transparent) 100%);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sowel-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 18px 36px color-mix(in srgb, var(--md-primary-fg-color) 12%, transparent),
+    0 4px 10px color-mix(in srgb, var(--md-primary-fg-color) 8%, transparent);
+  border-color: color-mix(in srgb, var(--md-accent-fg-color) 40%, transparent);
+}
+.sowel-card:hover::after {
+  transform: scaleX(1);
+}
+
+.sowel-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--md-accent-fg-color) 14%, transparent);
+  color: var(--md-primary-fg-color);
+}
+[data-md-color-scheme="slate"] .sowel-card__icon {
+  color: #C9DCE7;
+}
+.sowel-card__icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.sowel-card h3 {
+  font-family: var(--sowel-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  line-height: 1.3;
+  margin: 0 0 0.6rem;
+  color: var(--md-primary-fg-color);
+}
+[data-md-color-scheme="slate"] .sowel-card h3 {
+  color: #C9DCE7;
+}
+
+.sowel-card p {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.5rem;
+}
+.sowel-card p:last-child {
+  margin-bottom: 0;
+}
+.sowel-card a {
+  font-weight: 600;
+  color: var(--md-accent-fg-color);
+  text-decoration: none;
+}
+.sowel-card a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.sowel-card em {
+  color: var(--md-accent-fg-color);
+  font-style: italic;
+  font-weight: 500;
 }
 
 /* ============================================================
@@ -196,14 +320,14 @@
 
 .sowel-hero h1 {
   font-family: var(--sowel-display);
-  font-size: clamp(2.6rem, 5vw, 4.2rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
+  font-size: clamp(2.8rem, 5.5vw, 4.4rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
   line-height: 1.02;
   margin: 0.5rem 0 0.8rem;
   border-bottom: none;
   color: var(--md-primary-fg-color);
-  font-variation-settings: "opsz" 144;
+  font-feature-settings: "cv05", "cv08", "cv11", "ss01";
 }
 
 [data-md-color-scheme="slate"] .sowel-hero h1 {
@@ -225,9 +349,8 @@
 }
 
 .sowel-hero p em {
-  font-family: var(--sowel-display);
-  font-style: italic;
-  font-weight: 500;
+  font-style: normal;
+  font-weight: 600;
   color: var(--md-accent-fg-color);
 }
 
@@ -304,40 +427,45 @@
 }
 
 /* ============================================================
-   "Pills" row — landing
+   "Pills" row — landing (Deploy in minutes)
    ============================================================ */
 
-.sowel-pills ul {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
+.sowel-pills {
+  margin: 1.75rem 0 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.85rem;
 }
-
-.sowel-pills li {
-  background: var(--sowel-cream);
-  border-radius: 12px;
-  padding: 0.95rem 1.1rem;
-  font-size: 0.92rem;
-  line-height: 1.5;
-  border: 1px solid color-mix(in srgb, var(--md-accent-fg-color) 18%, transparent);
-  position: relative;
+@media (min-width: 720px) {
+  .sowel-pills { grid-template-columns: repeat(2, 1fr); }
 }
 
-.sowel-pills li strong {
+.sowel-pill {
+  background: var(--sowel-cream);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  font-size: 0.93rem;
+  line-height: 1.5;
+  border: 1px solid color-mix(in srgb, var(--md-accent-fg-color) 22%, transparent);
+  color: var(--md-default-fg-color);
+}
+
+.sowel-pill strong {
   color: var(--md-primary-fg-color);
   font-weight: 600;
 }
-
-.sowel-pills li code {
-  background: rgba(0,0,0,0.04);
-  border: none;
+[data-md-color-scheme="slate"] .sowel-pill strong {
+  color: #C9DCE7;
 }
 
-[data-md-color-scheme="slate"] .sowel-pills li code {
-  background: rgba(255,255,255,0.06);
+.sowel-pill code {
+  background: rgba(0,0,0,0.06);
+  border: none;
+  padding: 0.1em 0.32em;
+  font-size: 0.88em;
+}
+[data-md-color-scheme="slate"] .sowel-pill code {
+  background: rgba(255,255,255,0.08);
 }
 
 /* ============================================================
@@ -406,9 +534,8 @@
 }
 .md-typeset table:not([class]) th {
   background: var(--sowel-cream-soft);
-  font-family: var(--sowel-display);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.005em;
 }
 [data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
   background: var(--sowel-cream-soft);
