@@ -363,7 +363,7 @@ The maintainer's production deployment (as of 2026-04-11):
 
 - **Host**: Proxmox VM `sowelox` (Linux, x86_64, 8 GB RAM)
 - **Path**: `/opt/sowel/`
-- **Access**: LAN `http://192.168.0.230:3000`, public `` via Cloudflare Tunnel
+- **Access**: LAN `http://192.168.0.230:3000`
 - **Containers**: `sowel` + `sowel-influxdb`
 - **Timezone**: `TZ=Europe/Paris` explicitly set in compose (workaround pending spec 061)
 - **Current version**: tracked via `git log specs/060-self-update-helper-and-detection/` and `docker logs sowel | grep "Sowel engine started"`

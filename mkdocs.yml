@@ -11,6 +11,9 @@ theme:
   language: en
   logo: assets/logo.svg
   favicon: assets/favicon.svg
+  font:
+    text: Inter
+    code: JetBrains Mono
   palette:
     - scheme: default
       primary: custom
