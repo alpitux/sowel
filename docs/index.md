@@ -65,7 +65,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <p class="sowel-eyebrow">What makes Sowel singular</p>
 
-<p class="sowel-paragraph">Sowel starts by <strong>standardizing what's in your house</strong>: lights, shutters, thermostats, sensors, energy meters. Once your home is described in those terms, everything else (zones, modes, recipes) follows naturally.</p>
+<p class="sowel-paragraph">Start with what you own, your <strong>equipments</strong>. Stack <strong>zones</strong> on top to know what's where. Add <strong>modes</strong> to flip the whole house in one tap. Drop <strong>recipes</strong> to make it run on its own.</p>
 
 <div class="sowel-cards">
 
