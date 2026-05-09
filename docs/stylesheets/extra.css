@@ -424,7 +424,7 @@
 
 /* House in deep ocean blue; eyes + smile in the soft logo blue.
  * Independent from the page accent (which can change). */
-.sowel-logo .house     { stroke: var(--md-primary-fg-color); stroke-width: 12; }
+.sowel-logo .house     { stroke: var(--md-primary-fg-color); stroke-width: 9; }
 .sowel-logo .smile     { stroke: #6FB3D9; stroke-width: 9; }
 .sowel-logo .left-eye,
 .sowel-logo .right-eye { stroke: #6FB3D9; stroke-width: 8; }
