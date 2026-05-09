@@ -178,11 +178,8 @@
   max-width: 60rem;
 }
 .sowel-paragraph strong {
-  color: var(--md-primary-fg-color);
-  font-weight: 600;
-}
-[data-md-color-scheme="slate"] .sowel-paragraph strong {
-  color: #C9DCE7;
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
 }
 .sowel-paragraph em {
   font-style: italic;
@@ -339,6 +336,10 @@
   font-style: italic;
   font-weight: 500;
 }
+.sowel-card p strong {
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
+}
 
 /* ============================================================
    Landing-page hero
@@ -378,13 +379,13 @@
 }
 
 .sowel-hero p strong {
-  font-weight: 600;
-  color: var(--md-primary-fg-color);
+  font-weight: 700;
+  color: var(--md-accent-fg-color);
 }
 
 .sowel-hero p em {
   font-style: normal;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--md-accent-fg-color);
 }
 
@@ -490,11 +491,8 @@
 }
 
 .sowel-pill strong {
-  color: var(--md-primary-fg-color);
-  font-weight: 600;
-}
-[data-md-color-scheme="slate"] .sowel-pill strong {
-  color: #C9DCE7;
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
 }
 
 .sowel-pill code {
