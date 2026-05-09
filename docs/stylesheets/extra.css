@@ -407,10 +407,13 @@
 
 /* Logo */
 .sowel-logo {
-  width: 120px;
-  height: 120px;
-  filter: drop-shadow(0 6px 16px rgba(26, 79, 110, 0.16));
-  margin-bottom: 0.3rem;
+  width: 200px;
+  height: 200px;
+  filter: drop-shadow(0 10px 24px rgba(26, 79, 110, 0.18));
+  margin-bottom: 0.4rem;
+}
+@media (max-width: 600px) {
+  .sowel-logo { width: 140px; height: 140px; }
 }
 
 .sowel-logo path {
