@@ -5,13 +5,7 @@ Cette page vous guide à travers l'installation de Sowel, la première connexion
 ## Prérequis
 
 - **Docker** (recommandé) ou **Node.js 20+** pour une installation manuelle
-- Au moins une intégration prise en charge :
-  - **Zigbee2MQTT** avec un broker MQTT (Mosquitto ou équivalent)
-  - Compte **Panasonic Comfort Cloud** (pour les climatiseurs)
-  - Compte **MCZ Maestro** (pour les poêles à granulés)
-  - **Netatmo Weather** (pour les stations météo)
-  - **Legrand Energy / Control** (pour le suivi énergétique, les lumières, les volets)
-  - **LoRa2MQTT** (pour les devices LoRa via un pont lora2mqtt)
+- Au moins une intégration installée depuis le catalogue intégré (**Administration > Plugins**). Sowel propose des plugins pour Zigbee2MQTT, Shelly, Panasonic, MCZ, Netatmo, Legrand, Tasmota, SmartThings, et bien d'autres. Un nouveau plugin s'installe en quelques secondes et le catalogue s'enrichit régulièrement.
 
 ## Installation
 
@@ -80,24 +74,15 @@ Il n'existe aucun mécanisme de récupération de mot de passe. Assurez-vous de 
 
 Après la connexion, suivez ces étapes pour configurer votre maison.
 
-### Étape 1 : Configurer les intégrations
+### Étape 1 : Installer et configurer les intégrations
 
-Allez dans **Administration > Intégrations** dans la barre latérale.
+Ouvrez **Administration > Plugins** pour parcourir le catalogue, puis **Administration > Intégrations** pour configurer celles que vous avez installées.
 
 ![Page intégrations](../screenshots/getting-started-integrations.png)
 
-Chaque intégration possède son propre panneau de réglages. Cliquez sur une intégration pour la déplier et configurer la connexion. Réglages courants :
+Chaque intégration a son propre panneau. Les réglages varient : URL d'un broker MQTT (Zigbee2MQTT, LoRa2MQTT, Tasmota, Shelly), compte cloud (Panasonic, MCZ), identifiants OAuth (Netatmo, Legrand, SmartThings). Chacune embarque un texte d'aide qui décrit ce qu'elle attend.
 
-| Intégration                 | À configurer                                                        |
-| --------------------------- | ------------------------------------------------------------------- |
-| **Zigbee2MQTT**             | URL du broker MQTT (par ex. `mqtt://localhost:1883`), topic de base |
-| **Panasonic Comfort Cloud** | Email et mot de passe de votre compte Panasonic                     |
-| **MCZ Maestro**             | Email et mot de passe de votre compte MCZ                           |
-| **Netatmo Weather**         | Identifiants OAuth (client ID, client secret, tokens)               |
-| **Legrand Energy/Control**  | Identifiants OAuth (client ID, client secret, tokens)               |
-| **LoRa2MQTT**               | URL du broker MQTT, topic de base                                   |
-
-Chaque intégration affiche un **indicateur de statut de connexion** (vert = connecté). Vous pouvez démarrer/arrêter les intégrations et déclencher un rafraîchissement manuel sans redémarrer le moteur.
+Chaque intégration affiche un **indicateur de statut de connexion** (vert = connecté). Vous pouvez démarrer, arrêter ou recharger une intégration sans redémarrer le moteur.
 
 !!! tip
 Les réglages d'intégration sont stockés dans la base de données, pas dans des fichiers d'environnement. Vous configurez tout depuis l'UI.
