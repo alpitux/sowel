@@ -255,10 +255,13 @@
   /* Span the full section width like the four-pillar grid above. */
 }
 
-/* "Take a tour" cards: minimal layout, subtle accent gradient. */
+/* "Take a tour" cards: minimal layout. Same hover as other cards. */
 .sowel-cards--two .sowel-card {
   background: var(--md-default-bg-color);
-  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 11%, transparent);
+}
+.sowel-cards--two .sowel-card:hover {
+  border-color: var(--md-primary-fg-color);
 }
 .sowel-cards--two .sowel-card::after { display: none; }
 .sowel-cards--two .sowel-card__icon {
@@ -407,10 +410,11 @@
 
 /* Logo */
 .sowel-logo {
+  display: block;
   width: 200px;
   height: 200px;
+  margin: 0 auto 0.4rem;
   filter: drop-shadow(0 10px 24px rgba(26, 79, 110, 0.18));
-  margin-bottom: 0.4rem;
 }
 @media (max-width: 600px) {
   .sowel-logo { width: 140px; height: 140px; }
