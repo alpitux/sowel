@@ -215,7 +215,7 @@ Production logs go to both stdout (captured by Docker) and `data/logs/sowel-N.lo
 
 - **Production runs on**: Linux VM `sowelox` (Proxmox), x86_64, 8 GB RAM
 - **Path**: `/opt/sowel/`
-- **Access**: LAN `http://192.168.0.230:3000`, public `` (Cloudflare tunnel)
+- **Access**: LAN `http://192.168.0.230:3000`
 - **Related services on the same VM**: mosquitto (MQTT broker), zigbee2mqtt, lora2mqtt, cloudflared — **not** managed by Sowel itself
 - **Log files** accessible via `ssh mchacher@192.168.0.230 'docker exec sowel cat /app/data/logs/sowel.N.log'`
 - **SSH / API credentials**: in memory file `reference_sowel_access.md`

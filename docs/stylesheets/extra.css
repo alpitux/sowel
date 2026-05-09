@@ -1,92 +1,431 @@
-/* Sowel brand colors */
+/* ============================================================
+   Sowel docs — themed to match the Sowel app design system
+   Body / display: Inter (loaded via mkdocs theme.font.text)
+   Mono:           JetBrains Mono
+   Primary:        #1A4F6E ocean blue
+   Accent:         terracotta (refined replacement for #D4963F amber)
+   ============================================================ */
+
+/* ----- Brand variables ----- */
+
 :root {
-  --md-primary-fg-color: #1A4F6E;
-  --md-primary-fg-color--light: #E6F0F6;
-  --md-primary-fg-color--dark: #13405A;
-  --md-accent-fg-color: #D4963F;
-  --md-accent-fg-color--transparent: rgba(212, 150, 63, 0.1);
+  /* Page surface: pure light gray */
+  --md-default-bg-color: #F4F5F7;
+
+  /* Sowel ocean blue — primary */
+  --md-primary-fg-color:        #1A4F6E;
+  --md-primary-fg-color--light: #E8F1F6;
+  --md-primary-fg-color--dark:  #13405A;
+
+  /* Brick red accent — strong, warm, distinct from the deep ocean blue */
+  --md-accent-fg-color:             #A83232;
+  --md-accent-fg-color--transparent: rgba(168, 50, 50, 0.10);
+
+  /* Custom Sowel tokens */
+  --sowel-cream:        #F4F5F7;
+  --sowel-cream-soft:   #EDEEF0;
+  --sowel-ink:          #1F2A33;
+  --sowel-ink-muted:    #5C6A75;
+  --sowel-warm-shadow:  rgba(60, 40, 25, 0.08);
+  --sowel-warm-shadow-strong: rgba(60, 40, 25, 0.14);
+  --sowel-display: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 [data-md-color-scheme="slate"] {
-  --md-primary-fg-color: #1A4F6E;
+  --md-primary-fg-color:        #1A4F6E;
   --md-primary-fg-color--light: #1e5a7d;
-  --md-primary-fg-color--dark: #13405A;
-  --md-accent-fg-color: #D4963F;
+  --md-primary-fg-color--dark:  #13405A;
+  --md-accent-fg-color:             #D46868;
+  --md-accent-fg-color--transparent: rgba(212, 104, 104, 0.14);
+  --sowel-cream:        #2A3540;
+  --sowel-cream-soft:   #232C36;
+  --sowel-ink:          #E5E7EB;
+  --sowel-ink-muted:    #A0AAB4;
+  --sowel-warm-shadow:  rgba(0, 0, 0, 0.45);
+  --sowel-warm-shadow-strong: rgba(0, 0, 0, 0.55);
 }
 
 /* ============================================================
-   Landing page hero
+   Typography — display headings in Fraunces
+   ============================================================ */
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-family: var(--sowel-display);
+  font-feature-settings: "cv05", "cv08", "cv11", "ss01";
+  letter-spacing: -0.018em;
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+  font-size: 2.4rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.2rem;
+}
+
+.md-typeset h2 {
+  font-weight: 700;
+  font-size: 1.55rem;
+  line-height: 1.2;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.022em;
+}
+
+.md-typeset h3 {
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin-top: 2rem;
+  letter-spacing: -0.012em;
+}
+
+/* Body sets a tighter rhythm */
+.md-typeset {
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.md-typeset p {
+  margin-bottom: 1rem;
+}
+
+/* Inline code: warmer tint */
+.md-typeset code {
+  font-feature-settings: "ss01";
+  background-color: var(--sowel-cream-soft);
+  border: 1px solid color-mix(in srgb, var(--sowel-cream-soft) 75%, transparent);
+  border-radius: 4px;
+  padding: 0.1em 0.32em;
+  font-size: 0.85em;
+}
+
+/* Links */
+.md-typeset a {
+  color: var(--md-primary-fg-color);
+  text-decoration-color: color-mix(in srgb, var(--md-primary-fg-color) 30%, transparent);
+  text-underline-offset: 0.15em;
+  transition: text-decoration-color 150ms ease;
+}
+.md-typeset a:hover {
+  text-decoration-color: var(--md-primary-fg-color);
+}
+
+/* ============================================================
+   Buttons (md-button)
+   ============================================================ */
+
+.md-typeset .md-button {
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 0.65rem;
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+  padding: 0.5em 1.3em;
+  border: 1.5px solid var(--md-primary-fg-color);
+  color: var(--md-primary-fg-color);
+  background: transparent;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+.md-typeset .md-button:hover,
+.md-typeset .md-button:focus {
+  background: var(--md-primary-fg-color);
+  color: #fff;
+  border-color: var(--md-primary-fg-color);
+}
+.md-typeset .md-button--primary {
+  background: var(--md-primary-fg-color);
+  color: #fff;
+  border-color: var(--md-primary-fg-color);
+}
+.md-typeset .md-button--primary:hover,
+.md-typeset .md-button--primary:focus {
+  background: var(--md-primary-fg-color--dark);
+  color: #fff;
+  border-color: var(--md-primary-fg-color--dark);
+}
+
+/* ============================================================
+   Landing — section + eyebrow + paragraph utilities
+   ============================================================ */
+
+.sowel-section {
+  max-width: 72rem;
+  margin: 2rem auto 0;
+  padding: 0 1.25rem;
+}
+
+.sowel-eyebrow {
+  font-family: var(--sowel-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.22;
+  color: var(--md-primary-fg-color);
+  margin: 0 0 0.6rem;
+}
+[data-md-color-scheme="slate"] .sowel-eyebrow {
+  color: #C9DCE7;
+}
+
+.sowel-paragraph {
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.55rem;
+  max-width: 60rem;
+}
+.sowel-paragraph strong {
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
+}
+.sowel-paragraph em {
+  font-style: italic;
+  color: var(--md-accent-fg-color);
+  font-weight: 500;
+}
+
+/* ============================================================
+   Story block — narrative section with a subtle frame
+   ============================================================ */
+
+.sowel-story {
+  background: var(--sowel-cream);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 9%, transparent);
+  border-radius: 12px;
+  padding: 1rem 1.25rem 0.85rem;
+}
+
+.sowel-story .sowel-eyebrow {
+  margin-top: 0;
+}
+
+.md-typeset .sowel-bullets,
+.sowel-bullets {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0.4rem 0 0.75rem !important;
+}
+.sowel-bullets li {
+  position: relative;
+  padding-left: 0.9rem;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  margin-bottom: 0.2rem;
+  color: var(--md-default-fg-color);
+  list-style: none;
+}
+.sowel-bullets li::marker { content: ""; }
+.sowel-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0.65em;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--md-primary-fg-color);
+}
+
+/* ============================================================
+   Sowel cards (custom — replaces Material grid.cards)
+   ============================================================ */
+
+.sowel-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem;
+  margin: 1.75rem 0 0;
+}
+
+@media (min-width: 720px) {
+  .sowel-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+.sowel-cards--two {
+  /* Span the full section width like the four-pillar grid above. */
+}
+
+/* "Take a tour" cards: minimal layout, subtle accent gradient. */
+.sowel-cards--two .sowel-card {
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 9%, transparent);
+}
+.sowel-cards--two .sowel-card::after { display: none; }
+.sowel-cards--two .sowel-card__icon {
+  background: transparent;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-bottom: 0.4rem;
+  border-radius: 0;
+}
+.sowel-cards--two .sowel-card__icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.sowel-card {
+  position: relative;
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 11%, transparent);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem 1.1rem;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              box-shadow 280ms ease,
+              border-color 240ms ease;
+  overflow: hidden;
+}
+
+.sowel-card:hover {
+  border-color: var(--md-primary-fg-color);
+}
+
+.sowel-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-bottom: 0.7rem;
+  border-radius: 8px;
+  background: #ECEEF1;
+  color: var(--md-primary-fg-color);
+}
+[data-md-color-scheme="slate"] .sowel-card__icon {
+  background: #2A3540;
+  color: #C9DCE7;
+}
+.sowel-card__icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.sowel-card h3 {
+  font-family: var(--sowel-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 0 0 0.35rem;
+  color: var(--md-primary-fg-color);
+}
+[data-md-color-scheme="slate"] .sowel-card h3 {
+  color: #C9DCE7;
+}
+
+.sowel-card p {
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: var(--md-default-fg-color);
+  margin: 0 0 0.35rem;
+}
+.sowel-card p:last-child {
+  margin-bottom: 0;
+}
+.sowel-card a {
+  font-weight: 600;
+  color: var(--md-accent-fg-color);
+  text-decoration: none;
+}
+.sowel-card a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.sowel-card em {
+  color: var(--md-accent-fg-color);
+  font-style: italic;
+  font-weight: 500;
+}
+.sowel-card p strong {
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
+}
+
+/* ============================================================
+   Landing-page hero
    ============================================================ */
 
 .sowel-hero {
+  position: relative;
   text-align: center;
-  padding: 2.5rem 0 1rem;
-  margin-bottom: 2rem;
+  padding: 2.5rem 1rem 1.75rem;
+  margin: 0 0 1.5rem;
+  background: radial-gradient(ellipse 1200px 360px at 50% -10%, var(--sowel-cream) 0%, transparent 70%);
 }
 
 .sowel-hero h1 {
-  font-size: 3rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0.75rem 0 0.5rem;
+  font-family: var(--sowel-display);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  margin: 0.2rem 0 0.4rem;
   border-bottom: none;
   color: var(--md-primary-fg-color);
-}
-
-.sowel-hero p {
-  font-size: 1.15rem;
-  color: var(--md-default-fg-color--light);
-  margin: 0.5rem auto 1.25rem;
-  max-width: 36rem;
-  line-height: 1.5;
-}
-
-.sowel-hero p em {
-  color: var(--md-accent-fg-color);
-  font-style: normal;
-  font-weight: 600;
+  font-feature-settings: "cv05", "cv08", "cv11", "ss01";
 }
 
 [data-md-color-scheme="slate"] .sowel-hero h1 {
-  color: #6FB3D9;
+  color: #C9DCE7;
 }
 
-/* Logo — winking house */
+.sowel-hero p {
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--md-default-fg-color);
+  margin: 0.3rem auto 0.5rem;
+  max-width: 32rem;
+  font-weight: 400;
+}
+
+.sowel-hero p strong {
+  font-weight: 700;
+  color: var(--md-accent-fg-color);
+}
+
+.sowel-hero p em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--md-accent-fg-color);
+}
+
+.sowel-hero .md-button {
+  margin: 0.45rem 0.3rem 0;
+}
+
+/* Logo */
 .sowel-logo {
-  width: 140px;
-  height: 140px;
-  filter: drop-shadow(0 4px 12px rgba(26, 79, 110, 0.15));
+  width: 78px;
+  height: 78px;
+  filter: drop-shadow(0 4px 12px rgba(26, 79, 110, 0.14));
+  margin-bottom: 0.2rem;
 }
 
 .sowel-logo path {
   fill: none;
-  stroke: var(--md-primary-fg-color);
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
-[data-md-color-scheme="slate"] .sowel-logo path {
-  stroke: #6FB3D9;
-}
-
-.sowel-logo .house     { stroke-width: 12; }
-.sowel-logo .smile     { stroke-width: 9; }
+/* House in deep ocean blue; eyes + smile in the soft logo blue.
+ * Independent from the page accent (which can change). */
+.sowel-logo .house     { stroke: var(--md-primary-fg-color); stroke-width: 12; }
+.sowel-logo .smile     { stroke: #6FB3D9; stroke-width: 9; }
 .sowel-logo .left-eye,
-.sowel-logo .right-eye { stroke-width: 8; }
+.sowel-logo .right-eye { stroke: #6FB3D9; stroke-width: 8; }
 
-/* The wink — right eye scales down briefly every 5s */
+[data-md-color-scheme="slate"] .sowel-logo .house { stroke: #C9DCE7; }
+
+/* Wink */
 .sowel-logo .right-eye {
   transform-box: fill-box;
   transform-origin: center;
   animation: sowel-wink 5s ease-in-out infinite;
 }
-
 @keyframes sowel-wink {
   0%, 88%, 100% { transform: scaleY(1); }
   91%, 95%      { transform: scaleY(0.05); }
 }
-
-/* Hover: house "nods" subtly */
 .sowel-logo:hover {
   animation: sowel-nod 0.6s ease-in-out;
 }
@@ -95,57 +434,140 @@
   25%      { transform: rotate(-3deg); }
   75%      { transform: rotate(3deg); }
 }
-
-/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .sowel-logo .right-eye { animation: none; }
   .sowel-logo:hover      { animation: none; }
 }
 
-/* CTA buttons row */
-.sowel-hero .md-button {
-  margin: 0.25rem;
+/* Hero entrance: stagger reveal — uses fill-mode: backwards so the
+ * from-state only applies during the animation. After it ends, the
+ * elements return to their base style (opacity 1, no transform), which
+ * lets the logo's :hover nod replace the animation without making the
+ * logo disappear. */
+.sowel-hero > * {
+  animation: sowel-rise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.sowel-hero .sowel-logo { animation-delay: 0ms;  }
+.sowel-hero h1          { animation-delay: 120ms; }
+.sowel-hero > p         { animation-delay: 200ms; }
+.sowel-hero > p:nth-of-type(2),
+.sowel-hero > .md-button { animation-delay: 280ms; }
+
+@keyframes sowel-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Tagline mobile */
+/* Mobile */
 @media (max-width: 600px) {
-  .sowel-hero h1 { font-size: 2.25rem; }
+  .sowel-hero { padding: 2.5rem 1rem 1.5rem; }
+  .sowel-hero h1 { font-size: clamp(2.1rem, 9vw, 2.8rem); }
   .sowel-hero p  { font-size: 1rem; }
-  .sowel-logo    { width: 110px; height: 110px; }
+  .sowel-logo    { width: 104px; height: 104px; }
 }
 
 /* ============================================================
-   Pills row (What's inside)
+   "Pills" row — landing (Deploy in minutes)
    ============================================================ */
 
-.sowel-pills ul {
-  list-style: none;
-  padding: 0;
-  margin: 1rem 0;
+.sowel-pills {
+  margin: 1.75rem 0 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+}
+@media (min-width: 720px) {
+  .sowel-pills { grid-template-columns: repeat(2, 1fr); }
 }
 
-.sowel-pills li {
-  background: var(--md-code-bg-color);
+.sowel-pill {
+  background: var(--md-default-bg-color);
   border-radius: 10px;
-  padding: 0.85rem 1rem;
-  font-size: 0.95rem;
-  line-height: 1.45;
-  border-left: 3px solid var(--md-accent-fg-color);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 11%, transparent);
+  color: var(--md-default-fg-color);
 }
 
-.sowel-pills li strong { color: var(--md-primary-fg-color); }
-[data-md-color-scheme="slate"] .sowel-pills li strong { color: #6FB3D9; }
+.sowel-pill strong {
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
+}
+
+.sowel-pill code {
+  background: rgba(0,0,0,0.06);
+  border: none;
+  padding: 0.1em 0.32em;
+  font-size: 0.88em;
+}
+[data-md-color-scheme="slate"] .sowel-pill code {
+  background: rgba(255,255,255,0.08);
+}
 
 /* ============================================================
-   Footer line
+   Footer line on landing
    ============================================================ */
 
 .sowel-foot {
   text-align: center;
-  font-size: 0.85rem;
-  color: var(--md-default-fg-color--light);
-  margin-top: 3rem;
+  font-size: 0.82rem;
+  color: var(--sowel-ink-muted);
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px dashed color-mix(in srgb, var(--md-default-fg-color) 18%, transparent);
+}
+
+/* ============================================================
+   Header / nav refinement (subtle)
+   ============================================================ */
+
+.md-header {
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+}
+
+.md-tabs {
+  background: transparent;
+  color: var(--md-primary-fg-color);
+  border-bottom: 1px solid color-mix(in srgb, var(--md-default-fg-color) 8%, transparent);
+}
+
+.md-tabs__link {
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  opacity: 0.78;
+}
+.md-tabs__link--active,
+.md-tabs__link:hover {
+  opacity: 1;
+}
+
+
+/* ============================================================
+   Admonitions (callouts) — warmer, softer
+   ============================================================ */
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 10px;
+  border-left-width: 3px;
+  box-shadow: 0 1px 2px var(--sowel-warm-shadow);
+}
+
+/* ============================================================
+   Tables — refined
+   ============================================================ */
+
+.md-typeset table:not([class]) {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+}
+.md-typeset table:not([class]) th {
+  background: var(--sowel-cream-soft);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background: var(--sowel-cream-soft);
 }
