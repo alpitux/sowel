@@ -63,20 +63,24 @@ Avec `npm run dev`, l'UI tourne sur le port 5173 (serveur de dev Vite avec hot r
 
 ## Première connexion
 
-À la première ouverture de Sowel, une **page de configuration** apparaît. Créez votre compte administrateur :
+À la première ouverture de Sowel, une **page de configuration** vous demande de créer le compte administrateur :
 
-1. Choisissez un nom d'utilisateur
-2. Définissez un mot de passe
-3. Saisissez un nom d'affichage
+![Page de configuration — création de l'admin](../screenshots/getting-started-setup-fr.png)
 
-Une fois le premier compte créé, l'écran de connexion vous accueille :
+Remplissez :
 
-![Écran de connexion](../screenshots/getting-started-login.png)
+1. Un **identifiant** (par ex. `admin`)
+2. Un **nom affiché** dans l'UI
+3. Un **mot de passe**, confirmé deux fois
 
 Cela crée le premier compte administrateur. Vous pourrez ajouter d'autres utilisateurs plus tard depuis les Réglages.
 
 !!! warning
 Il n'existe aucun mécanisme de récupération de mot de passe. Assurez-vous de bien retenir vos identifiants admin.
+
+Une fois le premier compte créé, l'**écran de connexion** classique vous accueille à chaque visite suivante :
+
+![Écran de connexion](../screenshots/getting-started-login-fr.png)
 
 ## Configuration initiale
 
