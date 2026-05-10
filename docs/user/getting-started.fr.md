@@ -82,7 +82,24 @@ Il n'existe aucun mécanisme de récupération de mot de passe. Assurez-vous de 
 
 Après la connexion, suivez ces étapes pour configurer votre maison.
 
-### Étape 1 : Installer et configurer les intégrations
+### Étape 1 : Configurer votre maison
+
+Ouvrez **Réglages** dans la barre latérale. Le panneau **Maison** en haut est la première chose à configurer :
+
+![Réglages Maison — vide](../screenshots/getting-started-home-empty-fr.png)
+
+Remplissez :
+
+- **Nom de la maison** — un libellé parlant, par ex. `Ma Maison`
+- **Latitude** et **Longitude** — les coordonnées géographiques de votre maison. Vous pouvez les obtenir depuis n'importe quel service de cartographie (Google Maps, OpenStreetMap, etc.) en faisant clic droit sur votre emplacement.
+- Les **décalages lever / coucher** conviennent généralement aux valeurs par défaut (30 / 45 minutes). Ils contrôlent combien de temps après le lever Sowel considère qu'il fait jour, et combien de temps avant le coucher il commence à traiter comme nuit.
+
+![Réglages Maison — rempli](../screenshots/getting-started-home-filled-fr.png)
+
+!!! warning "Pourquoi c'est obligatoire"
+Sans latitude/longitude configurées, Sowel tourne en UTC. La planification de modes par calendrier, les volets au coucher du soleil, et la classification tarifaire HP/HC sur la page Énergie ne fonctionneront pas correctement tant que la localisation de la maison n'est pas définie.
+
+### Étape 2 : Installer et configurer les intégrations
 
 Ouvrez **Administration > Plugins** pour parcourir le catalogue, puis **Administration > Intégrations** pour configurer celles que vous avez installées.
 
@@ -95,7 +112,7 @@ Chaque intégration affiche un **indicateur de statut de connexion** (vert = con
 !!! tip
 Les réglages d'intégration sont stockés dans la base de données, pas dans des fichiers d'environnement. Vous configurez tout depuis l'UI.
 
-### Étape 2 : Vérifier la découverte des devices
+### Étape 3 : Vérifier la découverte des devices
 
 Allez dans **Administration > Devices**.
 
@@ -110,7 +127,7 @@ Une fois qu'une intégration est connectée, les devices apparaissent automatiqu
 
 Utilisez les onglets d'intégration en haut pour filtrer par source. Si les devices n'apparaissent pas, vérifiez que votre intégration est connectée (indicateur vert) et que les devices sont appairés à votre coordinateur ou enregistrés sur votre compte cloud.
 
-### Étape 3 : Créer la topologie de vos zones
+### Étape 4 : Créer la topologie de vos zones
 
 Allez dans **Administration > Topologie**.
 
@@ -135,7 +152,7 @@ Home
 
 Utilisez le bouton **+ Ajouter une zone** pour créer des zones, et les boutons fléchés pour les réordonner. Les zones peuvent être imbriquées sur n'importe quelle profondeur. L'arbre des zones apparaît dans la barre latérale Accueil pour la navigation quotidienne.
 
-### Étape 4 : Créer les équipements
+### Étape 5 : Créer les équipements
 
 Allez dans **Administration > Équipements**.
 
@@ -150,7 +167,7 @@ Pour chaque unité fonctionnelle de votre maison :
 !!! tip
 Un seul équipement peut se lier à plusieurs devices. Par exemple, trois modules variateurs derrière le mur peuvent être regroupés en un seul équipement "Spots Cuisine". Un seul interrupteur les contrôle tous les trois.
 
-### Étape 5 : Profiter de la vue Accueil
+### Étape 6 : Profiter de la vue Accueil
 
 Allez sur **Accueil** dans la barre latérale.
 
@@ -163,7 +180,7 @@ L'arbre des zones apparaît à gauche. Cliquez sur n'importe quelle zone pour vo
 - **Les cartes d'équipement** : groupées par type (Thermostat, Énergie, Météo, etc.) avec contrôles intégrés
 - **Les comportements** : recettes et modes configurés pour cette zone
 
-### Étape 6 : Personnaliser le tableau de bord
+### Étape 7 : Personnaliser le tableau de bord
 
 Allez sur **Tableau de bord** et cliquez sur **Éditer**.
 

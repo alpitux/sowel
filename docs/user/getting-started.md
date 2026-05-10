@@ -82,7 +82,24 @@ There is no password recovery mechanism. Make sure you remember your admin crede
 
 After logging in, follow these steps to set up your home.
 
-### Step 1: Install and configure integrations
+### Step 1: Set up your home
+
+Open **Settings** in the sidebar. The **Home** panel at the top is the first thing to configure:
+
+![Home settings — empty](../screenshots/getting-started-home-empty-en.png)
+
+Fill in:
+
+- **Home name** — a friendly label, e.g. `My Home`
+- **Latitude** and **Longitude** — your home's geographic coordinates. You can get them from any map service (Google Maps, OpenStreetMap, etc.) by right-clicking on your location.
+- The **Sunrise / Sunset offsets** are usually fine at the defaults (30 / 45 minutes). They control how long after sunrise Sowel treats the house as in daylight, and how long before sunset it starts treating it as night.
+
+![Home settings — filled](../screenshots/getting-started-home-filled-en.png)
+
+!!! warning "Why this is mandatory"
+Without latitude/longitude set, Sowel runs in UTC. Calendar-based mode scheduling, sunset shutters, and the HP/HC tariff classification on the Energy page will not work correctly until your home location is configured.
+
+### Step 2: Install and configure integrations
 
 Open **Administration > Plugins** in the sidebar to browse the catalogue, then **Administration > Integrations** to configure the ones you installed.
 
@@ -95,7 +112,7 @@ Each integration shows a **connection status indicator** (green = connected). Yo
 !!! tip
 Integration settings are stored in the database, not in environment files. You configure everything from the UI.
 
-### Step 2: Verify device discovery
+### Step 3: Verify device discovery
 
 Go to **Administration > Devices**.
 
@@ -110,7 +127,7 @@ Once an integration connects, devices appear automatically. The table shows:
 
 Use the integration tabs at the top to filter by source. If devices do not appear, check that your integration is connected (green indicator) and that devices are paired with your coordinator or registered in your cloud account.
 
-### Step 3: Create your zone topology
+### Step 4: Create your zone topology
 
 Go to **Administration > Topology**.
 
@@ -135,7 +152,7 @@ Home
 
 Use the **+ Add zone** button to create zones, and the arrow buttons to reorder them. Zones can be nested to any depth. The zone tree appears in the Home sidebar for daily navigation.
 
-### Step 4: Create equipments
+### Step 5: Create equipments
 
 Go to **Administration > Equipments**.
 
@@ -150,7 +167,7 @@ For each functional unit in your home:
 !!! tip
 A single equipment can bind to multiple devices. For example, three dimmer modules behind the wall can be grouped as one "Living Room Spots" equipment. One toggle controls all three.
 
-### Step 5: Enjoy the Home view
+### Step 6: Enjoy the Home view
 
 Go to **Home** in the sidebar.
 
@@ -163,7 +180,7 @@ The zone tree appears on the left. Click any zone to see:
 - **Equipment cards** -- grouped by type (Thermostat, Energy, Weather, etc.) with inline controls
 - **Behaviors** -- recipes and modes configured for this zone
 
-### Step 6: Customize the dashboard
+### Step 7: Customize the dashboard
 
 Go to **Dashboard** and click **Edit**.
 
