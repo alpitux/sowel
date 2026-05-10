@@ -103,7 +103,7 @@ Ils sont disponibles dans la vue Accueil, dans l'API, et comme actions dans les 
 
 ## Astuces
 
-- **Calquez la disposition physique** : les zones doivent refléter la façon dont vous pensez votre maison. Si vous dites "le salon", ça doit être une zone.
+- **Calquez la disposition physique** : les zones doivent refléter la façon dont vous pensez votre maison. Si vous dites "la cuisine", ça doit être une zone.
 - **N'imbriquez pas trop** : deux ou trois niveaux (Maison > Étage > Pièce) suffisent en général. Les arbres trop profonds sont moins faciles à parcourir.
 - **Zones extérieures** : créez une zone "Outdoor" pour les capteurs du jardin, le portail et tout équipement extérieur.
 - **L'agrégation crée la valeur** : plus vous affectez de capteurs et d'équipements aux zones, plus le statut agrégé est riche. Même un seul capteur de température dans une pièce rend le bandeau de zone utile.
