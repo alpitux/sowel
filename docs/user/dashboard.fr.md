@@ -4,7 +4,7 @@ Le Tableau de bord est votre écran d'accueil personnalisé : une grille de widg
 
 ## Vue d'ensemble
 
-Contrairement à la vue Accueil (organisée par zones), le Tableau de bord vous laisse choisir exactement ce que vous voulez voir, peu importe la pièce ou le type d'équipement. Vous pouvez placer les lumières de votre salon à côté de la température extérieure et du portail de garage, le tout sur un même écran.
+Contrairement à la vue Accueil (organisée par zones), le Tableau de bord vous laisse choisir exactement ce que vous voulez voir, peu importe la pièce ou le type d'équipement. Vous pouvez placer les lumières de votre cuisine à côté de la température extérieure et du portail de garage, le tout sur un même écran.
 
 ## Types de widgets
 

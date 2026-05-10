@@ -87,10 +87,12 @@ plugins:
             Specs Index: Index des specs
             User Guide: Guide utilisateur
             Getting Started: Premiers pas
+            Devices: Devices
             Equipments: Équipements
             Dashboard: Tableau de bord
             Zones & Rooms: Zones et pièces
             Modes & Calendar: Modes et calendrier
+            Recipes: Recettes
             Energy Monitoring: Suivi énergétique
             Remote Access: Accès distant
 
@@ -103,16 +105,24 @@ nav:
     - API Reference: technical/api-reference.md
     - Plugin Development: technical/plugin-development.md
     - Recipe Development: technical/recipe-development.md
-    - Data Model: technical/data-model.md
+    - Data Model:
+      - technical/data-model.md
+      - Devices: technical/data-model/devices.md
+      - Equipments: technical/data-model/equipments.md
+      - Zones: technical/data-model/zones.md
+      - Modes: technical/data-model/modes.md
+      - Recipes: technical/data-model/recipes.md
     - Contributing: technical/contributing.md
     - Specs Index: specs-index.md
   - User Guide:
     - user/index.md
     - Getting Started: user/getting-started.md
+    - Devices: user/devices.md
     - Equipments: user/equipments.md
     - Dashboard: user/dashboard.md
     - Zones & Rooms: user/zones.md
     - Modes & Calendar: user/modes.md
+    - Recipes: user/recipes.md
     - Energy Monitoring: user/energy.md
     - Remote Access: user/remote-access.md
 

@@ -1,8 +1,8 @@
 # Équipements
 
-Les équipements sont le concept central de Sowel. Un équipement est une **unité fonctionnelle** avec laquelle vous interagissez au quotidien : "Spots Salon", "Volets Chambre", "Capteur Cuisine".
+Les équipements sont le concept central de Sowel. Un équipement est une **unité fonctionnelle** avec laquelle vous interagissez au quotidien : "Spots Cuisine", "Volets Chambre", "Capteur Cuisine".
 
-**Un device est ce qui est sur le réseau, un équipement est ce qui est dans la pièce.** Vous ne pensez jamais au module variateur Zigbee installé derrière le mur, vous pensez aux lumières de votre salon.
+**Un device est ce qui est sur le réseau, un équipement est ce qui est dans la pièce.** Vous ne pensez jamais au module variateur Zigbee installé derrière le mur, vous pensez aux lumières de votre cuisine.
 
 ## Créer un équipement
 
@@ -13,7 +13,7 @@ Allez dans **Administration > Équipements** et cliquez sur **Ajouter un équipe
 | Champ       | Obligatoire | Description                                                                             |
 | ----------- | ----------- | --------------------------------------------------------------------------------------- |
 | Type        | Oui         | La catégorie de l'équipement (voir [Types d'équipements](#types-dequipements) plus bas) |
-| Nom         | Oui         | Un nom parlant comme "Spots Salon" ou "Capteur Cuisine"                                 |
+| Nom         | Oui         | Un nom parlant comme "Spots Cuisine" ou "Capteur Cuisine"                               |
 | Zone        | Oui         | À quelle pièce ou zone cet équipement appartient                                        |
 | Description | Non         | Une note pour vous-même                                                                 |
 
@@ -36,7 +36,7 @@ Vous pouvez créer un équipement sans device et en lier un plus tard depuis la 
 
 Un seul équipement peut se lier à **plusieurs devices**. C'est une des fonctionnalités les plus puissantes de Sowel.
 
-**Exemple :** Trois modules variateurs IKEA séparés alimentent les spots de votre salon. Créez un seul équipement "Spots Salon" et liez les trois. Un seul interrupteur allume les trois. Un seul curseur les variégradue tous les trois.
+**Exemple :** Trois modules variateurs IKEA séparés alimentent les spots de votre cuisine. Créez un seul équipement "Spots Cuisine" et liez les trois. Un seul interrupteur allume les trois. Un seul curseur les variégradue tous les trois.
 
 ---
 

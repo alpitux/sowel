@@ -42,179 +42,99 @@ A single equipment can bind to **multiple devices**. This is one of Sowel's most
 
 ## Equipment types
 
+Sowel ships a closed catalogue of equipment types. Every equipment in your home is one of these, and the type drives both the UI controls and the expected data shape.
+
 ### Lights
 
-#### Light (On/Off)
-
-Simple on/off light control.
-
-- **Controls:** Toggle ON/OFF
-- **Expected data:** state (on/off)
-
-#### Light (Dimmable)
-
-Brightness-controllable light.
-
-- **Controls:** Toggle ON/OFF + brightness slider
-- **Expected data:** state, brightness level
-
-#### Light (Color)
-
-Color-capable light with optional color temperature.
-
-- **Controls:** Toggle + brightness slider + color controls
-- **Expected data:** state, brightness, color, color temperature
-
----
+| Type                 | Controls                             | Expected data                               |
+| -------------------- | ------------------------------------ | ------------------------------------------- |
+| **Light (On/Off)**   | Toggle ON/OFF                        | state (on/off)                              |
+| **Light (Dimmable)** | Toggle + brightness slider           | state, brightness                           |
+| **Light (Color)**    | Toggle + brightness + color controls | state, brightness, color, color temperature |
 
 ### Shutters
 
-#### Shutter
-
-Motorized roller blind, cover, or shutter.
-
-- **Controls:** Open / Stop / Close buttons, position display
-- **Expected data:** position (0% = closed, 100% = open)
-
----
+| Type        | Controls                               | Expected data                       |
+| ----------- | -------------------------------------- | ----------------------------------- |
+| **Shutter** | Open / Stop / Close + position display | position (0% = closed, 100% = open) |
 
 ### Climate
 
-#### Thermostat
+| Type           | Controls                                        | Expected data                                                            |
+| -------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
+| **Thermostat** | Temperature display, setpoint +/-, power on/off | current temperature, target setpoint, power state, optional mode/fan/eco |
+| **Heater**     | Comfort / Eco toggle                            | relay state (fil pilote: ON = eco, OFF = comfort)                        |
 
-Heating or cooling control -- air conditioning, pellet stove, heat pump.
-
-- **Controls:** Temperature display, setpoint adjustment (+/-), power on/off
-- **Expected data:** current temperature, target setpoint, power state
-- **Additional data** (depends on device): operating mode, fan speed, eco mode
-
-#### Heater
-
-Individual electric heater controlled via fil pilote relay.
-
-- **Controls:** Comfort / Eco toggle
-- **Expected data:** relay state (ON = eco, OFF = comfort)
-
----
+Thermostat covers air conditioning, pellet stoves, and heat pumps. Heater covers individual electric heaters wired through a fil-pilote relay.
 
 ### Access
 
-#### Gate
-
-Gate, sliding gate, or garage door.
-
-- **Controls:** Open/Close button with state indicator
-- **Expected data:** gate state (open, closed, opening, closing)
+| Type     | Controls                            | Expected data                               |
+| -------- | ----------------------------------- | ------------------------------------------- |
+| **Gate** | Open/Close button + state indicator | gate state (open, closed, opening, closing) |
 
 !!! tip "Dashboard icon"
 You can choose a specific icon for gates on the dashboard: standard gate, sliding gate, or garage door.
 
----
-
 ### Sensors
 
-#### Sensor
+| Type                 | Controls / Display                          | Expected data                                                                                             |
+| -------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Sensor**           | Read-only multi-value display, auto-adapted | temperature, humidity, pressure, CO2, VOC, luminosity, noise, battery, motion, contact, water leak, smoke |
+| **Weather Station**  | Multi-value display                         | temperature, humidity, pressure, rain, wind, noise, battery                                               |
+| **Weather Forecast** | Day-by-day forecast cards (J+1 to J+5)      | weather condition, temperature min/max, rain probability, wind gusts                                      |
+| **Button / Remote**  | Not directly controlled (used as trigger)   | action events (single press, double press, long press)                                                    |
 
-Generic sensor that displays one or more measured values. Sowel adapts the display automatically based on what the device exposes.
+The generic **Sensor** type adapts its display automatically. Boolean sensors (motion, contact, water leak, smoke) get appropriate badges; numeric sensors get values with the right unit and icon.
 
-- **Controls:** Read-only value display with appropriate icons and units
-- **Typical data:** temperature, humidity, pressure, CO2, VOC, luminosity, noise, battery
-- **Boolean sensors:** motion (Movement/Calm), contact (Open/Closed), water leak, smoke
-
-#### Weather Station
-
-Outdoor weather sensor providing current conditions.
-
-- **Controls:** Multi-value display
-- **Typical data:** temperature, humidity, pressure, rain, wind, noise, battery
-
-#### Weather Forecast
-
-Multi-day weather forecast from an API integration (e.g., Open-Meteo plugin).
-
-- **Controls:** Day-by-day forecast cards with condition icons
-- **Data per day (J+1 to J+5):** weather condition, temperature min/max, rain probability, wind gusts
-
-#### Button / Remote
-
-Physical button or remote control. Not directly controlled -- used as a trigger for automations.
-
-- **Data:** action events (single press, double press, long press)
-- **Usage:** Trigger [recipes](../technical/recipe-development.md) or toggle [modes](modes.md)
-
----
+Buttons are inputs only — bind them to a [recipe](recipes.md) action or a [mode](modes.md) toggle through **Administration > Buttons**.
 
 ### Energy
 
-#### Energy Meter
-
-Tracks energy consumption for a specific circuit or device. Often used as a **submeter** on a dedicated line (heat pump, pool, EV charger) to feed the [by-usage breakdown](energy.md#total-by-usage-toggle) on the Energy page.
-
-- **Controls:** Power (W) and daily energy (Wh/kWh) display
-- **Expected data:** cumulative energy (Wh)
-
-#### Main Energy Meter
-
-Your home's main grid meter. Only one allowed per system.
-
-- **Controls:** Same as energy meter, plus feeds the [Energy monitoring](energy.md) page
-- **Expected data:** power, energy (with HP/HC tariff classification)
-
-#### Energy Production Meter
-
-Solar panel or other production source. Only one allowed per system.
-
-- **Controls:** Production display with autoconsumption calculation
-- **Expected data:** production power, cumulative production
-
----
+| Type                        | Controls / Display                                    | Expected data                                    | Notes                                                                                                                  |
+| --------------------------- | ----------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| **Energy Meter**            | Power (W) and daily energy (Wh/kWh)                   | cumulative energy (Wh)                           | Submeter for a circuit (heat pump, pool, EV charger). Feeds the [by-usage breakdown](energy.md#total-by-usage-toggle). |
+| **Main Energy Meter**       | Same + drives the [Energy monitoring](energy.md) page | power, energy (with HP/HC tariff classification) | One allowed per system.                                                                                                |
+| **Energy Production Meter** | Production display + autoconsumption calculation      | production power, cumulative production          | One allowed per system.                                                                                                |
 
 ### Media
 
-#### Media Player
-
-TV, soundbar, or media device (e.g., Samsung SmartThings TV).
-
-- **Controls:** Power on/off, volume, mute, input source selector
-- **Expected data:** power state, volume level, mute, current input source, picture mode
-- **Orders:** power on/off, set volume, toggle mute, change input source
-
----
+| Type             | Controls                                 | Expected data                                                |
+| ---------------- | ---------------------------------------- | ------------------------------------------------------------ |
+| **Media Player** | Power on/off, volume, mute, input source | power state, volume level, mute, current input, picture mode |
 
 ### Appliances
 
-#### Appliance
-
-Smart home appliance such as a washing machine, dryer, or dishwasher (e.g., Samsung SmartThings Washer).
-
-- **Controls:** Read-only status display
-- **Expected data:** power state, operating state (ready/running/paused), current phase (wash/rinse/spin), progress (%), remaining time, energy consumption
+| Type          | Controls / Display       | Expected data                                                                                                 |
+| ------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Appliance** | Read-only status display | power state, operating state (ready/running/paused), current phase, progress (%), remaining time, energy used |
 
 !!! tip "End-of-cycle notification"
-Use a state-watch recipe to get notified when the operating state changes from `running` to `ready`.
-
----
+Use a `state-watch` recipe to get notified when the operating state changes from `running` to `ready`.
 
 ### Water
 
-#### Water valve
+| Type            | Controls                                                                 | Expected data                                                                    |
+| --------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| **Water Valve** | Toggle ON/OFF, "Water for X min" timed action (firmware-side auto-close) | state, flow rate (m³/h), battery, device status (normal / water shortage / leak) |
 
-Smart irrigation valve for garden watering. Designed for devices like the SONOFF SWV that expose `state`, `flow`, and `irrigation_*` properties.
+Designed for devices like the SONOFF SWV. Standard aliases: `state`, `flow`, `battery`, `status`, `duration`, `cycles`, `interval`, `capacity`, `autoCloseOnShortage`. Only `state` is required — the UI adapts to whichever are bound. Zones aggregate open/total valves and sum live flow across the tree.
 
-- **Controls:** Toggle ON/OFF, "Water for X min" timed action that opens the valve and lets the device firmware close it automatically after the configured duration
-- **Live metrics shown when bound:** flow rate (m³/h), battery, device status (normal / water shortage / leak)
-- **Standard aliases:** `state`, `flow`, `battery`, `status`, `duration`, `cycles`, `interval`, `capacity`, `autoCloseOnShortage` — only `state` is required, the UI adapts to which are bound
-- **Zone aggregation:** counts open/total valves and sums live flow across the zone tree
-- **Foundation for** future auto-watering recipes (rain-aware scheduling)
+### Pool
+
+| Type               | Controls                               | Expected data                                   |
+| ------------------ | -------------------------------------- | ----------------------------------------------- |
+| **Pool Pump**      | Toggle ON/OFF + daily runtime display  | pump state, daily runtime                       |
+| **Pool Cover**     | Open / Stop / Close + position display | cover position (0% = closed, 100% = open)       |
+| **Pool Heat Pump** | Power on/off, target water temperature | water temperature, target setpoint, power state |
+
+Pool equipments work with the **Pool Pump Schedule** recipe (daily runtime tied to water temperature) and feed the pool widgets on the dashboard.
 
 ### Other
 
-#### Switch / Plug
-
-Simple on/off switch or smart plug.
-
-- **Controls:** Toggle ON/OFF with state badge
-- **Expected data:** state (on/off)
+| Type              | Controls                    | Expected data  |
+| ----------------- | --------------------------- | -------------- |
+| **Switch / Plug** | Toggle ON/OFF + state badge | state (on/off) |
 
 ---
 
@@ -237,18 +157,23 @@ From the detail page, click **Change device** to rebind the equipment to differe
 
 Each data value is historized to InfluxDB by default based on its category (temperature, humidity, power...). From the detail page, you can override this per binding:
 
-- **Default** -- follows the category rule
-- **Force ON** -- always historize this value
-- **Force OFF** -- never historize this value
+| Setting       | Effect                      |
+| ------------- | --------------------------- |
+| **Default**   | Follows the category rule   |
+| **Force ON**  | Always historize this value |
+| **Force OFF** | Never historize this value  |
 
 ### Disabling an equipment
 
-A disabled equipment:
+A disabled equipment behaves as if it weren't there for the engine, while staying visible in the admin UI:
 
-- Does not appear in the Home view
-- Is excluded from [zone aggregation](zones.md)
-- Does not trigger recipes or mode impacts
-- Can still be viewed and edited
+| Where                        | Disabled equipment         |
+| ---------------------------- | -------------------------- |
+| Home view                    | Hidden                     |
+| [Zone aggregation](zones.md) | Excluded                   |
+| Recipes                      | Not triggered              |
+| Mode impacts                 | Skipped                    |
+| Administration > Equipments  | Still visible and editable |
 
 ### Deleting an equipment
 

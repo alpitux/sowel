@@ -36,7 +36,7 @@ Chaque impact peut contenir une ou plusieurs **actions** :
 
 **Actions d'ordre** : envoyer une commande à un équipement :
 
-- Éteindre les lumières du salon
+- Éteindre les lumières de la cuisine
 - Fermer les volets de la chambre
 - Régler le thermostat à 18 °C
 
