@@ -62,7 +62,7 @@ Une **Zone** représente une aire spatiale dans la maison. Les zones forment une
 ```typescript
 interface Zone {
   id: string; // UUID v4
-  name: string; // "Salon", "Etage 1", "Maison"
+  name: string; // "Cuisine", "Etage 1", "Maison"
   parentId: string | null; // null = root zone
   icon?: string; // Lucide icon name: "home", "sofa", "bed"
   description?: string; // "Piece principale, 35m2"
@@ -79,7 +79,7 @@ Les zones sont imbriquables sur n'importe quelle profondeur. Structure typique :
 ```
 Maison                    (root, parentId: null)
 +-- RDC                   (floor, parentId: Maison)
-|   +-- Salon             (room, parentId: RDC)
+|   +-- Cuisine             (room, parentId: RDC)
 |   +-- Cuisine           (room, parentId: RDC)
 |   +-- Entree            (room, parentId: RDC)
 |   +-- WC                (room, parentId: RDC)
@@ -177,7 +177,7 @@ interface EquipmentGroup {
 ### 4.2 Objectif et exemples
 
 ```
-Salon (Zone)
+Cuisine (Zone)
 +-- Group "Volets Sud"
 |   +-- Volet Baie Vitree          (Equipment: shutter)
 |   +-- Volet Porte Fenetre        (Equipment: shutter)
@@ -186,8 +186,8 @@ Salon (Zone)
 +-- Group "Eclairage Ambiance"
 |   +-- Spots Plafond              (Equipment: dimmer)
 |   +-- Lampe Canape               (Equipment: dimmer)
-+-- Detection Salon                (Equipment: motion_sensor, no group)
-+-- Temperature Salon              (Equipment: sensor, no group)
++-- Detection Cuisine                (Equipment: motion_sensor, no group)
++-- Temperature Cuisine              (Equipment: sensor, no group)
 ```
 
 **Comportements clés :**
@@ -247,7 +247,7 @@ type EquipmentType =
 
 interface Equipment {
   id: string; // UUID v4
-  name: string; // "Spots Salon", "Volet Baie Vitree"
+  name: string; // "Spots Cuisine", "Volet Baie Vitree"
   zoneId: string; // FK -> Zone (where the equipment functions)
   groupId: string | null; // FK -> EquipmentGroup (optional)
   type: EquipmentType; // Semantic type, drives UI rendering & aggregation
@@ -272,9 +272,9 @@ interface Equipment {
 
 **Exemples :**
 
-- 1 Device -> 1 Equipment : capteur de température Aqara -> "Temperature Salon"
+- 1 Device -> 1 Equipment : capteur de température Aqara -> "Temperature Cuisine"
 - 1 Device -> N Equipments : module double relais -> "Lumiere Cuisine" + "Lumiere Cellier"
-- N Devices -> 1 Equipment : 3 capteurs PIR -> "Detection Salon" (via computed data, V0.5)
+- N Devices -> 1 Equipment : 3 capteurs PIR -> "Detection Cuisine" (via computed data, V0.5)
 
 ---
 
@@ -301,7 +301,7 @@ Device "Variateur #1"
 +-- DeviceData: key="brightness", value=180    <---+-- DataBinding
 +-- DeviceData: key="linkquality", value=85        |
                                                    |
-Equipment "Spots Salon"                            |
+Equipment "Spots Cuisine"                            |
 +-- Data alias "state" ----------------------------+ (bound to DeviceData "state")
 +-- Data alias "brightness" -----------------------  (bound to DeviceData "brightness")
 +-- [not bound to linkquality -- it's a technical metric, not user-facing]
@@ -347,7 +347,7 @@ interface OrderBinding {
 Quand un Equipment Order est exécuté :
 
 ```
-User clicks "Turn On" on Equipment "Spots Salon"
+User clicks "Turn On" on Equipment "Spots Cuisine"
   -> API: POST /equipments/:id/orders/turn_on { value: true }
     -> Equipment Manager finds OrderBinding alias="turn_on"
       -> Resolves to DeviceOrder
