@@ -105,7 +105,13 @@ nav:
     - API Reference: technical/api-reference.md
     - Plugin Development: technical/plugin-development.md
     - Recipe Development: technical/recipe-development.md
-    - Data Model: technical/data-model.md
+    - Data Model:
+      - technical/data-model.md
+      - Devices: technical/data-model/devices.md
+      - Equipments: technical/data-model/equipments.md
+      - Zones: technical/data-model/zones.md
+      - Modes: technical/data-model/modes.md
+      - Recipes: technical/data-model/recipes.md
     - Contributing: technical/contributing.md
     - Specs Index: specs-index.md
   - User Guide:
