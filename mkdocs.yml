@@ -87,10 +87,12 @@ plugins:
             Specs Index: Index des specs
             User Guide: Guide utilisateur
             Getting Started: Premiers pas
+            Devices: Devices
             Equipments: Équipements
             Dashboard: Tableau de bord
             Zones & Rooms: Zones et pièces
             Modes & Calendar: Modes et calendrier
+            Recipes: Recettes
             Energy Monitoring: Suivi énergétique
             Remote Access: Accès distant
 
@@ -109,10 +111,12 @@ nav:
   - User Guide:
     - user/index.md
     - Getting Started: user/getting-started.md
+    - Devices: user/devices.md
     - Equipments: user/equipments.md
     - Dashboard: user/dashboard.md
     - Zones & Rooms: user/zones.md
     - Modes & Calendar: user/modes.md
+    - Recipes: user/recipes.md
     - Energy Monitoring: user/energy.md
     - Remote Access: user/remote-access.md
 
