@@ -33,7 +33,7 @@ npm run dev          # Vite dev server (hot module replacement)
 ### Docker (InfluxDB)
 
 ```bash
-docker-compose up -d     # Starts InfluxDB 2.x
+docker compose up -d     # Starts InfluxDB 2.x
 ```
 
 InfluxDB is mandatory -- Sowel connects on startup and auto-creates buckets, downsampling tasks, and energy aggregation tasks. No manual setup needed.

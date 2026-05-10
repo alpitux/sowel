@@ -9,14 +9,30 @@ Cette page vous guide à travers l'installation de Sowel, la première connexion
 
 ## Installation
 
-### Option 1 : Docker (recommandé)
+### Option 1 : Installation en une commande (recommandée)
 
-Docker est la manière la plus simple d'exécuter Sowel. Il regroupe le moteur et InfluxDB.
+Le plus rapide. Récupère le `docker-compose.yml` officiel, démarre Sowel et InfluxDB ensemble, attend que le moteur réponde, et affiche l'URL quand c'est prêt :
 
 ```bash
-git clone <repo>
-cd sowel
-docker-compose up -d
+curl -fsSL https://raw.githubusercontent.com/mchacher/sowel/main/scripts/install.sh | sh
+```
+
+Valeurs par défaut :
+
+- Installe dans `~/sowel/` (override avec `SOWEL_DIR=/your/path`)
+- Expose Sowel sur le port `3000` (override avec `SOWEL_PORT=8080` par exemple)
+- Détecte automatiquement le fuseau horaire de l'hôte et patche le compose
+
+À la fin, ouvrez l'URL affichée dans votre navigateur.
+
+### Option 2 : Installation Docker manuelle
+
+Si vous préférez faire les étapes vous-même :
+
+```bash
+mkdir ~/sowel && cd ~/sowel
+curl -O https://raw.githubusercontent.com/mchacher/sowel/main/docker-compose.yml
+docker compose up -d
 ```
 
 Cela lance :
@@ -24,34 +40,26 @@ Cela lance :
 - Le **moteur Sowel** sur le port `3000`
 - **InfluxDB** sur le port `8086` (utilisé en interne pour les données d'énergie et d'historique)
 
-Ouvrez votre navigateur sur **http://localhost:3000**.
+Ouvrez ensuite votre navigateur :
 
-### Option 2 : Installation manuelle
+- **Installation locale** — `http://localhost:3000`
+- **Installation distante** (ex. Raspberry Pi, NAS, serveur dédié) — `http://<ip-de-l'hôte>:3000`, où `<ip-de-l'hôte>` est l'adresse LAN de la machine qui fait tourner Sowel
+
+### Option 3 : Depuis les sources (développement)
+
+Pour les contributeurs et développeurs :
 
 ```bash
-git clone <repo>
+git clone https://github.com/mchacher/sowel.git
 cd sowel
 npm install
+npm run dev                            # backend sur :3000
+# dans un autre terminal
+cd ui && npm install && npm run dev    # frontend sur :5173 avec hot reload
 ```
-
-Démarrez le backend :
-
-```bash
-npm run dev
-```
-
-Dans un terminal séparé, démarrez le frontend :
-
-```bash
-cd ui
-npm install
-npm run dev
-```
-
-Ouvrez votre navigateur sur **http://localhost:5173**.
 
 !!! info "Développement vs production"
-En exécution manuelle avec `npm run dev`, l'UI tourne sur le port 5173 (serveur de dev Vite avec hot reload). En mode Docker ou production, le backend sert directement l'UI sur le port 3000.
+Avec `npm run dev`, l'UI tourne sur le port 5173 (serveur de dev Vite avec hot reload). En mode Docker, le backend sert directement l'UI sur le port 3000.
 
 ## Première connexion
 
@@ -135,12 +143,12 @@ Pour chaque unité fonctionnelle de votre maison :
 
 1. Cliquez sur **Ajouter un équipement**
 2. Choisissez un type (lumière, volet, capteur, thermostat, portail, vanne d'eau, etc.)
-3. Donnez-lui un nom (par ex. "Spots Salon")
+3. Donnez-lui un nom (par ex. "Spots Cuisine")
 4. Affectez-le à une zone
 5. Liez les données et les commandes des devices
 
 !!! tip
-Un seul équipement peut se lier à plusieurs devices. Par exemple, trois modules variateurs derrière le mur peuvent être regroupés en un seul équipement "Spots Salon". Un seul interrupteur les contrôle tous les trois.
+Un seul équipement peut se lier à plusieurs devices. Par exemple, trois modules variateurs derrière le mur peuvent être regroupés en un seul équipement "Spots Cuisine". Un seul interrupteur les contrôle tous les trois.
 
 ### Étape 5 : Profiter de la vue Accueil
 

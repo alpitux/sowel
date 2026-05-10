@@ -31,9 +31,9 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <p class="sowel-paragraph">Most home automation tools turn you into a part-time developer: YAML files, scripts, flows, conditions, edge cases. The result is fragile spaghetti that only one person in the household can debug.</p>
 
-<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Instead of writing automations, you <strong>pick a recipe</strong> (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Pool Pump Schedule</em>, <em>Sunset Shutters</em>) and <strong>apply it to a zone</strong>. Each recipe encodes a thoughtful, road-tested pattern for a specific need: comfort, safety, or energy efficiency. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
+<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Instead of writing automations, you <strong>pick a recipe</strong> (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Pool Pump Schedule</em>, <em>Sunset Shutters</em>) and <strong>apply it to a zone</strong>. Each recipe encodes a thoughtful, road-tested pattern that strikes the right balance between comfort, safety, and energy efficiency. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
 
-<p class="sowel-paragraph">Your house stops being a side project. It just works.</p>
+<p class="sowel-paragraph">The best automation is the one you forget about. Your home just works.</p>
 
 </div>
 
@@ -63,9 +63,9 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <div class="sowel-section">
 
-<p class="sowel-eyebrow">What makes Sowel singular</p>
+<p class="sowel-eyebrow">Where every other home automation tool sees triggers, Sowel sees a home.</p>
 
-<p class="sowel-paragraph">Sowel layers your home from the network up:</p>
+<p class="sowel-paragraph">Most tools start at the wires and ask you to bolt scripts on top. Sowel starts at the home and lets the wires fall into place. Five layers describe your house in the same words you'd use yourself, each one a little less abstract than the one below it:</p>
 
 <ul class="sowel-bullets">
   <li><strong>Devices</strong> are auto-discovered and normalized into one data model.</li>
@@ -86,34 +86,57 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 9h2"/><path d="M20 15h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+  </div>
+  <h3>Devices. What's on your network.</h3>
+  <p class="sowel-card__lead">Whatever the brand, whatever the protocol, Sowel models them all the same way.</p>
+  <p>About fifty semantic categories match what a home actually measures: temperature, motion, brightness, contact, energy, water, presence. Each integration plugin (Zigbee, MQTT, a cloud API, a LoRa bridge) translates its raw protocol into that shared vocabulary, so every device lands with the right category, type, and unit, ready to bind.</p>
+  <p class="sowel-card__example" data-label="Example">A Zigbee bulb, a Shelly relay, and a Netatmo station all expose <em>temperature</em> the same way — same category, same unit, same equipment binding.</p>
+  <p class="sowel-card__more"><a href="user/devices/">Read more →</a></p>
+</div>
+
+<div class="sowel-card">
+  <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
   </div>
-  <h3>Equipments. A standard vocabulary for your home.</h3>
-  <p>Sowel turns the wiring of your house into a small, well-defined catalogue: lights, shutters, thermostats, motion sensors, energy meters. Three switches and a motion sensor in your kitchen become one <em>Kitchen Lights</em> equipment, something you can name, group, and reason about.</p>
+  <h3>Equipments. What's in your room.</h3>
+  <p class="sowel-card__lead">Sowel standardizes the things every home has — lights, shutters, thermostats, sensors, gates, meters.</p>
+  <p>Each equipment has a known type, a name, and a predictable set of controls. Bind one device or several — three IKEA dimmers behind a wall, a Zigbee bulb, a cloud-driven heat pump — and Sowel hides the wiring behind a single handle you can use, group, and reason about.</p>
+  <p class="sowel-card__example" data-label="Example">A wall dimmer and the ceiling spots it controls become a single <em>Kitchen Lights</em> equipment you can dim from one place.</p>
+  <p class="sowel-card__more"><a href="user/equipments/">Read more →</a></p>
 </div>
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   </div>
-  <h3>Zones that aggregate themselves</h3>
-  <p>Group equipments into zones, by room, by floor, by purpose. A zone called <em>Ground Floor</em> tells you the average temperature, the brightest room, the highest humidity, automatically. No formulas, no glue code, no dashboards to wire.</p>
+  <h3>Zones. Your home's topology.</h3>
+  <p class="sowel-card__lead">Sowel turns your layout into a thinking map of your house.</p>
+  <p>Group equipments into zones, by room, by floor, by purpose. Sowel rolls up their data automatically — averages, OR-of-all, max — so a zone always knows its own state. No formulas, no glue code, no dashboards to wire.</p>
+  <p class="sowel-card__example" data-label="Example">Three PIR sensors in your <em>Living Room</em> zone become a single presence signal — anyone moves anywhere, the zone is occupied.</p>
+  <p class="sowel-card__more"><a href="user/zones/">Read more →</a></p>
 </div>
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
   </div>
-  <h3>Modes that switch the whole house</h3>
-  <p>Day, Night, Holiday, Cocoon. One tap flips your home over: dimmer lights, lower thermostats, closed shutters. Schedule them or trigger them by hand.</p>
+  <h3>Modes. Your home's rhythms.</h3>
+  <p class="sowel-card__lead">Sowel makes the whole house move in tune with your habits.</p>
+  <p>Define modes for the rhythms you live by — Day, Evening, Night. One tap (or a schedule) flips every zone over: brightness targets, motion behaviour, heating setpoints, recipes on or off.</p>
+  <p class="sowel-card__example" data-label="Example">At sunset your home switches to <em>Evening</em> — dimmers drop to 40%, lights warm up, and the kids' rooms stop reacting to motion.</p>
+  <p class="sowel-card__more"><a href="user/modes/">Read more →</a></p>
 </div>
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.13-7.59 5 5 0 0 0-9.2 0 4 4 0 0 0-2.13 7.59c.41.2.73.58.73 1.04V20a1 1 0 0 0 1 1z"/><path d="M6 17h12"/></svg>
   </div>
-  <h3>Recipes, not scripts</h3>
-  <p>Drop a curated automation pattern onto a zone (motion-triggered lighting, presence-based heating, scheduled irrigation, sunset shutters), set a few values, and it runs. No flows to wire. No logic programming.</p>
+  <h3>Recipes. Your home's reflexes.</h3>
+  <p class="sowel-card__lead">Sowel ships them tested. Drop one on a zone, no scripting.</p>
+  <p>Choose from a curated catalogue: motion-triggered lighting, presence-based heating, scheduled irrigation, sunset shutters. Set a few values, and it runs. No flows to wire, no logic programming.</p>
+  <p class="sowel-card__example" data-label="Example">The <em>Motion Light (Dimmable)</em> recipe keeps a room at the right brightness whenever someone's there — vivid by day, gentle in the evening, dim at night. One recipe, three modes, zero code.</p>
+  <p class="sowel-card__more"><a href="user/recipes/">Read more →</a></p>
 </div>
 
 </div>
@@ -126,7 +149,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
 
 <div class="sowel-pills">
   <div class="sowel-pill">
-    <strong>One Docker container.</strong> <code>docker compose up -d</code>. That's the install.
+    <strong>One command.</strong> <code>curl ... | sh</code> on any Docker host — Linux, macOS, Raspberry Pi. Sowel and InfluxDB up in under a minute.
   </div>
   <div class="sowel-pill">
     <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware: a Raspberry Pi, an old PC, a Proxmox VM, whatever you've got lying around.
@@ -160,7 +183,7 @@ A home automation engine for <em>comfort</em>, <em>safety</em> and <em>energy ef
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>
   </div>
-  <h3>For builders</h3>
+  <h3>For developers</h3>
   <p>Architecture, plugin development, recipes, and the data model.</p>
   <p><a href="technical/">Technical guide →</a></p>
 </div>
