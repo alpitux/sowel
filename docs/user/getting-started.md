@@ -9,14 +9,30 @@ This page walks you through installing Sowel, logging in for the first time, and
 
 ## Installation
 
-### Option 1: Docker (recommended)
+### Option 1: One-command install (recommended)
 
-Docker is the easiest way to run Sowel. It bundles the engine and InfluxDB together.
+The quickest way. Pulls the official `docker-compose.yml`, starts Sowel and InfluxDB together, waits for the engine to come up, and prints the URL when ready:
 
 ```bash
-git clone <repo>
-cd sowel
-docker-compose up -d
+curl -fsSL https://raw.githubusercontent.com/mchacher/sowel/main/scripts/install.sh | sh
+```
+
+Defaults:
+
+- Installs into `~/sowel/` (override with `SOWEL_DIR=/your/path`)
+- Exposes Sowel on port `3000` (override with `SOWEL_PORT=8080` for example)
+- Auto-detects your host timezone and patches the compose file
+
+When done, open the printed URL in your browser.
+
+### Option 2: Manual Docker install
+
+If you prefer to do the steps yourself:
+
+```bash
+mkdir ~/sowel && cd ~/sowel
+curl -O https://raw.githubusercontent.com/mchacher/sowel/main/docker-compose.yml
+docker compose up -d
 ```
 
 This starts:
@@ -26,32 +42,21 @@ This starts:
 
 Open your browser to **http://localhost:3000**.
 
-### Option 2: Manual installation
+### Option 3: Run from source (development)
+
+For contributors and developers:
 
 ```bash
-git clone <repo>
+git clone https://github.com/mchacher/sowel.git
 cd sowel
 npm install
+npm run dev                            # backend on :3000
+# in a separate terminal
+cd ui && npm install && npm run dev    # frontend on :5173 with hot reload
 ```
-
-Start the backend:
-
-```bash
-npm run dev
-```
-
-In a separate terminal, start the frontend:
-
-```bash
-cd ui
-npm install
-npm run dev
-```
-
-Open your browser to **http://localhost:5173**.
 
 !!! info "Development vs production"
-When running manually with `npm run dev`, the UI runs on port 5173 (Vite dev server with hot reload). In Docker or production mode, the backend serves the UI directly on port 3000.
+When running with `npm run dev`, the UI is on port 5173 (Vite dev server with hot reload). In Docker mode, the backend serves the built UI on port 3000.
 
 ## First login
 
