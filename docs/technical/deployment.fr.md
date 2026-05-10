@@ -10,11 +10,32 @@ Sowel est livré sous forme d'image Docker à `ghcr.io/mchacher/sowel:latest`. U
 
 ### Prérequis
 
-- Hôte Linux (x86_64) avec Docker Engine 20.10+ et `docker compose` v2
+- Hôte Linux ou macOS avec Docker Engine 20.10+ et `docker compose` v2 (images multi-arch : `linux/amd64` et `linux/arm64` — Raspberry Pi 4/5 supportés en natif)
 - Au moins 2 Go de RAM, 10 Go de disque (les données InfluxDB grossissent avec le temps)
 - Accès réseau à `ghcr.io` pour les pulls d'image et `api.github.com` pour les vérifications de version
 
-### Étapes
+### Option A — Installation en une commande (recommandée)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mchacher/sowel/main/scripts/install.sh | sh
+```
+
+Ce que ça fait :
+
+- Vérifie que Docker et Docker Compose v2 sont installés et joignables
+- Crée `~/sowel/` (override avec `SOWEL_DIR=/opt/sowel`)
+- Télécharge le `docker-compose.yml` de référence
+- Détecte automatiquement le fuseau horaire de l'hôte et patche le compose (plus de logs en UTC)
+- Tire les images, démarre la stack, attend que `/api/v1/health` réponde
+- Affiche l'URL et les commandes utiles (logs / update / stop)
+
+Override du port d'hôte : `SOWEL_PORT=8080 curl -fsSL ... | sh`.
+
+Si une installation existe déjà à `$SOWEL_DIR`, le script refuse d'écraser — choisissez un autre dossier ou supprimez l'existant d'abord.
+
+### Option B — Déploiement manuel
+
+Pour un contrôle complet sur chaque étape :
 
 ```bash
 # 1. Pick a deployment directory (convention: /opt/sowel)
