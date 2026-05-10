@@ -63,20 +63,24 @@ When running with `npm run dev`, the UI is on port 5173 (Vite dev server with ho
 
 ## First login
 
-When you open Sowel for the first time, a **setup page** appears. Create your admin account:
+When you open Sowel for the first time, a **setup page** asks you to create the administrator account:
 
-1. Choose a username
-2. Set a password
-3. Enter a display name
+![Setup page — admin creation](../screenshots/getting-started-setup-en.png)
 
-After the first account is created, the login screen greets you:
+Fill in:
 
-![Login screen](../screenshots/getting-started-login.png)
+1. A **username** (e.g. `admin`)
+2. A **display name** shown in the UI
+3. A **password**, confirmed twice
 
 This creates the first administrator account. You can add more users later from Settings.
 
 !!! warning
 There is no password recovery mechanism. Make sure you remember your admin credentials.
+
+After the first account is created, the regular **login screen** greets you on subsequent visits:
+
+![Login screen](../screenshots/getting-started-login-en.png)
 
 ## Initial configuration
 
