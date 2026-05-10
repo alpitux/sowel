@@ -7,7 +7,7 @@ Bienvenue dans le guide utilisateur Sowel. Cette documentation couvre tout ce do
 Sowel est un moteur de domotique qui apporte de la **structure** à votre maison connectée. Au lieu de gérer des centaines de devices individuels, Sowel organise votre maison en trois couches claires :
 
 - **Devices** : le matériel physique sur votre réseau (capteurs, interrupteurs, variateurs, thermostats). Découverts automatiquement depuis vos intégrations.
-- **Équipements** : les unités fonctionnelles avec lesquelles vous interagissez vraiment ("Spots Salon", "Volets Chambre"). Chaque équipement se lie à un ou plusieurs devices.
+- **Équipements** : les unités fonctionnelles avec lesquelles vous interagissez vraiment ("Spots Cuisine", "Volets Chambre"). Chaque équipement se lie à un ou plusieurs devices.
 - **Zones** : la structure spatiale de votre maison (Maison > Étage > Pièce). Les zones agrègent automatiquement les données de leurs équipements.
 
 Cette séparation vous permet de penser en termes de _pièces et de fonctions_, pas en termes d'adresses Zigbee et de topics MQTT.
