@@ -337,7 +337,7 @@
     "icon": "Waves",
     "author": "mchacher",
     "repo": "mchacher/sowel-plugin-polytropic-master",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "tags": ["pool", "heat-pump", "modbus", "polytropic"],
     "i18n": {
       "fr": {
