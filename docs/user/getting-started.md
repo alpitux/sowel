@@ -40,7 +40,10 @@ This starts:
 - **Sowel engine** on port `3000`
 - **InfluxDB** on port `8086` (used internally for energy and history data)
 
-Open your browser to **http://localhost:3000**.
+Then open your browser:
+
+- **Local install** — `http://localhost:3000`
+- **Remote install** (e.g. Raspberry Pi, NAS, dedicated server) — `http://<host-ip>:3000`, where `<host-ip>` is the LAN address of the machine running Sowel
 
 ### Option 3: Run from source (development)
 

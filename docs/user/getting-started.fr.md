@@ -40,7 +40,10 @@ Cela lance :
 - Le **moteur Sowel** sur le port `3000`
 - **InfluxDB** sur le port `8086` (utilisé en interne pour les données d'énergie et d'historique)
 
-Ouvrez votre navigateur sur **http://localhost:3000**.
+Ouvrez ensuite votre navigateur :
+
+- **Installation locale** — `http://localhost:3000`
+- **Installation distante** (ex. Raspberry Pi, NAS, serveur dédié) — `http://<ip-de-l'hôte>:3000`, où `<ip-de-l'hôte>` est l'adresse LAN de la machine qui fait tourner Sowel
 
 ### Option 3 : Depuis les sources (développement)
 
