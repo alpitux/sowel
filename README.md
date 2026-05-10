@@ -6,13 +6,24 @@ Home automation engine. Pick a **Recipe**, apply it to a **Zone** — your house
 
 ## Quick start
 
+One command. Requires Docker:
+
 ```bash
-mkdir /opt/sowel && cd /opt/sowel
+curl -fsSL https://raw.githubusercontent.com/mchacher/sowel/main/scripts/install.sh | sh
+```
+
+Sowel installs into `~/sowel/` (override with `SOWEL_DIR=/your/path`), starts on port 3000 (override with `SOWEL_PORT=...`), and prints the URL when ready. Open it and create your admin account.
+
+<details>
+<summary>Manual install (skip the script)</summary>
+
+```bash
+mkdir ~/sowel && cd ~/sowel
 curl -O https://raw.githubusercontent.com/mchacher/sowel/main/docker-compose.yml
 docker compose up -d
 ```
 
-Open `http://<host>:3000` and create your admin account on first launch.
+</details>
 
 See [docs/technical/deployment.md](docs/technical/deployment.md) for self-update, backup, timezone and troubleshooting.
 

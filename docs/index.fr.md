@@ -31,9 +31,9 @@ Un moteur de domotique pour le <em>confort</em>, la <em>sécurité</em> et l'<em
 
 <p class="sowel-paragraph">La plupart des outils de domotique vous transforment en développeur à temps partiel : fichiers YAML, scripts, flows, conditions, cas particuliers. Le résultat est un plat de spaghettis fragile que seule une personne du foyer arrive à dépanner.</p>
 
-<p class="sowel-paragraph"><strong>Sowel prend le chemin inverse.</strong> Au lieu d'écrire des automatisations, vous <strong>choisissez une recette</strong> (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Pool Pump Schedule</em>, <em>Sunset Shutters</em>) et vous l'<strong>appliquez à une zone</strong>. Chaque recette encode un schéma réfléchi et éprouvé pour un besoin précis : confort, sécurité ou efficacité énergétique. Vous configurez quelques réglages évidents (une durée, une température, une plage horaire), pas un langage de programmation.</p>
+<p class="sowel-paragraph"><strong>Sowel prend le chemin inverse.</strong> Au lieu d'écrire des automatisations, vous <strong>choisissez une recette</strong> (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Pool Pump Schedule</em>, <em>Sunset Shutters</em>) et vous l'<strong>appliquez à une zone</strong>. Chaque recette encode un schéma réfléchi et éprouvé qui vise le juste équilibre entre confort, sécurité et efficacité énergétique. Vous configurez quelques réglages évidents (une durée, une température, une plage horaire), pas un langage de programmation.</p>
 
-<p class="sowel-paragraph">Votre maison cesse d'être un projet annexe. Elle fonctionne, tout simplement.</p>
+<p class="sowel-paragraph">La meilleure automatisation est celle qu'on oublie. Votre maison fonctionne, tout simplement.</p>
 
 </div>
 
@@ -63,9 +63,9 @@ Un moteur de domotique pour le <em>confort</em>, la <em>sécurité</em> et l'<em
 
 <div class="sowel-section">
 
-<p class="sowel-eyebrow">Ce qui rend Sowel singulier</p>
+<p class="sowel-eyebrow">Là où tous les autres outils domotiques voient des déclencheurs, Sowel voit une maison.</p>
 
-<p class="sowel-paragraph">Sowel structure votre maison en couches, depuis le réseau :</p>
+<p class="sowel-paragraph">La plupart des outils partent du câblage et vous laissent greffer des scripts par-dessus. Sowel part de la maison et laisse le câblage suivre. Cinq couches décrivent votre maison avec les mots que vous utiliseriez vous-même, chacune un peu moins abstraite que celle d'en dessous :</p>
 
 <ul class="sowel-bullets">
   <li>Les <strong>devices</strong> sont auto-découverts et normalisés dans un seul modèle de données.</li>
@@ -86,34 +86,57 @@ Un moteur de domotique pour le <em>confort</em>, la <em>sécurité</em> et l'<em
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 9h2"/><path d="M20 15h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+  </div>
+  <h3>Devices. Ce qui est sur votre réseau.</h3>
+  <p class="sowel-card__lead">Quelle que soit la marque, quel que soit le protocole, Sowel les modélise tous de la même façon.</p>
+  <p>Une cinquantaine de catégories sémantiques correspondent à ce qu'une maison mesure vraiment : température, mouvement, luminosité, contact, énergie, eau, présence. Chaque plugin d'intégration (Zigbee, MQTT, une API cloud, une passerelle LoRa) traduit son protocole brut dans ce vocabulaire commun, pour que chaque device arrive avec la bonne catégorie, le bon type et la bonne unité, prêt à être lié.</p>
+  <p class="sowel-card__example" data-label="Exemple">Une ampoule Zigbee, un relais Shelly et une station Netatmo exposent la <em>température</em> de la même façon — même catégorie, même unité, même liaison à un équipement.</p>
+  <p class="sowel-card__more"><a href="user/devices/">En savoir plus →</a></p>
+</div>
+
+<div class="sowel-card">
+  <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
   </div>
-  <h3>Équipements. Un vocabulaire standard pour votre maison.</h3>
-  <p>Sowel transforme le câblage de votre maison en un petit catalogue bien défini : luminaires, volets, thermostats, détecteurs de mouvement, compteurs d'énergie. Trois interrupteurs et un détecteur de mouvement dans votre cuisine deviennent un seul équipement <em>Kitchen Lights</em>, quelque chose que vous pouvez nommer, regrouper et raisonner.</p>
+  <h3>Équipements. Ce qui est dans votre pièce.</h3>
+  <p class="sowel-card__lead">Sowel standardise ce que toute maison contient — lumières, volets, thermostats, capteurs, portails, compteurs.</p>
+  <p>Chaque équipement a un type connu, un nom et un jeu de contrôles prévisibles. Liez un device ou plusieurs — trois variateurs IKEA derrière un mur, une ampoule Zigbee, une pompe à chaleur pilotée par API cloud — et Sowel masque le câblage derrière une seule poignée que vous pouvez utiliser, regrouper et manipuler.</p>
+  <p class="sowel-card__example" data-label="Exemple">Un variateur mural et les spots qu'il commande au plafond deviennent un seul équipement <em>Lumières Cuisine</em> que vous pilotez depuis un point unique.</p>
+  <p class="sowel-card__more"><a href="user/equipments/">En savoir plus →</a></p>
 </div>
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   </div>
-  <h3>Des zones qui s'agrègent toutes seules</h3>
-  <p>Regroupez les équipements en zones, par pièce, par étage, par usage. Une zone nommée <em>Ground Floor</em> vous donne la température moyenne, la pièce la plus lumineuse, l'humidité la plus élevée, automatiquement. Sans formules, sans code de glue, sans tableau de bord à câbler.</p>
+  <h3>Zones. La topologie de votre maison.</h3>
+  <p class="sowel-card__lead">Sowel transforme votre plan en carte pensante de votre maison.</p>
+  <p>Regroupez les équipements en zones, par pièce, par étage, par usage. Sowel consolide leurs données automatiquement — moyennes, OU logique, maximum — pour qu'une zone connaisse en permanence son propre état. Sans formules, sans code de glue, sans tableau de bord à câbler.</p>
+  <p class="sowel-card__example" data-label="Exemple">Trois détecteurs PIR dans votre <em>Salon</em> ne forment plus qu'un seul signal de présence — un seul se déclenche, la zone est occupée.</p>
+  <p class="sowel-card__more"><a href="user/zones/">En savoir plus →</a></p>
 </div>
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
   </div>
-  <h3>Des modes qui basculent toute la maison</h3>
-  <p>Jour, Nuit, Vacances, Cocon. Un geste fait basculer votre maison : lumières tamisées, thermostats abaissés, volets fermés. Programmez-les ou déclenchez-les à la main.</p>
+  <h3>Modes. Les rythmes de votre maison.</h3>
+  <p class="sowel-card__lead">Sowel fait basculer toute la maison au tempo de vos habitudes.</p>
+  <p>Définissez des modes au rythme de votre vie — Jour, Soir, Nuit. Un geste (ou une planification) fait basculer chaque zone : niveaux de luminosité, comportement des détections, consignes de chauffage, recettes activées ou en pause.</p>
+  <p class="sowel-card__example" data-label="Exemple">Au coucher du soleil, votre maison passe en <em>Soir</em> — les variateurs descendent à 40 %, la lumière se réchauffe, et les chambres des enfants cessent de réagir au mouvement.</p>
+  <p class="sowel-card__more"><a href="user/modes/">En savoir plus →</a></p>
 </div>
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.13-7.59 5 5 0 0 0-9.2 0 4 4 0 0 0-2.13 7.59c.41.2.73.58.73 1.04V20a1 1 0 0 0 1 1z"/><path d="M6 17h12"/></svg>
   </div>
-  <h3>Des recettes, pas des scripts</h3>
-  <p>Posez un schéma d'automatisation sélectionné sur une zone (éclairage déclenché par mouvement, chauffage piloté par présence, irrigation programmée, volets au coucher du soleil), réglez quelques valeurs, et ça tourne. Pas de flows à câbler. Pas de programmation logique.</p>
+  <h3>Recettes. Les réflexes de votre maison.</h3>
+  <p class="sowel-card__lead">Sowel les livre éprouvées. Posez-en une sur une zone, sans script.</p>
+  <p>Choisissez dans un catalogue éprouvé : éclairage déclenché par mouvement, chauffage piloté par présence, irrigation programmée, volets au coucher du soleil. Réglez quelques valeurs, et ça tourne. Pas de flows à câbler, pas de programmation logique.</p>
+  <p class="sowel-card__example" data-label="Exemple">La recette <em>Lumière dimmable sur mouvement</em> garde une pièce éclairée au bon niveau dès qu'on y entre — vif le jour, doux le soir, tamisé la nuit. Une seule recette, trois modes, zéro ligne de code.</p>
+  <p class="sowel-card__more"><a href="user/recipes/">En savoir plus →</a></p>
 </div>
 
 </div>
@@ -126,7 +149,7 @@ Un moteur de domotique pour le <em>confort</em>, la <em>sécurité</em> et l'<em
 
 <div class="sowel-pills">
   <div class="sowel-pill">
-    <strong>Un seul conteneur Docker.</strong> <code>docker compose up -d</code>. C'est ça, l'installation.
+    <strong>Une seule commande.</strong> <code>curl ... | sh</code> sur n'importe quel hôte Docker — Linux, macOS, Raspberry Pi. Sowel et InfluxDB en moins d'une minute.
   </div>
   <div class="sowel-pill">
     <strong>Reste à la maison.</strong> Pas de cloud, pas de télémétrie, pas de compte tiers. Vos données vivent sur votre matériel : un Raspberry Pi, un vieux PC, une VM Proxmox, ce que vous avez sous la main.
@@ -160,7 +183,7 @@ Un moteur de domotique pour le <em>confort</em>, la <em>sécurité</em> et l'<em
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>
   </div>
-  <h3>Pour les bâtisseurs</h3>
+  <h3>Pour les développeurs</h3>
   <p>Architecture, développement de plugins, recettes, et modèle de données.</p>
   <p><a href="technical/">Guide technique →</a></p>
 </div>
