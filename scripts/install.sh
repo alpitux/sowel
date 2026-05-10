@@ -109,16 +109,36 @@ if [ "$ready" -ne 1 ]; then
   exit 2
 fi
 
+# ─── Detect LAN IP for the final message ────────────────────
+# Use the IP the host would use to reach the internet (avoids Docker bridges).
+LAN_IP=""
+if command -v ip >/dev/null 2>&1; then
+  LAN_IP="$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}' | head -1)"
+fi
+if [ -z "$LAN_IP" ] && command -v route >/dev/null 2>&1 && command -v ipconfig >/dev/null 2>&1; then
+  iface="$(route get 1.1.1.1 2>/dev/null | awk '/interface:/ {print $2}')"
+  [ -n "$iface" ] && LAN_IP="$(ipconfig getifaddr "$iface" 2>/dev/null)"
+fi
+if [ -z "$LAN_IP" ] && command -v hostname >/dev/null 2>&1; then
+  LAN_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+fi
+[ -z "$LAN_IP" ] && LAN_IP="localhost"
+
+URL="http://${LAN_IP}:${SOWEL_PORT}"
+
 # ─── Done ───────────────────────────────────────────────────
 cat <<EOF
 
 Sowel is running.
 
-  → Open http://localhost:${SOWEL_PORT} and create your admin account.
+  → ${URL}
 
-Next steps:
-  • Install integrations: http://localhost:${SOWEL_PORT}/admin/plugins
-  • Set your home location in Settings to enable automatic timezone
+First steps after you sign in:
+  1. Create your admin account
+  2. Name your home (Settings → Home)
+  3. Set its location (latitude / longitude) — required to enable
+     timezone, sunrise / sunset, and HP/HC tariff classification
+  4. Install integrations: ${URL}/admin/plugins
 
 Useful commands (run from $SOWEL_DIR):
   Logs     docker compose logs -f
@@ -126,5 +146,5 @@ Useful commands (run from $SOWEL_DIR):
   Stop     docker compose down
   Wipe     docker compose down -v   # also deletes data volumes
 
-Documentation: https://github.com/mchacher/sowel
+Documentation: https://docs.sowel.org
 EOF
