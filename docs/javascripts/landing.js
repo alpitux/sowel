@@ -32,6 +32,23 @@
     // Tell CSS how many pages we have (used by .sowel-flip height + track width).
     flip.style.setProperty("--sowel-flip-n", String(n));
 
+    // Read the real header height (mkdocs material header + tabs) so the
+    // sticky pin sits flush below them instead of being covered.
+    function updateHeaderOffset() {
+      var h = document.querySelector(".md-header");
+      var t = document.querySelector(".md-tabs");
+      var top = h ? h.offsetHeight : 0;
+      // Tabs are positioned inside the header height in this theme, so we
+      // only add their height when they're rendered below the header bar.
+      if (t && t.getBoundingClientRect().bottom > (h ? h.getBoundingClientRect().bottom : 0)) {
+        top = Math.max(top, t.getBoundingClientRect().bottom);
+      }
+      if (top > 0) {
+        flip.style.setProperty("--sowel-flip-top", top + "px");
+      }
+    }
+    updateHeaderOffset();
+
     // Disabled paths: small viewports + reduced motion.
     var mqSmall = window.matchMedia("(max-width: 899px)");
     var mqReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -138,7 +155,10 @@
       });
     }
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("resize", function () {
+      updateHeaderOffset();
+      update();
+    });
     mqSmall.addEventListener && mqSmall.addEventListener("change", update);
     mqReduced.addEventListener && mqReduced.addEventListener("change", update);
     update();
