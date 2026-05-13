@@ -130,9 +130,52 @@ hide:
 <div class="sowel-flip__page">
 <div class="sowel-section">
 
+<div class="sowel-section--split sowel-section--intro" markdown="0">
+<div class="sowel-section__copy">
 <p class="sowel-eyebrow">Sowel voit votre maison en pièces et en espaces, pas en câbles et en règles.</p>
-
 <p class="sowel-paragraph">Cinq couches décrivent votre maison avec les mots que vous utiliseriez vous-même, chacune un peu moins abstraite que celle d'en dessous.</p>
+</div>
+<div class="sowel-section__visual">
+<div class="sowel-floats">
+<div class="sowel-float-recipe sowel-float-recipe--1">
+<p class="sowel-float-recipe__name">Lumière du soir</p>
+<p class="sowel-float-recipe__flow">20:00 <span class="arr">↘</span> Séjour</p>
+</div>
+<div class="sowel-float-recipe sowel-float-recipe--2">
+<p class="sowel-float-recipe__name">Volets au coucher</p>
+<p class="sowel-float-recipe__flow">sunset <span class="arr">↘</span> Chambres</p>
+</div>
+</div>
+<div class="sowel-stack__house" data-caption="Le modèle de la maison">
+<div class="sowel-nested sowel-nested--home">
+<span class="sowel-nested__tag">Maison</span>
+<div class="sowel-nested__name">Mon appartement</div>
+<div class="sowel-nested__nest">
+<div class="sowel-nested sowel-nested--zone">
+<span class="sowel-nested__tag sowel-nested__tag--zone">Zone</span>
+<span class="sowel-float-mode">Soir</span>
+<div class="sowel-nested__name">Séjour</div>
+<span class="sowel-nested__hint">agrège tout ce qui est dedans</span>
+<div class="sowel-nested__nest">
+<div class="sowel-nested sowel-nested--equipment">
+<span class="sowel-nested__tag sowel-nested__tag--equipment">Équipement</span>
+<div class="sowel-nested__name">Appliques x2</div>
+<span class="sowel-nested__hint">une poignée pour l'utilisateur</span>
+<div class="sowel-nested__nest">
+<div class="sowel-nested sowel-nested--device">
+<span class="sowel-nested__tag sowel-nested__tag--device">Device</span>
+<div class="sowel-nested__name sowel-nested__name--mono">zb_0x00158d0001f3a2</div>
+<span class="sowel-nested__hint">le câblage, invisible à l'usage</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 <div class="sowel-cards sowel-cards--pillars">
 

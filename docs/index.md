@@ -130,9 +130,52 @@ hide:
 <div class="sowel-flip__page">
 <div class="sowel-section">
 
+<div class="sowel-section--split sowel-section--intro" markdown="0">
+<div class="sowel-section__copy">
 <p class="sowel-eyebrow">Sowel thinks of your home in rooms and spaces, not in wires and rules.</p>
-
 <p class="sowel-paragraph">Five layers describe your house in the same words you'd use yourself, each one a little less abstract than the one below it.</p>
+</div>
+<div class="sowel-section__visual">
+<div class="sowel-floats">
+<div class="sowel-float-recipe sowel-float-recipe--1">
+<p class="sowel-float-recipe__name">Evening light</p>
+<p class="sowel-float-recipe__flow">20:00 <span class="arr">↘</span> Living Room</p>
+</div>
+<div class="sowel-float-recipe sowel-float-recipe--2">
+<p class="sowel-float-recipe__name">Sunset shutters</p>
+<p class="sowel-float-recipe__flow">sunset <span class="arr">↘</span> Bedrooms</p>
+</div>
+</div>
+<div class="sowel-stack__house" data-caption="The home model">
+<div class="sowel-nested sowel-nested--home">
+<span class="sowel-nested__tag">Home</span>
+<div class="sowel-nested__name">My apartment</div>
+<div class="sowel-nested__nest">
+<div class="sowel-nested sowel-nested--zone">
+<span class="sowel-nested__tag sowel-nested__tag--zone">Zone</span>
+<span class="sowel-float-mode">Evening</span>
+<div class="sowel-nested__name">Living Room</div>
+<span class="sowel-nested__hint">aggregates everything inside it</span>
+<div class="sowel-nested__nest">
+<div class="sowel-nested sowel-nested--equipment">
+<span class="sowel-nested__tag sowel-nested__tag--equipment">Equipment</span>
+<div class="sowel-nested__name">Wall lights x2</div>
+<span class="sowel-nested__hint">one handle for the user</span>
+<div class="sowel-nested__nest">
+<div class="sowel-nested sowel-nested--device">
+<span class="sowel-nested__tag sowel-nested__tag--device">Device</span>
+<div class="sowel-nested__name sowel-nested__name--mono">zb_0x00158d0001f3a2</div>
+<span class="sowel-nested__hint">the wiring, invisible day to day</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 <div class="sowel-cards sowel-cards--pillars">
 
