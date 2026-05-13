@@ -20,7 +20,7 @@ hide:
 
 <h1 class="sowel-hero__tagline">Ne programmez pas votre maison.<br/><em>Appliquez-lui des recettes.</em></h1>
 
-<p class="sowel-hero__lead">Sowel est un moteur de domotique qui pense en pièces, modes et recettes — pas en fichiers YAML. Choisissez une recette, posez-la sur une zone, votre maison fonctionne toute seule.</p>
+<p class="sowel-hero__lead">Sowel embarque des recettes éprouvées pour ce dont chaque maison a vraiment besoin — Motion Light, Sunset Shutters, Presence Heating, Solar Charging. Posez-en une sur une pièce, réglez quelques valeurs, c'est fait.</p>
 
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Commencer <span class="md-icon md-icon--arrow">→</span></a>
