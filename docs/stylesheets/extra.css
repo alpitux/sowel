@@ -815,6 +815,27 @@
 .sowel-hero--split .sowel-hero__copy { text-align: left; }
 .sowel-hero--split .sowel-hero__copy > * { margin-left: 0; margin-right: 0; }
 
+.sowel-hero__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 1.5rem;
+}
+.sowel-logo--sm {
+  width: 2.4rem;
+  height: 2.4rem;
+  filter: drop-shadow(0 4px 10px rgba(26, 79, 110, 0.15));
+}
+.md-typeset .sowel-hero__wordmark {
+  font-family: var(--sowel-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--md-primary-fg-color);
+  line-height: 1;
+}
+[data-md-color-scheme="slate"] .sowel-hero__wordmark { color: #C9DCE7; }
+
 .md-typeset .sowel-hero__eyebrow {
   font-family: var(--sowel-display);
   font-size: 0.78rem;

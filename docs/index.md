@@ -16,6 +16,16 @@ hide:
 <div class="sowel-hero sowel-hero--split">
 <div class="sowel-hero__copy">
 
+<div class="sowel-hero__brand">
+  <svg class="sowel-logo sowel-logo--sm" xmlns="http://www.w3.org/2000/svg" viewBox="25 15 150 155" aria-hidden="true">
+    <path class="house"     d="M100 30 L160 90 Q165 95 160 100 L160 150 Q160 158 152 158 L48 158 Q40 158 40 150 L40 100 Q35 95 40 90 Z"/>
+    <path class="smile"     d="M75 115 Q100 140 125 115"/>
+    <path class="left-eye"  d="M78 95 Q83 87 88 95"/>
+    <path class="right-eye" d="M112 95 Q117 87 122 95"/>
+  </svg>
+  <span class="sowel-hero__wordmark">Sowel</span>
+</div>
+
 <p class="sowel-hero__eyebrow">A different way to automate your home</p>
 
 <h1 class="sowel-hero__tagline">Don't program your home.<em>Apply recipes to it.</em></h1>
