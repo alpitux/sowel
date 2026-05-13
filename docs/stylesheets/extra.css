@@ -1096,6 +1096,18 @@
   html:has(.sowel-flip)::-webkit-scrollbar {
     display: none;
   }
+
+  /* Kill the natural top spacing MkDocs Material puts between its
+   * header and the first content block, so the hero is flush with
+   * the header on initial load (no white strip before scrolling). */
+  html:has(.sowel-flip) .md-main__inner { margin-top: 0; }
+  html:has(.sowel-flip) .md-content__inner { padding-top: 0; margin-top: 0; }
+  html:has(.sowel-flip) .md-content__inner > :first-child { margin-top: 0; }
+  /* The floating "edit this page" pencil would overlap the hero. */
+  html:has(.sowel-flip) .md-content__button { display: none; }
+  /* The .md-typeset article still leaves ~0.5rem of leading above
+   * its first child; cancel it on the flip itself. */
+  html:has(.sowel-flip) .sowel-flip { margin-top: -0.5rem; }
 }
 
 /* Mobile / reduced-motion fallback: stack pages vertically. */
