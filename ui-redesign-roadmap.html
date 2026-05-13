@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sowel — Roadmap UI (progressive)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --p-50:#EEF5F8; --p-100:#D9E7EF; --p-500:#1A4F6E; --p-600:#144159;
+    --a-50:#FFF4D9; --a-500:#E5A23A; --a-600:#C68420;
+    --n-0:#FFFFFF; --n-25:#FAFAFA; --n-50:#F4F4F5; --n-100:#E9E9EB; --n-200:#D4D4D8;
+    --n-300:#A1A1AA; --n-400:#71717A; --n-500:#52525B; --n-600:#3F3F46; --n-700:#27272A; --n-800:#18181B;
+    --green-50:#E6F7EE; --green-500:#1FA260; --green-700:#0E6B3F;
+    --red-50:#FBE9E1; --red-500:#C7522E;
+    --shutter-500:#4F5763; --sensor-500:#4F7559; --light-500:#E5A23A;
+    --line:rgba(24,24,27,.08); --line-2:rgba(24,24,27,.14);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--n-700); background:var(--n-50);
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+    font-feature-settings:"cv11" 1, "ss01" 1;
+  }
+
+  /* ── Layout ─── */
+  .wrap{max-width:1180px;margin:0 auto;padding:3rem 1.5rem 5rem}
+
+  /* ── Hero ─── */
+  .hero{margin-bottom:3.5rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:end}
+  .hero__eyebrow{
+    display:inline-flex;align-items:center;gap:.5rem;
+    font-size:.7rem;text-transform:uppercase;letter-spacing:.18em;
+    color:var(--a-500);font-weight:700;margin-bottom:1rem;
+  }
+  .hero__eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--a-500)}
+  .hero__title{
+    font-family:'Inter',serif;
+    font-size:3.4rem;font-weight:700;line-height:.98;letter-spacing:-.032em;
+    color:var(--n-800);margin:0 0 1.25rem;max-width:14ch;
+  }
+  .hero__title em{font-style:normal;color:var(--a-500)}
+  .hero__lead{font-size:1rem;color:var(--n-500);line-height:1.65;max-width:34rem}
+  .hero__lead b{color:var(--n-700);font-weight:600}
+
+  .hero__metrics{
+    display:grid;grid-template-columns:1fr 1fr;gap:1rem;
+    align-self:end;
+    padding:.25rem 0 .5rem;
+  }
+  .metric{
+    padding:1.1rem 1.25rem;background:var(--n-0);
+    border:1px solid var(--line);border-radius:12px;
+    display:flex;flex-direction:column;gap:.1rem;
+  }
+  .metric__val{
+    font-family:'JetBrains Mono';font-size:2.1rem;font-weight:600;
+    color:var(--n-800);letter-spacing:-.025em;line-height:1;
+    font-feature-settings:"tnum" 1;
+  }
+  .metric__val small{font-size:.55em;color:var(--n-400);font-weight:500;margin-left:.15rem}
+  .metric__lab{
+    font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;
+    color:var(--n-400);font-weight:700;margin-top:.45rem;
+  }
+  .metric--accent .metric__val{color:var(--a-500)}
+
+  /* ── Philosophy callout ─── */
+  .philo{
+    margin:0 0 3.5rem;padding:1.75rem 2rem;
+    background:linear-gradient(120deg, var(--p-500), var(--p-600));
+    color:#fff;border-radius:14px;
+    display:grid;grid-template-columns:auto 1fr;gap:2rem;align-items:center;
+    overflow:hidden;position:relative;
+  }
+  .philo::after{
+    content:"";position:absolute;top:-40px;right:-40px;width:200px;height:200px;
+    background:radial-gradient(circle,var(--a-500) 0%,transparent 60%);
+    opacity:.18;
+  }
+  .philo__num{
+    font-family:'JetBrains Mono';font-size:4.5rem;font-weight:700;
+    line-height:1;letter-spacing:-.04em;
+    color:color-mix(in srgb, #fff 30%, transparent);
+    position:relative;z-index:1;
+  }
+  .philo__num em{font-style:normal;color:#fff}
+  .philo__txt{position:relative;z-index:1}
+  .philo__txt h2{font-size:1.4rem;margin:0 0 .5rem;font-weight:700;letter-spacing:-.015em}
+  .philo__txt p{font-size:.92rem;color:color-mix(in srgb, #fff 88%, transparent);margin:0;line-height:1.55}
+  .philo__txt b{color:#fff;font-weight:600}
+
+  /* ── Timeline rail (vertical line on left of phases) ─── */
+  .rail{position:relative;padding-left:3rem}
+  .rail::before{
+    content:"";position:absolute;left:1rem;top:0;bottom:0;width:2px;
+    background:linear-gradient(180deg,var(--n-200) 0%,var(--p-500) 12%,var(--a-500) 88%,var(--n-200) 100%);
+    border-radius:2px;
+  }
+
+  /* ── Phase card ─── */
+  .phase{
+    position:relative;
+    margin-bottom:2rem;
+    background:var(--n-0);border:1px solid var(--line);
+    border-radius:14px;overflow:hidden;
+    box-shadow:0 1px 2px rgba(15,42,60,.03), 0 4px 12px -6px rgba(15,42,60,.08);
+  }
+  /* Bullet on rail */
+  .phase::before{
+    content:"";position:absolute;left:-2.45rem;top:1.85rem;
+    width:18px;height:18px;border-radius:50%;
+    background:var(--n-0);border:3px solid var(--n-300);
+    z-index:1;
+  }
+  .phase--current::before{background:var(--a-500);border-color:var(--a-500);box-shadow:0 0 0 5px var(--a-50)}
+  .phase--done::before{background:var(--p-500);border-color:var(--p-500)}
+
+  .phase__head{
+    display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:center;
+    padding:1.1rem 1.4rem;border-bottom:1px solid var(--line);
+  }
+  .phase__num{
+    font-family:'JetBrains Mono';font-size:.78rem;font-weight:700;
+    color:var(--p-500);background:var(--p-50);
+    padding:.25rem .55rem;border-radius:var(--n-50);border-radius:6px;
+    letter-spacing:.04em;
+  }
+  .phase__title{
+    font-size:1.2rem;font-weight:700;color:var(--n-800);
+    letter-spacing:-.018em;line-height:1.2;margin:0;
+  }
+  .phase__title small{
+    display:block;font-size:.78rem;font-weight:500;color:var(--n-500);
+    letter-spacing:0;margin-top:.15rem;
+  }
+  .phase__pills{display:flex;gap:.4rem;flex-wrap:wrap}
+  .pill{
+    display:inline-flex;align-items:center;gap:.3rem;
+    padding:.25rem .55rem;border-radius:999px;
+    font-size:.68rem;font-weight:600;letter-spacing:.02em;
+  }
+  .pill__dot{width:6px;height:6px;border-radius:50%}
+  .pill--risk-low{background:var(--green-50);color:var(--green-700)}
+  .pill--risk-low .pill__dot{background:var(--green-500)}
+  .pill--risk-med{background:var(--a-50);color:var(--a-600)}
+  .pill--risk-med .pill__dot{background:var(--a-500)}
+  .pill--risk-high{background:var(--red-50);color:var(--red-500)}
+  .pill--risk-high .pill__dot{background:var(--red-500)}
+  .pill--effort{background:var(--n-100);color:var(--n-600)}
+  .pill--effort .pill__dot{background:var(--n-400)}
+
+  /* Body — 2 columns: changes list + visual diff */
+  .phase__body{display:grid;grid-template-columns:1fr 1.1fr;gap:0;align-items:stretch}
+  .phase__changes{padding:1.2rem 1.4rem;border-right:1px solid var(--line);min-width:0}
+  .phase__changes h4{
+    font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;
+    color:var(--n-400);margin:0 0 .65rem;font-weight:700;
+  }
+  .phase__changes ul{margin:0 0 1.1rem;padding:0;list-style:none;display:flex;flex-direction:column;gap:.4rem}
+  .phase__changes li{
+    font-size:.85rem;color:var(--n-700);line-height:1.5;
+    padding-left:1.25rem;position:relative;
+  }
+  .phase__changes li::before{
+    content:"";position:absolute;left:0;top:.5rem;width:6px;height:6px;
+    border-radius:50%;background:var(--p-500);
+  }
+  .phase__changes li b{color:var(--n-800);font-weight:600}
+  .phase__value{
+    background:var(--n-25);border:1px solid var(--line);border-radius:8px;
+    padding:.75rem .9rem;
+    font-size:.78rem;color:var(--n-600);line-height:1.5;
+    display:flex;gap:.55rem;align-items:flex-start;
+  }
+  .phase__value svg{width:14px;height:14px;color:var(--a-500);flex:none;margin-top:.15rem}
+  .phase__value b{color:var(--n-800);font-weight:600}
+
+  .phase__visual{
+    padding:1.2rem 1.4rem;background:var(--n-25);
+    display:flex;flex-direction:column;gap:.6rem;
+  }
+  .phase__visual h4{
+    font-size:.65rem;text-transform:uppercase;letter-spacing:.14em;
+    color:var(--n-400);margin:0 0 .25rem;font-weight:700;
+  }
+  /* schematic mockup */
+  .mock{
+    background:var(--n-0);border:1px solid var(--line-2);border-radius:8px;
+    padding:.6rem;display:flex;gap:.55rem;
+    min-height:170px;font-size:9px;
+  }
+  .mock__sb{
+    width:38px;background:var(--n-0);border:1px solid var(--line);border-radius:5px;
+    display:flex;flex-direction:column;gap:3px;padding:5px 4px;
+  }
+  .mock__sb-item{height:6px;background:var(--n-100);border-radius:2px}
+  .mock__sb-item--active{background:var(--p-500)}
+  .mock__sb-sep{height:1px;background:var(--n-200);margin:2px 0}
+  .mock__main{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+  .mock__topbar{height:9px;background:var(--n-50);border-radius:3px;border:1px solid var(--line)}
+  .mock__hero{height:14px;background:var(--n-100);border-radius:3px}
+  .mock__strip{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;height:24px}
+  .mock__strip--asym{grid-template-columns:1.5fr 1fr 1fr 1fr}
+  .mock__strip-cell{background:var(--n-50);border:1px solid var(--line);border-radius:3px}
+  .mock__strip-cell--anchor{background:linear-gradient(90deg, color-mix(in srgb, var(--p-500) 10%, transparent), transparent)}
+  .mock__strip-cell--accent{background:var(--a-50);border-color:var(--a-100)}
+  /* New: pill-row mockup (replaces grid strip for P2) */
+  .mock__pills{display:flex;align-items:center;gap:0;height:24px;padding:0 4px;background:var(--n-0);border:1px solid var(--line);border-radius:4px}
+  .mock__pill{height:12px;background:var(--n-100);border-radius:6px;margin:0 3px;flex:0 0 auto}
+  .mock__pill:nth-child(1){width:30px}
+  .mock__pill:nth-child(2){width:24px}
+  .mock__pill:nth-child(3){width:28px}
+  .mock__pill:nth-child(5){width:42px;background:color-mix(in srgb,var(--green-500) 25%,var(--n-50))}
+  .mock__pill:nth-child(6){width:24px;background:color-mix(in srgb,var(--a-500) 30%,var(--n-50))}
+  .mock__pill:nth-child(7){width:34px}
+  .mock__pill-gap{width:1px;height:18px;background:var(--n-200);margin:0 4px;flex:none}
+  .mock__pill--alert{width:34px !important;background:var(--red-500) !important}
+  .mock__grid{display:grid;grid-template-columns:1.4fr 1fr;gap:5px;flex:1;min-height:0}
+  .mock__panel{background:var(--n-25);border:1px solid var(--line);border-radius:3px;display:flex;flex-direction:column;overflow:hidden}
+  .mock__panel-head{height:7px;background:var(--p-50);border-bottom:1px solid var(--line)}
+  .mock__panel-row{height:7px;background:var(--n-0);border-top:1px solid var(--line)}
+  .mock__panel-row:first-of-type{border-top:none}
+  .mock__panel-row--on{background:color-mix(in srgb,var(--a-500) 15%,var(--n-0))}
+  .mock__panel-row--active{background:var(--green-50)}
+  .mock__panel-cat{height:5px;background:var(--n-25);border-top:1px solid var(--n-200);border-bottom:1px solid var(--n-200)}
+
+  /* Highlighter — where the phase changes things */
+  .mock__hl{
+    position:relative;
+  }
+  .mock__hl::after{
+    content:"";position:absolute;inset:-3px;
+    border:1.5px dashed var(--a-500);border-radius:5px;
+    pointer-events:none;
+    animation:phasePulse 2.6s ease-in-out infinite;
+  }
+  @keyframes phasePulse{
+    0%,100%{opacity:.55}
+    50%{opacity:.95}
+  }
+  .mock__caption{font-size:.7rem;color:var(--n-500);line-height:1.4}
+  .mock__caption b{color:var(--n-700);font-weight:600}
+
+  /* Activity feed mock (used in P3) */
+  .mock__feed{display:flex;flex-direction:column}
+  .mock__feed-row{height:8px;background:var(--n-0);border-top:1px solid var(--line);display:flex;align-items:center;gap:3px;padding:2px 4px}
+  .mock__feed-row:first-child{border-top:none}
+  .mock__feed-dot{width:4px;height:4px;border-radius:50%}
+
+  /* Modal mock (P6) */
+  .mock--modal{position:relative;padding:.85rem .6rem;justify-content:center;align-items:center}
+  .mock--modal::before{
+    content:"";position:absolute;inset:.6rem;
+    background:repeating-linear-gradient(45deg,var(--n-50),var(--n-50) 4px,var(--n-25) 4px,var(--n-25) 8px);
+    border-radius:5px;opacity:.5;
+  }
+  .mock__modal-box{
+    position:relative;width:80%;background:var(--n-0);
+    border:1px solid var(--line-2);border-radius:6px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    padding:6px 8px;display:flex;flex-direction:column;gap:4px;
+  }
+  .mock__modal-head{display:flex;align-items:center;gap:4px}
+  .mock__modal-head-i{width:10px;height:10px;border-radius:2px;background:var(--p-50);border:1px solid var(--p-100)}
+  .mock__modal-head-t{flex:1;height:5px;background:var(--n-200);border-radius:2px}
+  .mock__modal-head-x{width:8px;height:8px;background:var(--n-100);border-radius:50%}
+  .mock__modal-sec{padding:3px 0;border-top:1px solid var(--line)}
+  .mock__modal-sec:first-of-type{border-top:none}
+  .mock__modal-lab{height:3px;width:35%;background:var(--n-200);border-radius:1px;margin-bottom:3px}
+  .mock__modal-row{height:5px;background:var(--n-50);border-radius:2px;margin-bottom:2px}
+  .mock__modal-foot{display:flex;justify-content:flex-end;gap:3px;padding-top:3px;border-top:1px solid var(--line)}
+  .mock__modal-btn{height:6px;width:18px;background:var(--n-100);border-radius:2px}
+  .mock__modal-btn--p{background:var(--p-500);width:24px}
+
+  /* Mobile mock (P3-4) */
+  .mock--mobile{justify-content:center;background:var(--n-50)}
+  .mock__phone{
+    width:80px;height:150px;background:var(--n-0);
+    border:1px solid var(--line-2);border-radius:10px;
+    display:flex;flex-direction:column;gap:3px;padding:6px 4px;
+    box-shadow:0 4px 10px rgba(0,0,0,.06);
+  }
+  .mock__phone-bar{height:5px;background:var(--n-100);border-radius:2px}
+  .mock__phone-hero{height:24px;background:linear-gradient(90deg, color-mix(in srgb, var(--p-500) 10%, transparent), transparent);border-radius:3px}
+  .mock__phone-actions{display:grid;grid-template-columns:1fr 1fr;gap:3px;height:14px}
+  .mock__phone-action{background:var(--n-50);border:1px solid var(--line);border-radius:2px}
+  .mock__phone-list{flex:1;background:var(--n-25);border:1px solid var(--line);border-radius:3px}
+  .mock__phone-tabs{display:flex;gap:3px;height:10px;border-top:1px solid var(--line);padding-top:3px}
+  .mock__phone-tab{flex:1;background:var(--n-100);border-radius:2px}
+  .mock__phone-tab--on{background:var(--p-500)}
+
+  /* Footer summary */
+  .end{
+    margin-top:3rem;padding:2rem 2.25rem;
+    background:var(--n-800);color:#fff;border-radius:14px;
+    display:grid;grid-template-columns:1.5fr 1fr;gap:2.5rem;align-items:center;
+  }
+  .end__title{font-size:1.55rem;font-weight:700;line-height:1.2;margin:0 0 .6rem;letter-spacing:-.02em}
+  .end__title em{font-style:normal;color:var(--a-500)}
+  .end__lead{font-size:.92rem;color:color-mix(in srgb, #fff 75%, transparent);line-height:1.6;margin:0}
+  .end__lead b{color:#fff;font-weight:600}
+  .end__cta{
+    display:inline-flex;flex-direction:column;gap:.5rem;
+  }
+  .end__btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+    padding:.85rem 1.25rem;
+    background:var(--a-500);color:#18170F;
+    border:none;border-radius:8px;
+    font-family:'Inter';font-size:.85rem;font-weight:600;letter-spacing:.02em;
+    cursor:pointer;text-decoration:none;
+  }
+  .end__btn:hover{background:var(--a-600);color:#fff}
+  .end__btn--ghost{
+    background:transparent;color:#fff;
+    border:1px solid color-mix(in srgb, #fff 25%, transparent);
+  }
+  .end__btn--ghost:hover{background:color-mix(in srgb, #fff 8%, transparent);color:#fff}
+
+  /* Responsive */
+  @media (max-width: 920px) {
+    .hero{grid-template-columns:1fr;gap:2rem}
+    .hero__title{font-size:2.4rem}
+    .phase__body{grid-template-columns:1fr}
+    .phase__changes{border-right:none;border-bottom:1px solid var(--line)}
+    .end{grid-template-columns:1fr}
+    .philo{grid-template-columns:1fr;text-align:left}
+    .philo__num{font-size:3rem}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div>
+      <div class="hero__eyebrow">Plan d'itération · Sowel UI</div>
+      <h1 class="hero__title">Pas de big bang.<br><em>Six paliers.</em></h1>
+      <p class="hero__lead">Migrer l'UI actuelle de Sowel vers la cible définie dans <b>ui-redesign-B-polished.html</b> en six itérations indépendantes. Chacune apporte une valeur livrable. Chacune est réversible si elle déplaît à l'usage.</p>
+    </div>
+    <div class="hero__metrics">
+      <div class="metric metric--accent">
+        <div class="metric__val">6</div>
+        <div class="metric__lab">Phases</div>
+      </div>
+      <div class="metric">
+        <div class="metric__val">3<small>+3</small></div>
+        <div class="metric__lab">Faible risque · puis risqué</div>
+      </div>
+      <div class="metric">
+        <div class="metric__val">∞</div>
+        <div class="metric__lab">Stop possible après chaque palier</div>
+      </div>
+      <div class="metric">
+        <div class="metric__val">1</div>
+        <div class="metric__lab">Cible finale</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PHILOSOPHY -->
+  <div class="philo">
+    <div class="philo__num"><em>0</em><span style="opacity:.4">.</span><em>1</em></div>
+    <div class="philo__txt">
+      <h2>Pourquoi par paliers, pas en une fois ?</h2>
+      <p>Une refonte d'un coup, c'est un <b>big bang qui force une décision sur tout en même temps</b> — palette, IA, motion, mobile. Or chaque choix doit pouvoir être <b>testé en isolation</b> : si la palette zinc déçoit en usage réel, on garde le hero asymétrique et l'activity feed. Six PR séparées, six rollbacks possibles.</p>
+    </div>
+  </div>
+
+  <!-- PHASES -->
+  <div class="rail">
+
+    <!-- PHASE 1 -->
+    <article class="phase">
+      <div class="phase__head">
+        <span class="phase__num">P1</span>
+        <h3 class="phase__title">Fondations typographiques<small>Aucune surface ne change. Tout devient plus lisible.</small></h3>
+        <div class="phase__pills">
+          <span class="pill pill--risk-low"><span class="pill__dot"></span>Risque nul</span>
+          <span class="pill pill--effort"><span class="pill__dot"></span>~3 j</span>
+        </div>
+      </div>
+      <div class="phase__body">
+        <div class="phase__changes">
+          <h4>Ce qui change</h4>
+          <ul>
+            <li><b>Tabular numbers</b> partout (chiffres alignés colonne, plus de saut visuel quand "1/3" devient "10/12")</li>
+            <li><b>Hiérarchie typo</b> : <code>titre</code> en plus gros et tracking négatif, <code>label</code> en uppercase tiny, <code>valeur</code> en mono</li>
+            <li><b>Sidebar : séparateurs horizontaux</b> autour de Modes / Analyse / Énergie</li>
+            <li><b>Icônes nav harmonisées</b> (bar-chart pour Analyse, zap pour Énergie)</li>
+          </ul>
+          <div class="phase__value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div><b>Valeur immédiate</b> : l'UI prend l'air d'un produit calibré sans changer aucun comportement. Aucune formation utilisateur.</div>
+          </div>
+        </div>
+        <div class="phase__visual">
+          <h4>Mockup schématique</h4>
+          <div class="mock">
+            <div class="mock__sb">
+              <div class="mock__sb-item"></div>
+              <div class="mock__sb-item mock__sb-item--active"></div>
+              <div class="mock__sb-item"></div>
+              <div class="mock__sb-sep mock__hl"></div>
+              <div class="mock__sb-item"></div>
+              <div class="mock__sb-sep mock__hl"></div>
+              <div class="mock__sb-item"></div>
+              <div class="mock__sb-sep mock__hl"></div>
+              <div class="mock__sb-item"></div>
+            </div>
+            <div class="mock__main">
+              <div class="mock__topbar"></div>
+              <div class="mock__hero mock__hl"></div>
+              <div class="mock__strip">
+                <div class="mock__strip-cell"></div>
+                <div class="mock__strip-cell"></div>
+                <div class="mock__strip-cell"></div>
+                <div class="mock__strip-cell"></div>
+              </div>
+              <div class="mock__grid">
+                <div class="mock__panel"><div class="mock__panel-head"></div><div class="mock__panel-row"></div><div class="mock__panel-row"></div><div class="mock__panel-row"></div></div>
+                <div class="mock__panel"><div class="mock__panel-head"></div><div class="mock__panel-row"></div><div class="mock__panel-row"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="mock__caption">Pointillés ambre = zones modifiées. <b>Le titre</b> respire, <b>la sidebar</b> respire.</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- PHASE 2 -->
+    <article class="phase">
+      <div class="phase__head">
+        <span class="phase__num">P2</span>
+        <h3 class="phase__title">Strip pills honnête + alertes<small>Pattern aligné prod, conditionnel, avec section alertes confidente.</small></h3>
+        <div class="phase__pills">
+          <span class="pill pill--risk-low"><span class="pill__dot"></span>Risque faible</span>
+          <span class="pill pill--effort"><span class="pill__dot"></span>~3 j</span>
+        </div>
+      </div>
+      <div class="phase__body">
+        <div class="phase__changes">
+          <h4>Ce qui change</h4>
+          <ul>
+            <li>La strip devient une <b>rangée de pills à largeur contenu</b> séparées par 1px (vs grille 4 cellules égales)</li>
+            <li><b>Conditionnel</b> : chaque pill ne se rend que si la donnée existe (pas de lux ? pas de pill lux)</li>
+            <li><b>3 groupes</b> faiblement séparés : capteurs ambiants (°C, %, lx) → compteurs (motion, lumières, volets, eau) → <b>alertes (porte ouverte, fumée, fuite)</b></li>
+            <li>Pills d'alerte avec fond rouge + dot pulsant — <b>impossibles à manquer</b></li>
+            <li>Sparklines inline sur les capteurs ambiants (history InfluxDB)</li>
+            <li><b>Suppression du badge mode</b> à côté du titre Séjour</li>
+          </ul>
+          <div class="phase__value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div><b>Valeur immédiate</b> : la strip dit la vérité sur la zone. Une porte oubliée ouverte saute aux yeux dès qu'on entre dans la zone — pas besoin de scroller la liste des équipements.</div>
+          </div>
+        </div>
+        <div class="phase__visual">
+          <h4>Pattern aligné prod</h4>
+          <div class="mock">
+            <div class="mock__sb">
+              <div class="mock__sb-item"></div>
+              <div class="mock__sb-item mock__sb-item--active"></div>
+              <div class="mock__sb-item"></div>
+            </div>
+            <div class="mock__main">
+              <div class="mock__topbar"></div>
+              <div class="mock__hero"></div>
+              <div class="mock__pills mock__hl">
+                <span class="mock__pill"></span>
+                <span class="mock__pill"></span>
+                <span class="mock__pill"></span>
+                <span class="mock__pill-gap"></span>
+                <span class="mock__pill"></span>
+                <span class="mock__pill"></span>
+                <span class="mock__pill"></span>
+                <span class="mock__pill-gap"></span>
+                <span class="mock__pill mock__pill--alert"></span>
+              </div>
+              <div class="mock__grid">
+                <div class="mock__panel"><div class="mock__panel-head"></div><div class="mock__panel-row"></div><div class="mock__panel-row"></div><div class="mock__panel-row"></div></div>
+                <div class="mock__panel"><div class="mock__panel-head"></div><div class="mock__panel-row"></div><div class="mock__panel-row"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="mock__caption">Pills variable-width, 3 groupes, alerte en rouge à droite.</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- PHASE 3 -->
+    <article class="phase">
+      <div class="phase__head">
+        <span class="phase__num">P3</span>
+        <h3 class="phase__title">Activity feed<small>La colonne droite vit. On comprend ce qui se passe dans la zone.</small></h3>
+        <div class="phase__pills">
+          <span class="pill pill--risk-low"><span class="pill__dot"></span>Risque faible</span>
+          <span class="pill pill--effort"><span class="pill__dot"></span>~5 j</span>
+        </div>
+      </div>
+      <div class="phase__body">
+        <div class="phase__changes">
+          <h4>Ce qui change</h4>
+          <ul>
+            <li>Nouvelle <b>colonne droite</b> avec un panel "Activité" (4-6 events récents de la zone)</li>
+            <li>Pastilles colorées par type d'event (mode, lumière, mouvement, volet)</li>
+            <li>Source d'event lisible : "par le calendrier", "par Motion Light", "par Marc"</li>
+            <li>Sur mobile, l'activity vit en bas du scroll</li>
+          </ul>
+          <div class="phase__value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div><b>Valeur immédiate</b> : on n'a plus besoin de chercher dans les logs pour comprendre "pourquoi cette lumière s'est allumée". <b>Premier pas vers la prédictibilité.</b></div>
+          </div>
+        </div>
+        <div class="phase__visual">
+          <h4>La nouvelle colonne</h4>
+          <div class="mock">
+            <div class="mock__sb">
+              <div class="mock__sb-item"></div>
+              <div class="mock__sb-item mock__sb-item--active"></div>
+              <div class="mock__sb-item"></div>
+            </div>
+            <div class="mock__main">
+              <div class="mock__topbar"></div>
+              <div class="mock__hero"></div>
+              <div class="mock__strip mock__strip--asym">
+                <div class="mock__strip-cell mock__strip-cell--anchor"></div>
+                <div class="mock__strip-cell"></div>
+                <div class="mock__strip-cell"></div>
+                <div class="mock__strip-cell"></div>
+              </div>
+              <div class="mock__grid">
+                <div class="mock__panel"><div class="mock__panel-head"></div><div class="mock__panel-row"></div><div class="mock__panel-row"></div><div class="mock__panel-row"></div></div>
+                <div class="mock__panel mock__hl">
+                  <div class="mock__panel-head"></div>
+                  <div class="mock__feed">
+                    <div class="mock__feed-row"><span class="mock__feed-dot" style="background:var(--p-500)"></span><span style="flex:1;height:3px;background:var(--n-100);border-radius:1px"></span></div>
+                    <div class="mock__feed-row"><span class="mock__feed-dot" style="background:var(--a-500)"></span><span style="flex:1;height:3px;background:var(--n-100);border-radius:1px"></span></div>
+                    <div class="mock__feed-row"><span class="mock__feed-dot" style="background:var(--sensor-500)"></span><span style="flex:1;height:3px;background:var(--n-100);border-radius:1px"></span></div>
+                    <div class="mock__feed-row"><span class="mock__feed-dot" style="background:var(--shutter-500)"></span><span style="flex:1;height:3px;background:var(--n-100);border-radius:1px"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mock__caption">Le feed Activité pose les fondations de tous les futurs gains "temporels".</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- PHASE 4 -->
+    <article class="phase phase--current">
+      <div class="phase__head">
+        <span class="phase__num">P4</span>
+        <h3 class="phase__title">Palette Hybrid<small>Le warm cream cède la place au zinc neutre. L'ambre devient un accent réservé.</small></h3>
+        <div class="phase__pills">
+          <span class="pill pill--risk-med"><span class="pill__dot"></span>Risque moyen</span>
+          <span class="pill pill--effort"><span class="pill__dot"></span>~4 j + flag</span>
+        </div>
+      </div>
+      <div class="phase__body">
+        <div class="phase__changes">
+          <h4>Ce qui change</h4>
+          <ul>
+            <li>Fond passe de cream <code>#F7F5F0</code> à zinc <code>#F4F4F5</code> (neutre)</li>
+            <li>L'<b>ambre Sowel devient un accent</b>, plus une dominante — il ne s'utilise que pour : icône de lumière allumée, slider lumière, bouton power-on</li>
+            <li>Capteurs en sauge (vert grisé), volets en ardoise — non-bleu pour éviter la confusion avec le primary</li>
+            <li>Mode <b>Dark</b> disponible en option (palette nuit complète)</li>
+          </ul>
+          <div class="phase__value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div><b>Valeur immédiate</b> : l'UI a l'air de 2026, plus de 2018. Toggle <code>palette</code> dans les réglages permet de rollback per-user.</div>
+          </div>
+        </div>
+        <div class="phase__visual">
+          <h4>Mobile en parallèle possible</h4>
+          <div class="mock mock--mobile">
+            <div class="mock__phone">
+              <div class="mock__phone-bar"></div>
+              <div class="mock__phone-bar" style="background:var(--p-50)"></div>
+              <div class="mock__phone-hero mock__hl"></div>
+              <div class="mock__phone-actions">
+                <div class="mock__phone-action"></div>
+                <div class="mock__phone-action"></div>
+                <div class="mock__phone-action"></div>
+                <div class="mock__phone-action"></div>
+              </div>
+              <div class="mock__phone-list"></div>
+              <div class="mock__phone-tabs">
+                <div class="mock__phone-tab mock__phone-tab--on"></div>
+                <div class="mock__phone-tab"></div>
+                <div class="mock__phone-tab"></div>
+                <div class="mock__phone-tab"></div>
+                <div class="mock__phone-tab"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mock__caption">Palette + version mobile peuvent shipper ensemble (même design system).</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- PHASE 5 -->
+    <article class="phase">
+      <div class="phase__head">
+        <span class="phase__num">P5</span>
+        <h3 class="phase__title">Panel Comportements<small>Modes + Recettes fusionnés. Le lien mode↔recette devient visible.</small></h3>
+        <div class="phase__pills">
+          <span class="pill pill--risk-med"><span class="pill__dot"></span>Risque moyen</span>
+          <span class="pill pill--effort"><span class="pill__dot"></span>~7 j</span>
+        </div>
+      </div>
+      <div class="phase__body">
+        <div class="phase__changes">
+          <h4>Ce qui change</h4>
+          <ul>
+            <li>Un seul panel <b>Comportements</b> avec deux sous-catégories : <b>Modes</b> et <b>Recettes</b></li>
+            <li>Mode actif marqué d'un badge "Actif" + dot pulsant vert</li>
+            <li>Recette compacte sur 1 ligne : nom · params (avec petits dots verts indiquant les valeurs réglées par un mode)</li>
+            <li>Hiérarchie visuelle : panel head bleu pâle (catégorie mère), sous-cats neutres claires</li>
+          </ul>
+          <div class="phase__value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div><b>Valeur immédiate</b> : on comprend enfin <b>"qui pilote quoi"</b>. La confusion mode↔recette de la prod disparaît.</div>
+          </div>
+        </div>
+        <div class="phase__visual">
+          <h4>Le panel restructuré</h4>
+          <div class="mock">
+            <div class="mock__sb">
+              <div class="mock__sb-item"></div>
+              <div class="mock__sb-item mock__sb-item--active"></div>
+              <div class="mock__sb-item"></div>
+            </div>
+            <div class="mock__main">
+              <div class="mock__topbar"></div>
+              <div class="mock__hero"></div>
+              <div class="mock__strip mock__strip--asym">
+                <div class="mock__strip-cell mock__strip-cell--anchor"></div>
+                <div class="mock__strip-cell"></div>
+                <div class="mock__strip-cell"></div>
+                <div class="mock__strip-cell"></div>
+              </div>
+              <div class="mock__grid">
+                <div class="mock__panel"><div class="mock__panel-head"></div><div class="mock__panel-row"></div><div class="mock__panel-row mock__panel-row--on"></div><div class="mock__panel-row"></div></div>
+                <div class="mock__panel mock__hl">
+                  <div class="mock__panel-head"></div>
+                  <div class="mock__panel-cat"></div>
+                  <div class="mock__panel-row"></div>
+                  <div class="mock__panel-row mock__panel-row--active"></div>
+                  <div class="mock__panel-cat"></div>
+                  <div class="mock__panel-row"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mock__caption">2 sous-cats dans un seul panel. La rangée verte = mode actif.</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- PHASE 6 -->
+    <article class="phase">
+      <div class="phase__head">
+        <span class="phase__num">P6</span>
+        <h3 class="phase__title">Modal config recette<small>Édition d'une recette + ses surcharges par mode en un seul écran.</small></h3>
+        <div class="phase__pills">
+          <span class="pill pill--risk-high"><span class="pill__dot"></span>Risque élevé</span>
+          <span class="pill pill--effort"><span class="pill__dot"></span>~10 j</span>
+        </div>
+      </div>
+      <div class="phase__body">
+        <div class="phase__changes">
+          <h4>Ce qui change</h4>
+          <ul>
+            <li>Click sur une recette dans le panel Comportements ouvre un <b>overlay modal</b> dédié</li>
+            <li>4 sections : Équipements pilotés (chips), Paramètres globaux (form), <b>Surcharges par mode</b> (table avec valeur per-mode), Déclencheurs (cards)</li>
+            <li>Le footer indique "Modifications non enregistrées" + boutons Annuler / Enregistrer</li>
+            <li>Permet de supprimer le double aller-retour <code>Admin > Modes</code> ↔ <code>Admin > Recettes</code></li>
+          </ul>
+          <div class="phase__value">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            <div><b>Valeur livrée</b> : config sans changer d'écran. Risque élevé car on touche au modèle existant — à valider en interne avant ship.</div>
+          </div>
+        </div>
+        <div class="phase__visual">
+          <h4>L'overlay au centre</h4>
+          <div class="mock mock--modal">
+            <div class="mock__modal-box mock__hl">
+              <div class="mock__modal-head">
+                <span class="mock__modal-head-i"></span>
+                <span class="mock__modal-head-t"></span>
+                <span class="mock__modal-head-x"></span>
+              </div>
+              <div class="mock__modal-sec">
+                <div class="mock__modal-lab"></div>
+                <div class="mock__modal-row" style="height:8px;background:var(--p-50)"></div>
+              </div>
+              <div class="mock__modal-sec">
+                <div class="mock__modal-lab"></div>
+                <div class="mock__modal-row"></div>
+                <div class="mock__modal-row"></div>
+                <div class="mock__modal-row"></div>
+              </div>
+              <div class="mock__modal-sec">
+                <div class="mock__modal-lab" style="background:var(--green-500)"></div>
+                <div class="mock__modal-row"></div>
+                <div class="mock__modal-row"></div>
+              </div>
+              <div class="mock__modal-foot">
+                <span class="mock__modal-btn"></span>
+                <span class="mock__modal-btn mock__modal-btn--p"></span>
+              </div>
+            </div>
+          </div>
+          <div class="mock__caption">Modal centrée avec backdrop hatchée. Une seule porte d'entrée pour <b>tout configurer</b>.</div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- END -->
+  <div class="end">
+    <div>
+      <h2 class="end__title">À l'arrivée du dernier palier :<br>l'UI cible <em>polished.html</em>.</h2>
+      <p class="end__lead">Chaque phase ci-dessus correspond à <b>une PR isolée</b>, livrée derrière un feature flag si nécessaire. La cible n'est pas figée : si une étape révèle un meilleur chemin, on l'intègre. La cible est un point de convergence, pas un cahier des charges.</p>
+    </div>
+    <div class="end__cta">
+      <a class="end__btn" href="ui-redesign-B-polished.html">Voir la cible polished →</a>
+      <a class="end__btn end__btn--ghost" href="https://app.sowel.org">Voir la prod actuelle →</a>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
