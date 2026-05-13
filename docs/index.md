@@ -34,7 +34,7 @@ hide:
   <div class="sowel-mock__title">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span class="sowel-mock__zone">Living Room</span>
-    <span class="sowel-mock__mode">Lumière soir</span>
+    <span class="sowel-mock__mode">Evening light</span>
   </div>
   <div class="sowel-mock__metrics">
     <div class="sowel-mock__metric"><div class="sowel-mock__metric-label">Lux</div><div class="sowel-mock__metric-value">334</div></div>
