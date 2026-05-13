@@ -215,21 +215,18 @@
   max-width: 56rem;
 }
 .md-typeset .sowel-flip__page .sowel-eyebrow {
-  font-size: clamp(2.4rem, 4.5vw, 3.8rem);
-  margin: 0 0 1.5rem;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  margin: 0 0 1rem;
   overflow-wrap: break-word;
   text-wrap: balance;
 }
 @media (max-width: 600px) {
-  /* On mobile the flip pages stack vertically and the desktop
-     experience-sized eyebrow becomes oversized for a narrow column
-     (a long French word like "d'automatiser" would break mid-word). */
   .md-typeset .sowel-flip__page .sowel-eyebrow {
-    font-size: clamp(1.6rem, 7vw, 2.2rem);
+    font-size: clamp(1.3rem, 5.5vw, 1.7rem);
     line-height: 1.12;
   }
   .md-typeset .sowel-flip__page .sowel-paragraph {
-    font-size: 1.02rem;
+    font-size: 0.92rem;
   }
 }
 [data-md-color-scheme="slate"] .sowel-eyebrow {
@@ -244,9 +241,9 @@
   max-width: 60rem;
 }
 .md-typeset .sowel-flip__page .sowel-paragraph {
-  font-size: 1.25rem;
+  font-size: 0.95rem;
   line-height: 1.55;
-  margin: 0 0 1.1rem;
+  margin: 0 0 0.85rem;
 }
 
 /* A closing "dek" — italic editorial line that wraps up the section. */
@@ -263,16 +260,16 @@
 }
 [data-md-color-scheme="slate"] .md-typeset .sowel-subtitle { color: #C9DCE7; }
 .md-typeset .sowel-flip__page .sowel-subtitle {
-  font-size: 1.7rem;
-  margin: 1.4rem 0 0;
-  padding-top: 1rem;
+  font-size: 1.15rem;
+  margin: 1.1rem 0 0;
+  padding-top: 0.85rem;
   border-top: 1px solid color-mix(in srgb, var(--md-primary-fg-color) 18%, transparent);
 }
 @media (max-width: 600px) {
   .md-typeset .sowel-flip__page .sowel-subtitle {
-    font-size: 1.18rem;
-    padding-top: 0.85rem;
-    margin: 1.15rem 0 0;
+    font-size: 1rem;
+    padding-top: 0.7rem;
+    margin: 0.95rem 0 0;
   }
 }
 .sowel-paragraph strong {
@@ -310,10 +307,10 @@
 }
 .sowel-bullets li {
   position: relative;
-  padding-left: 1.25rem;
-  font-size: 1.05rem;
-  line-height: 1.55;
-  margin-bottom: 0.5rem;
+  padding-left: 1.1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 0.32rem;
   color: var(--md-default-fg-color);
   list-style: none;
 }
@@ -359,7 +356,7 @@
 .sowel-cards--two .sowel-card {
   background: var(--md-default-bg-color);
   border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 11%, transparent);
-  padding: 2rem 2.25rem;
+  padding: 1.25rem 1.5rem;
 }
 .sowel-cards--two .sowel-card:hover {
   border-color: var(--md-primary-fg-color);
@@ -367,17 +364,17 @@
 .sowel-cards--two .sowel-card::after { display: none; }
 .sowel-cards--two .sowel-card__icon {
   background: var(--md-primary-fg-color--light);
-  width: 3rem;
-  height: 3rem;
-  margin-bottom: 1rem;
-  border-radius: 10px;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-bottom: 0.7rem;
+  border-radius: 8px;
 }
 .sowel-cards--two .sowel-card__icon svg {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.15rem;
+  height: 1.15rem;
 }
-.sowel-cards--two .sowel-card h3 { font-size: 1.4rem; margin-bottom: 0.6rem; }
-.sowel-cards--two .sowel-card p { font-size: 1.05rem; line-height: 1.55; }
+.sowel-cards--two .sowel-card h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+.sowel-cards--two .sowel-card p { font-size: 0.88rem; line-height: 1.5; }
 
 .sowel-card {
   position: relative;
@@ -669,9 +666,9 @@
   box-shadow: 0 1px 2px var(--sowel-warm-shadow);
 }
 .sowel-flip__page .sowel-pill {
-  padding: 1.5rem 1.75rem;
-  font-size: 1.08rem;
-  line-height: 1.55;
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .sowel-pill strong {
