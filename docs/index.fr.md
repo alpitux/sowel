@@ -20,7 +20,7 @@ hide:
 
 <h1 class="sowel-hero__tagline">Ne programmez pas votre maison.<br/><em>Appliquez-lui des recettes.</em></h1>
 
-<p class="sowel-hero__lead">Sowel embarque des recettes éprouvées pour ce dont chaque maison a vraiment besoin — Motion Light, Sunset Shutters, Presence Heating, Solar Charging. Posez-en une sur une pièce, réglez quelques valeurs, c'est fait.</p>
+<p class="sowel-hero__lead">Sowel embarque des recettes éprouvées pour ce dont chaque maison a vraiment besoin : Motion Light, Sunset Shutters, Presence Heating, Solar Charging. Posez-en une sur une pièce, réglez quelques valeurs, c'est fait.</p>
 
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Commencer <span class="md-icon md-icon--arrow">→</span></a>
@@ -55,7 +55,7 @@ hide:
     </div>
   </div>
   <div class="sowel-mock__recipe">
-    <b>● Motion Light</b> — maintient les lumières à 4% jusqu'à 06:14, puis remonte
+    <b>● Motion Light</b> : maintient les lumières à 4% jusqu'à 06:14, puis remonte
   </div>
 </div>
 
@@ -75,7 +75,7 @@ hide:
 
 <p class="sowel-paragraph">La plupart des outils de domotique vous transforment en développeur à temps partiel : fichiers YAML, scripts, flows, conditions, cas particuliers. Le résultat est un plat de spaghettis fragile que seule une personne du foyer arrive à dépanner.</p>
 
-<p class="sowel-paragraph"><strong>Sowel prend le chemin inverse.</strong> Choisissez une recette (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) et <strong>appliquez-la à une zone</strong>. Vous configurez quelques réglages évidents — une durée, une température, une plage horaire — pas un langage de programmation.</p>
+<p class="sowel-paragraph"><strong>Sowel prend le chemin inverse.</strong> Choisissez une recette (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) et <strong>appliquez-la à une zone</strong>. Vous configurez quelques réglages évidents (une durée, une température, une plage horaire), pas un langage de programmation.</p>
 
 <p class="sowel-paragraph">La meilleure automatisation est celle qu'on oublie. Votre maison fonctionne, tout simplement.</p>
 
@@ -152,7 +152,7 @@ hide:
   </div>
   <h3>Équipements</h3>
   <p class="sowel-card__lead">Ce qui est dans votre pièce.</p>
-  <p>Lumières, volets, thermostats, compteurs — standardisés, contrôles prévisibles, une seule poignée par chose.</p>
+  <p>Lumières, volets, thermostats, compteurs. Tous standardisés, contrôles prévisibles, une seule poignée par chose.</p>
   <p class="sowel-card__more"><a href="user/equipments/">En savoir plus →</a></p>
 </div>
 
@@ -162,7 +162,7 @@ hide:
   </div>
   <h3>Zones</h3>
   <p class="sowel-card__lead">La topologie de votre maison.</p>
-  <p>Regroupez par pièce ou par étage ; Sowel consolide les données automatiquement — moyennes, OU, maximum.</p>
+  <p>Regroupez par pièce ou par étage. Sowel consolide les données automatiquement (moyennes, OU, maximum).</p>
   <p class="sowel-card__more"><a href="user/zones/">En savoir plus →</a></p>
 </div>
 
@@ -172,7 +172,7 @@ hide:
   </div>
   <h3>Modes</h3>
   <p class="sowel-card__lead">Les rythmes de votre maison.</p>
-  <p>Jour, Soir, Nuit — un geste (ou un planning) fait basculer toute la maison : luminosité, chauffage, recettes.</p>
+  <p>Jour, Soir, Nuit. Un geste (ou un planning) fait basculer toute la maison : luminosité, chauffage, recettes.</p>
   <p class="sowel-card__more"><a href="user/modes/">En savoir plus →</a></p>
 </div>
 
@@ -213,7 +213,7 @@ hide:
 
 <div class="sowel-pills">
   <div class="sowel-pill">
-    <strong>Reste à la maison.</strong> Pas de cloud, pas de télémétrie, pas de compte tiers. Vos données vivent sur votre matériel — un Raspberry Pi, un vieux PC, une VM Proxmox.
+    <strong>Reste à la maison.</strong> Pas de cloud, pas de télémétrie, pas de compte tiers. Vos données vivent sur votre matériel : un Raspberry Pi, un vieux PC, une VM Proxmox.
   </div>
   <div class="sowel-pill">
     <strong>Branchez ce que vous avez.</strong> Zigbee, Panasonic, Netatmo, Shelly, Legrand, tout ce qui parle MQTT. Installez les intégrations comme des apps, ignorez le reste.
@@ -245,7 +245,7 @@ hide:
 
 <p class="sowel-eyebrow">Et maintenant ?</p>
 
-<p class="sowel-paragraph">Sowel est open source sous AGPL-3.0 — choisissez la porte qui vous correspond.</p>
+<p class="sowel-paragraph">Sowel est open source sous AGPL-3.0. Choisissez la porte qui vous correspond.</p>
 
 <div class="sowel-cards sowel-cards--two">
 

@@ -20,7 +20,7 @@ hide:
 
 <h1 class="sowel-hero__tagline">Don't program your home.<br/><em>Apply recipes to it.</em></h1>
 
-<p class="sowel-hero__lead">Sowel ships proven recipes for what every home actually needs — Motion Light, Sunset Shutters, Presence Heating, Solar Charging. Drop one on a room, set a few values, you're done.</p>
+<p class="sowel-hero__lead">Sowel ships proven recipes for what every home actually needs: Motion Light, Sunset Shutters, Presence Heating, Solar Charging. Drop one on a room, set a few values, you're done.</p>
 
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Get started <span class="md-icon md-icon--arrow">→</span></a>
@@ -55,7 +55,7 @@ hide:
     </div>
   </div>
   <div class="sowel-mock__recipe">
-    <b>● Motion Light</b> — keeps lights at 4% until 06:14, then ramps up
+    <b>● Motion Light</b>: keeps lights at 4% until 06:14, then ramps up
   </div>
 </div>
 
@@ -75,7 +75,7 @@ hide:
 
 <p class="sowel-paragraph">Most home automation tools turn you into a part-time developer: YAML files, scripts, flows, conditions, edge cases. The result is fragile spaghetti that only one person in the household can debug.</p>
 
-<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Pick a recipe (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) and <strong>apply it to a zone</strong>. You configure a few obvious settings — a duration, a temperature, a time window — not a programming language.</p>
+<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Pick a recipe (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) and <strong>apply it to a zone</strong>. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
 
 <p class="sowel-paragraph">The best automation is the one you forget about. Your home just works.</p>
 
@@ -152,7 +152,7 @@ hide:
   </div>
   <h3>Equipments</h3>
   <p class="sowel-card__lead">What's in your room.</p>
-  <p>Lights, shutters, thermostats, meters — standardized, with predictable controls, one handle per thing.</p>
+  <p>Lights, shutters, thermostats, meters. All standardized, with predictable controls and one handle per thing.</p>
   <p class="sowel-card__more"><a href="user/equipments/">Read more →</a></p>
 </div>
 
@@ -162,7 +162,7 @@ hide:
   </div>
   <h3>Zones</h3>
   <p class="sowel-card__lead">Your home's topology.</p>
-  <p>Group equipments by room or floor; Sowel rolls up their data automatically — averages, OR-of-all, max.</p>
+  <p>Group equipments by room or floor. Sowel rolls up their data automatically (averages, OR-of-all, max).</p>
   <p class="sowel-card__more"><a href="user/zones/">Read more →</a></p>
 </div>
 
@@ -172,7 +172,7 @@ hide:
   </div>
   <h3>Modes</h3>
   <p class="sowel-card__lead">Your home's rhythms.</p>
-  <p>Day, Evening, Night — one tap (or a schedule) flips every zone over: brightness, heating, recipes.</p>
+  <p>Day, Evening, Night. One tap (or a schedule) flips every zone over: brightness, heating, recipes.</p>
   <p class="sowel-card__more"><a href="user/modes/">Read more →</a></p>
 </div>
 
@@ -213,7 +213,7 @@ hide:
 
 <div class="sowel-pills">
   <div class="sowel-pill">
-    <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware — a Raspberry Pi, an old PC, a Proxmox VM.
+    <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware: a Raspberry Pi, an old PC, a Proxmox VM.
   </div>
   <div class="sowel-pill">
     <strong>Plug in what you own.</strong> Zigbee, Panasonic, Netatmo, Shelly, Legrand, MQTT-anything. Install integrations like apps; skip what you don't need.
@@ -245,7 +245,7 @@ hide:
 
 <p class="sowel-eyebrow">Where to next?</p>
 
-<p class="sowel-paragraph">Sowel is open source under AGPL-3.0 — pick the door that fits.</p>
+<p class="sowel-paragraph">Sowel is open source under AGPL-3.0. Pick the door that fits.</p>
 
 <div class="sowel-cards sowel-cards--two">
 
