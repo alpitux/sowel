@@ -240,7 +240,7 @@
 }
 .sowel-paragraph em {
   font-style: italic;
-  color: var(--md-accent-fg-color);
+  color: inherit;
   font-weight: 500;
 }
 
