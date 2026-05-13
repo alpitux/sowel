@@ -18,6 +18,36 @@
 (function () {
   "use strict";
 
+  // === Site title clickable (runs on every page) ======================
+  // MkDocs Material only wraps the tiny logo icon in an <a>; the
+  // 'Sowel Documentation' text next to it isn't a link. Make the
+  // whole title behave like one so users can click anywhere on it
+  // to return to the home page.
+  function makeTitleClickable() {
+    var title = document.querySelector(".md-header__title");
+    var logo = document.querySelector(".md-header__button.md-logo");
+    if (!title || !logo) return;
+    var href = logo.getAttribute("href");
+    if (!href) return;
+    title.style.cursor = "pointer";
+    title.setAttribute("role", "link");
+    title.setAttribute("tabindex", "0");
+    title.addEventListener("click", function () {
+      window.location.href = href;
+    });
+    title.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        window.location.href = href;
+      }
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", makeTitleClickable);
+  } else {
+    makeTitleClickable();
+  }
+
   function init() {
     var flip = document.querySelector(".sowel-flip");
     if (!flip) return;

@@ -725,6 +725,25 @@
   box-shadow: 0 1px 0 color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
 }
 
+/* Make the Sowel house logo in the header visibly prominent so users
+ * read it as a clickable brand mark + home button (the wordmark
+ * 'Sowel Documentation' next to it is wired clickable via JS).
+ * The SVG strokes are dark blue (#1A4F6E) which would disappear
+ * on the dark blue header, so invert it via filter. */
+.md-header__button.md-logo {
+  padding: 0.3rem;
+  margin-right: 0.2rem;
+}
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  filter: brightness(0) invert(1);
+}
+/* Style cue when the wordmark next to the logo is hovered. */
+.md-header__title { transition: color 150ms ease; }
+.md-header__title:hover { color: color-mix(in srgb, currentColor 80%, transparent); }
+
 /* Hide the tabs row site-wide. It only carries Home + 2 section tabs,
  * which the sidebar already exposes, and its dark-on-dark labels were
  * invisible against the header background — pure 49px of empty space. */
