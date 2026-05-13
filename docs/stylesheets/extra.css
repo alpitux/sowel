@@ -202,27 +202,37 @@
   }
 }
 
-/* Acts as a section title on the landing — big and bold, primary blue. */
+/* Acts as a section title on the landing — big and bold, primary blue.
+ * Inside flip pages it goes even larger to fill the viewport. */
 .sowel-eyebrow {
   font-family: var(--sowel-display);
-  font-size: clamp(1.35rem, 2.2vw, 1.7rem);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.18;
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.028em;
+  line-height: 1.08;
   color: var(--md-primary-fg-color);
-  margin: 0 0 0.9rem;
+  margin: 0 0 1.2rem;
   max-width: 56rem;
+}
+.sowel-flip__page .sowel-eyebrow {
+  font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+  margin: 0 0 1.5rem;
 }
 [data-md-color-scheme="slate"] .sowel-eyebrow {
   color: #C9DCE7;
 }
 
 .sowel-paragraph {
-  font-size: 0.92rem;
-  line-height: 1.65;
+  font-size: 1.1rem;
+  line-height: 1.55;
   color: var(--md-default-fg-color);
-  margin: 0 0 0.85rem;
-  max-width: 56rem;
+  margin: 0 0 1rem;
+  max-width: 60rem;
+}
+.sowel-flip__page .sowel-paragraph {
+  font-size: 1.25rem;
+  line-height: 1.55;
+  margin: 0 0 1.1rem;
 }
 .sowel-paragraph strong {
   color: var(--md-accent-fg-color);
@@ -259,10 +269,10 @@
 }
 .sowel-bullets li {
   position: relative;
-  padding-left: 1.1rem;
-  font-size: 0.92rem;
-  line-height: 1.6;
-  margin-bottom: 0.32rem;
+  padding-left: 1.25rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  margin-bottom: 0.5rem;
   color: var(--md-default-fg-color);
   list-style: none;
 }
@@ -308,22 +318,25 @@
 .sowel-cards--two .sowel-card {
   background: var(--md-default-bg-color);
   border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 11%, transparent);
+  padding: 2rem 2.25rem;
 }
 .sowel-cards--two .sowel-card:hover {
   border-color: var(--md-primary-fg-color);
 }
 .sowel-cards--two .sowel-card::after { display: none; }
 .sowel-cards--two .sowel-card__icon {
-  background: transparent;
-  width: 1.6rem;
-  height: 1.6rem;
-  margin-bottom: 0.4rem;
-  border-radius: 0;
+  background: var(--md-primary-fg-color--light);
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
 }
 .sowel-cards--two .sowel-card__icon svg {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
+.sowel-cards--two .sowel-card h3 { font-size: 1.4rem; margin-bottom: 0.6rem; }
+.sowel-cards--two .sowel-card p { font-size: 1.05rem; line-height: 1.55; }
 
 .sowel-card {
   position: relative;
@@ -614,6 +627,11 @@
   color: var(--md-default-fg-color);
   box-shadow: 0 1px 2px var(--sowel-warm-shadow);
 }
+.sowel-flip__page .sowel-pill {
+  padding: 1.5rem 1.75rem;
+  font-size: 1.08rem;
+  line-height: 1.55;
+}
 
 .sowel-pill strong {
   color: var(--md-accent-fg-color);
@@ -755,21 +773,21 @@
 
 .sowel-hero__eyebrow {
   font-family: var(--sowel-display);
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--md-accent-fg-color);
-  margin: 0 0 0.8rem;
+  margin: 0 0 1rem;
 }
 
 .sowel-hero__tagline {
   font-family: var(--sowel-display);
-  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  font-size: clamp(2.2rem, 4.5vw, 4rem);
   font-weight: 800;
-  letter-spacing: -0.028em;
-  line-height: 1.04;
-  margin: 0 0 0.9rem;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  margin: 0 0 1.1rem;
   color: var(--md-primary-fg-color);
   border-bottom: none;
   font-feature-settings: "cv05", "cv08", "cv11", "ss01";
@@ -783,11 +801,11 @@
 [data-md-color-scheme="slate"] .sowel-hero__tagline em { color: #8FB3C7; opacity: 1; }
 
 .sowel-hero__lead {
-  font-size: 0.78rem;
+  font-size: 1.05rem;
   line-height: 1.55;
   color: var(--md-default-fg-color);
-  margin: 0 0 1.1rem;
-  max-width: 32rem;
+  margin: 0 0 1.4rem;
+  max-width: 34rem;
 }
 
 .sowel-hero__ctas {
@@ -846,15 +864,15 @@
 
 .sowel-mock {
   width: 100%;
-  max-width: 440px;
+  max-width: 520px;
   background: #fff;
-  border-radius: 14px;
-  padding: 1rem 1.1rem;
-  font-size: 0.78rem;
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  font-size: 0.92rem;
   color: var(--sowel-ink);
   box-shadow:
-    0 30px 60px -20px rgba(26, 79, 110, 0.30),
-    0 8px 24px -8px rgba(26, 79, 110, 0.18);
+    0 40px 80px -20px rgba(26, 79, 110, 0.32),
+    0 12px 30px -10px rgba(26, 79, 110, 0.22);
 }
 [data-md-color-scheme="slate"] .sowel-mock {
   background: #163040;
@@ -1037,12 +1055,17 @@
     position: relative;
     /* page count is set inline as --sowel-flip-n, default 5 */
     height: calc(var(--sowel-flip-n, 5) * 100vh);
+    /* Break out of .md-content's horizontal padding to span the full viewport. */
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
   }
   .sowel-flip__pin {
     position: sticky;
-    /* Matches the mkdocs material header + tabs height (~3rem + ~2.4rem). */
-    top: var(--sowel-flip-top, 5.4rem);
-    height: calc(100vh - var(--sowel-flip-top, 5.4rem));
+    /* Matches the mkdocs material header + tabs height (~3rem + ~3rem). */
+    top: var(--sowel-flip-top, 6rem);
+    height: calc(100vh - var(--sowel-flip-top, 6rem));
+    width: 100vw;
     overflow: hidden;
   }
   .sowel-flip__track {
@@ -1055,12 +1078,23 @@
   }
   .sowel-flip__page {
     flex: 0 0 100vw;
+    width: 100vw;
     height: 100%;
     overflow-y: auto;
-    padding: 1.5rem clamp(1.25rem, 5vw, 4rem);
+    padding: clamp(1.5rem, 3vh, 3rem) clamp(2rem, 6vw, 5rem);
     display: flex;
     flex-direction: column;
     justify-content: center;
+  }
+
+  /* On the landing, hide the page scrollbar so the user reads
+   * the experience as horizontal even though the underlying
+   * scroll is still vertical. */
+  html:has(.sowel-flip) {
+    scrollbar-width: none;
+  }
+  html:has(.sowel-flip)::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -1134,20 +1168,23 @@
 
 .sowel-flip__dots {
   position: fixed;
-  right: 1.25rem;
+  left: 50%;
   bottom: 1.25rem;
+  transform: translateX(-50%);
   z-index: 50;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.55rem 0.4rem;
-  background: rgba(255, 255, 255, 0.6);
+  flex-direction: row;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.85rem;
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(8px);
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+  box-shadow: 0 4px 18px -8px rgba(26, 79, 110, 0.18);
 }
 [data-md-color-scheme="slate"] .sowel-flip__dots {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
 }
 .sowel-flip__dot {
   width: 0.55rem;
@@ -1155,14 +1192,15 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--md-default-fg-color) 25%, transparent);
+  background: color-mix(in srgb, var(--md-default-fg-color) 22%, transparent);
   cursor: pointer;
-  transition: background 200ms ease, transform 200ms ease;
+  transition: background 200ms ease, width 240ms ease;
 }
 .sowel-flip__dot:hover { background: var(--md-primary-fg-color); }
 .sowel-flip__dot[aria-current="true"] {
   background: var(--md-primary-fg-color);
-  transform: scale(1.35);
+  width: 1.5rem;
+  border-radius: 999px;
 }
 @media (max-width: 899px), (prefers-reduced-motion: reduce) {
   .sowel-flip__dots { display: none; }
