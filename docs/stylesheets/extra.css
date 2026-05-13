@@ -743,9 +743,15 @@ html:has(.sowel-flip) .md-header__button.md-logo { opacity: 0; }
  * (site_name) to the current page's nav label ('Home') once the
  * user scrolls. On the landing the flip IS the home page, so the
  * 'Home' breadcrumb adds nothing — keep 'Sowel Documentation'
- * pinned by hiding the page-title topic. */
+ * pinned by hiding the page-title topic AND cancelling the
+ * lifted-header translate that hides the site-name topic. */
 html:has(.sowel-flip) .md-header__topic[data-md-component="header-topic"] {
   display: none;
+}
+html:has(.sowel-flip) .md-header__topic:first-child {
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto !important;
 }
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
