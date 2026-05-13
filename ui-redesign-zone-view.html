@@ -1,0 +1,2175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sowel — UI redesign proposals (Zone view)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1A4F6E;
+    --primary-2: #246588;
+    --primary-hover: #13405A;
+    --primary-light: #E6F0F6;
+    --primary-tint: #F2F7FB;
+    --accent: #D4963F;
+    --accent-hover: #BB8232;
+    --accent-light: #FCF1E0;
+    --cream: #FAF6EE;
+    --bg: #F5F2EC;
+    --surface: #FFFFFF;
+    --ink: #0F2A3C;
+    --ink-2: #4A6478;
+    --ink-3: #8AA1B2;
+    --line: rgba(15,42,60,.10);
+    --line-2: rgba(15,42,60,.18);
+    --green: #2BAA68;
+    --green-light: #E6F5EC;
+    --red: #C7522E;
+    --amber: #D4963F;
+    --amber-light: #FCF1E0;
+    --shutter: #5C7A9A;
+    --shutter-light: #E6EDF4;
+    --sensor: #6B7E8E;
+    --shadow-sm: 0 1px 3px rgba(15,42,60,.06);
+    --shadow-md: 0 6px 24px -8px rgba(26,79,110,.18);
+    --shadow-lg: 0 30px 80px -20px rgba(26,79,110,.35), 0 8px 30px -6px rgba(26,79,110,.18);
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Sticky variant nav */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    gap: 0;
+    padding: .55rem 1.25rem;
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    font-size: .82rem;
+  }
+  .nav__brand {
+    font-weight: 700;
+    color: var(--primary);
+    margin-right: auto;
+    letter-spacing: .04em;
+  }
+  .nav a {
+    padding: .35rem .8rem;
+    color: var(--ink-2);
+    text-decoration: none;
+    border-radius: 4px;
+  }
+  .nav a:hover { background: var(--primary-light); color: var(--primary); }
+
+  /* Section wrapper */
+  .variant {
+    padding: 3.5rem 1.5rem 4rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .variant__head {
+    max-width: 1280px;
+    margin: 0 auto 1.5rem;
+  }
+  .variant__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .3rem .8rem;
+    background: var(--ink);
+    color: white;
+    border-radius: 4px;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+  .variant__tag span:last-child { opacity: .55; font-weight: 500; }
+  .variant__title { font-size: 1.5rem; font-weight: 700; margin: 0 0 .35rem; color: var(--ink); }
+  .variant__sub { color: var(--ink-2); margin: 0; font-size: .95rem; max-width: 720px; }
+
+  /* Shared product chrome wrapper */
+  .ui {
+    max-width: 1280px;
+    margin: 0 auto;
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 720px;
+  }
+
+  /* Sidebar (shared, slightly different states per variant) */
+  .sb {
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    padding: 1.25rem 0;
+    font-size: .82rem;
+  }
+  .sb__logo {
+    display: flex; align-items: center; gap: .5rem;
+    padding: 0 1.25rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 1rem;
+  }
+  .sb__logo svg { width: 28px; height: 28px; }
+  .sb__logo b { font-weight: 700; letter-spacing: .1em; font-size: .9rem; color: var(--primary); }
+  .sb__group {
+    padding: .25rem .75rem;
+    margin-bottom: .25rem;
+  }
+  .sb__item {
+    display: flex; align-items: center; gap: .55rem;
+    padding: .5rem .75rem;
+    border-radius: 6px;
+    color: var(--ink-2);
+    cursor: pointer;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-size: .72rem;
+  }
+  .sb__item--active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+  .sb__sub {
+    display: flex; flex-direction: column;
+    margin-left: 1rem;
+  }
+  .sb__sub-item {
+    padding: .35rem .75rem;
+    border-radius: 6px;
+    color: var(--ink-2);
+    font-size: .8rem;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .sb__sub-item:hover { background: var(--primary-light); }
+  .sb__sub-item--active {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+  }
+  .sb__chev { margin-left: auto; opacity: .55; font-size: .65rem; }
+
+  /* Main area common */
+  .main {
+    padding: 1.5rem 2rem 2rem;
+    background: var(--bg);
+    overflow-y: auto;
+  }
+
+  /* ============================================================ */
+  /* VARIANT A — Glanceable                                       */
+  /* ============================================================ */
+  .vA__topbar {
+    display: flex; align-items: center; gap: 1rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .vA__breadcrumb {
+    font-size: .8rem;
+    color: var(--ink-3);
+    margin-right: auto;
+  }
+  .vA__breadcrumb b { color: var(--ink); font-weight: 600; }
+  .vA__clock {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .35rem .7rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: .78rem;
+  }
+  .vA__sun {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .35rem .7rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: .78rem;
+    color: var(--ink-2);
+  }
+  .vA__sun b { color: var(--ink); font-weight: 600; }
+
+  /* Big zone hero card */
+  .vA__hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 1.75rem 1.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .vA__hero::after {
+    content: "";
+    position: absolute; top: -50%; right: -10%;
+    width: 60%; height: 200%;
+    background: radial-gradient(circle, rgba(212,150,63,.18) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .vA__zone-title {
+    display: flex; align-items: baseline; gap: .8rem;
+    margin-bottom: .25rem;
+  }
+  .vA__zone-name { font-size: 1.85rem; font-weight: 800; letter-spacing: -.02em; }
+  .vA__zone-status {
+    font-size: .75rem;
+    background: rgba(255,255,255,.18);
+    padding: .25rem .65rem;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: .04em;
+  }
+  .vA__zone-status::before {
+    content: "●";
+    color: var(--green);
+    margin-right: .35rem;
+  }
+  .vA__zone-sub { font-size: .85rem; color: rgba(255,255,255,.75); margin-bottom: 1.2rem; }
+  .vA__metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    position: relative; z-index: 1;
+  }
+  .vA__metric {
+    background: rgba(255,255,255,.10);
+    padding: .85rem 1rem;
+    border-radius: 10px;
+    backdrop-filter: blur(4px);
+  }
+  .vA__metric-label {
+    font-size: .62rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: rgba(255,255,255,.65);
+    margin-bottom: .35rem;
+    display: flex; align-items: center; gap: .35rem;
+  }
+  .vA__metric-value {
+    font-family: var(--font-mono);
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .vA__metric-value .u { font-size: .8rem; opacity: .75; margin-left: 2px; }
+  .vA__metric-spark {
+    width: 100%; height: 18px;
+    margin-top: .35rem;
+  }
+  .vA__metric-foot {
+    font-size: .68rem;
+    color: rgba(255,255,255,.65);
+    margin-top: .35rem;
+  }
+  .vA__metric-foot b { color: white; font-weight: 600; }
+
+  .vA__actions {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+    margin-bottom: 1.5rem;
+  }
+  .vA__action {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem .9rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: .82rem;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 120ms;
+  }
+  .vA__action:hover { border-color: var(--primary); color: var(--primary); }
+  .vA__action svg { width: 14px; height: 14px; opacity: .65; }
+
+  /* Equipment tiles */
+  .vA__section-title {
+    display: flex; align-items: center; gap: .6rem;
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--ink-3);
+    font-weight: 700;
+    margin: 1.75rem 0 .85rem;
+  }
+  .vA__section-title-count {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: .68rem;
+    color: var(--ink-2);
+    font-family: var(--font-mono);
+  }
+
+  .vA__tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .85rem;
+  }
+  .vA__tile {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--line);
+    transition: all 120ms;
+    cursor: pointer;
+  }
+  .vA__tile:hover { box-shadow: var(--shadow-md); border-color: var(--line-2); }
+  .vA__tile--on { background: linear-gradient(135deg, #FFF8EB 0%, var(--amber-light) 100%); border-color: rgba(212,150,63,.3); }
+  .vA__tile--shutter { background: linear-gradient(135deg, #F7F9FC 0%, var(--shutter-light) 100%); border-color: rgba(92,122,154,.2); }
+  .vA__tile-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .9rem;
+  }
+  .vA__tile-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vA__tile--on .vA__tile-icon { background: var(--amber); color: white; }
+  .vA__tile--shutter .vA__tile-icon { background: var(--shutter); color: white; }
+  .vA__tile-icon svg { width: 18px; height: 18px; }
+  .vA__tile-state {
+    font-size: .68rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .vA__tile-state--off { background: rgba(0,0,0,.05); color: var(--ink-3); }
+  .vA__tile-state--on { background: var(--amber); color: white; }
+  .vA__tile-state--closed { background: var(--shutter); color: white; }
+  .vA__tile-name {
+    font-weight: 600;
+    font-size: .92rem;
+    margin-bottom: .2rem;
+    color: var(--ink);
+  }
+  .vA__tile-value {
+    font-family: var(--font-mono);
+    font-size: .85rem;
+    color: var(--ink-2);
+  }
+  .vA__tile-slider {
+    width: 100%; height: 4px;
+    background: rgba(0,0,0,.06);
+    border-radius: 999px;
+    margin-top: .75rem;
+    overflow: hidden;
+  }
+  .vA__tile-slider-fill {
+    height: 100%;
+    background: var(--amber);
+    border-radius: 999px;
+  }
+
+  /* Modes / Recipes row */
+  .vA__behaviors {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .vA__panel {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1rem 1.15rem 1.15rem;
+    border: 1px solid var(--line);
+  }
+  .vA__panel-head {
+    display: flex; align-items: center; gap: .55rem;
+    margin-bottom: .85rem;
+  }
+  .vA__panel-title {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--ink-3);
+    font-weight: 700;
+    margin-right: auto;
+  }
+  .vA__panel-count {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: .68rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  .vA__mode {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .55rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .vA__mode:first-of-type { border-top: 0; padding-top: 0; }
+  .vA__mode-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--line-2);
+  }
+  .vA__mode--active .vA__mode-dot { background: var(--green); box-shadow: 0 0 0 4px rgba(43,170,104,.15); }
+  .vA__mode-name { font-weight: 600; font-size: .9rem; flex: 1; }
+  .vA__mode--active .vA__mode-name { color: var(--green); }
+  .vA__mode-meta { font-size: .72rem; color: var(--ink-3); margin-right: .5rem; }
+  .vA__mode-apply {
+    font-size: .72rem;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .vA__recipe {
+    padding: .7rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .vA__recipe:first-of-type { border-top: 0; padding-top: 0; }
+  .vA__recipe-head {
+    display: flex; align-items: center; gap: .5rem;
+    margin-bottom: .35rem;
+  }
+  .vA__recipe-name { font-weight: 600; font-size: .9rem; flex: 1; }
+  .vA__recipe-toggle {
+    width: 32px; height: 18px;
+    background: var(--green);
+    border-radius: 999px;
+    position: relative;
+  }
+  .vA__recipe-toggle::after {
+    content: "";
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 14px; height: 14px;
+    background: white;
+    border-radius: 50%;
+  }
+  .vA__recipe-meta {
+    font-size: .72rem;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+    line-height: 1.6;
+  }
+  .vA__recipe-meta b { color: var(--ink-2); }
+
+  /* ============================================================ */
+  /* VARIANT B — Dashboard                                        */
+  /* ============================================================ */
+  .vB__top {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .vB__title { font-size: 1.6rem; font-weight: 700; margin: 0; color: var(--ink); }
+  .vB__breadcrumb { font-size: .78rem; color: var(--ink-3); margin-bottom: .2rem; }
+  .vB__filters {
+    display: flex; gap: .5rem;
+  }
+  .vB__filter-chip {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .35rem .75rem;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: .8rem;
+    color: var(--ink-2);
+    cursor: pointer;
+  }
+  .vB__filter-chip--active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  /* Compact metric ribbon */
+  .vB__ribbon {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--line);
+  }
+  .vB__ribbon-cell {
+    background: var(--surface);
+    padding: .85rem 1.1rem;
+  }
+  .vB__ribbon-label {
+    font-size: .65rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--ink-3);
+    margin-bottom: .3rem;
+    font-weight: 700;
+  }
+  .vB__ribbon-value {
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .vB__ribbon-value .u { font-size: .7rem; opacity: .55; margin-left: 2px; }
+  .vB__ribbon-trend {
+    font-size: .68rem;
+    color: var(--ink-3);
+    margin-top: .25rem;
+  }
+  .vB__ribbon-trend .up { color: var(--green); }
+  .vB__ribbon-trend .down { color: var(--red); }
+  .vB__ribbon-spark { width: 100%; height: 18px; margin-top: .35rem; }
+
+  /* Two-column main */
+  .vB__cols {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1rem;
+  }
+  .vB__panel {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .vB__panel-head {
+    display: flex; align-items: center; gap: .55rem;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--primary-tint);
+  }
+  .vB__panel-title {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--primary);
+    font-weight: 700;
+    margin-right: auto;
+  }
+  .vB__panel-count {
+    background: white;
+    color: var(--ink-2);
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: .68rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  .vB__row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto auto;
+    gap: .85rem;
+    align-items: center;
+    padding: .6rem 1rem;
+    border-top: 1px solid var(--line);
+    font-size: .85rem;
+    transition: background 120ms;
+  }
+  .vB__row:hover { background: var(--primary-tint); }
+  .vB__row-icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vB__row-icon svg { width: 15px; height: 15px; }
+  .vB__row-icon--amber { background: var(--amber-light); color: var(--amber); }
+  .vB__row-icon--shutter { background: var(--shutter-light); color: var(--shutter); }
+  .vB__row-name { font-weight: 500; color: var(--ink); }
+  .vB__row-sub { color: var(--ink-3); font-size: .72rem; font-family: var(--font-mono); }
+  .vB__row-value {
+    font-family: var(--font-mono);
+    font-size: .8rem;
+    color: var(--ink-2);
+    padding-right: .5rem;
+  }
+  .vB__row-toggle {
+    width: 32px; height: 18px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.08);
+    position: relative;
+    cursor: pointer;
+  }
+  .vB__row-toggle::after {
+    content: "";
+    position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    background: white;
+    border-radius: 50%;
+    transition: all 160ms;
+    box-shadow: 0 1px 2px rgba(0,0,0,.18);
+  }
+  .vB__row-toggle--on { background: var(--amber); }
+  .vB__row-toggle--on::after { left: 16px; }
+  .vB__row-slider {
+    width: 70px;
+    height: 4px;
+    background: rgba(0,0,0,.06);
+    border-radius: 999px;
+    position: relative;
+  }
+  .vB__row-slider::after {
+    content: "";
+    position: absolute;
+    left: 0; top: 0;
+    height: 100%;
+    background: var(--amber);
+    border-radius: 999px;
+  }
+  .vB__sub-head {
+    padding: .5rem 1rem;
+    background: var(--bg);
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--ink-3);
+    font-weight: 600;
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; gap: .5rem;
+  }
+
+  .vB__events {
+    padding: .35rem 1rem .85rem;
+  }
+  .vB__event {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: .5rem;
+    padding: .45rem 0;
+    border-top: 1px dashed var(--line);
+    font-size: .8rem;
+  }
+  .vB__event:first-child { border-top: 0; }
+  .vB__event-time {
+    font-family: var(--font-mono);
+    font-size: .7rem;
+    color: var(--ink-3);
+  }
+  .vB__event-text { color: var(--ink-2); }
+  .vB__event-text b { color: var(--ink); font-weight: 600; }
+  .vB__event-text .ok { color: var(--green); font-weight: 600; }
+
+  /* ============================================================ */
+  /* VARIANT B — MOBILE                                           */
+  /* ============================================================ */
+  .vBm__row { display: flex; justify-content: center; }
+  .vBm__phone {
+    width: 412px;
+    background: #1F2A36;
+    border-radius: 42px;
+    padding: 12px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+  }
+  .vBm__phone::before {
+    content: "";
+    position: absolute;
+    top: 22px; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 28px;
+    background: #0A0F15;
+    border-radius: 0 0 14px 14px;
+    z-index: 10;
+  }
+  .vBm__screen {
+    background: #FBFAF5;
+    border-radius: 32px;
+    overflow: hidden;
+    min-height: 860px;
+    position: relative;
+  }
+  .vBm__status {
+    height: 50px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem;
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .vBm__status-right { display: flex; gap: .3rem; align-items: center; opacity: .65; font-size: .65rem; }
+  .vBm__topbar {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .5rem 1rem 1rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .vBm__back {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--primary);
+    border-radius: 6px;
+    background: var(--primary-tint);
+  }
+  .vBm__title-block { flex: 1; }
+  .vBm__title-block h1 { font-size: 1.15rem; font-weight: 700; margin: 0; line-height: 1.1; }
+  .vBm__title-block .sub { font-size: .65rem; color: var(--ink-3); }
+  .vBm__icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-2);
+  }
+  .vBm__icon-btn svg { width: 16px; height: 16px; }
+
+  .vBm__body { padding: .85rem .85rem 2rem; overflow-y: auto; }
+
+  .vBm__ribbon {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    margin-bottom: 1rem;
+  }
+  .vBm__ribbon-cell { background: var(--surface); padding: .65rem .8rem; }
+  .vBm__ribbon-label {
+    font-size: .58rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--ink-3);
+    margin-bottom: .25rem;
+    font-weight: 700;
+  }
+  .vBm__ribbon-value {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .vBm__ribbon-value .u { font-size: .65rem; opacity: .55; margin-left: 2px; }
+  .vBm__ribbon-foot { font-size: .62rem; color: var(--ink-3); margin-top: .25rem; }
+
+  .vBm__chips {
+    display: flex; gap: .4rem;
+    overflow-x: auto;
+    padding: 0 0 .25rem;
+    margin: 0 -.85rem 1rem;
+    padding-left: .85rem; padding-right: .85rem;
+    scrollbar-width: none;
+  }
+  .vBm__chips::-webkit-scrollbar { display: none; }
+  .vBm__chip {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .35rem .75rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: .72rem;
+    color: var(--ink-2);
+  }
+  .vBm__chip--active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  .vBm__panel {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    margin-bottom: .85rem;
+  }
+  .vBm__panel-head {
+    display: flex; align-items: center; gap: .55rem;
+    padding: .7rem .85rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--primary-tint);
+  }
+  .vBm__panel-title {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--primary);
+    font-weight: 700;
+    margin-right: auto;
+  }
+  .vBm__panel-count {
+    background: white;
+    color: var(--ink-2);
+    border-radius: 999px;
+    padding: 1px 7px;
+    font-size: .65rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+  .vBm__sub-head {
+    padding: .35rem .85rem;
+    background: var(--bg);
+    font-size: .6rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--ink-3);
+    font-weight: 600;
+    border-top: 1px solid var(--line);
+  }
+  .vBm__row-eq {
+    display: grid;
+    grid-template-columns: 28px 1fr auto auto;
+    gap: .65rem;
+    align-items: center;
+    padding: .55rem .85rem;
+    border-top: 1px solid var(--line);
+    font-size: .82rem;
+  }
+  .vBm__row-eq:hover { background: var(--primary-tint); }
+  .vBm__row-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vBm__row-icon svg { width: 14px; height: 14px; }
+  .vBm__row-icon--amber { background: var(--amber-light); color: var(--amber); }
+  .vBm__row-icon--shutter { background: var(--shutter-light); color: var(--shutter); }
+  .vBm__row-name { font-weight: 500; color: var(--ink); font-size: .85rem; }
+  .vBm__row-sub { color: var(--ink-3); font-size: .68rem; font-family: var(--font-mono); }
+  .vBm__row-value { font-family: var(--font-mono); font-size: .72rem; color: var(--ink-2); }
+  .vBm__row-toggle {
+    width: 32px; height: 18px; border-radius: 999px;
+    background: rgba(0,0,0,.08);
+    position: relative; flex-shrink: 0;
+  }
+  .vBm__row-toggle::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; background: white; border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,.18);
+  }
+  .vBm__row-toggle--on { background: var(--amber); }
+  .vBm__row-toggle--on::after { left: 16px; }
+
+  .vBm__event {
+    display: grid;
+    grid-template-columns: 50px 1fr;
+    gap: .5rem;
+    padding: .45rem .85rem;
+    border-top: 1px dashed var(--line);
+    font-size: .76rem;
+  }
+  .vBm__event:first-of-type { border-top: 0; }
+  .vBm__event-time { font-family: var(--font-mono); font-size: .65rem; color: var(--ink-3); }
+  .vBm__event-text { color: var(--ink-2); }
+  .vBm__event-text b { color: var(--ink); font-weight: 600; }
+  .vBm__event-text .ok { color: var(--green); font-weight: 600; }
+
+  .vBm__tabs {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255,255,255,.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: .5rem .25rem .65rem;
+  }
+  .vBm__tab {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: .4rem 0;
+    color: var(--ink-3);
+    font-size: .58rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-radius: 6px;
+  }
+  .vBm__tab svg { width: 18px; height: 18px; }
+  .vBm__tab--active { color: var(--primary); }
+  .vBm__tab--active svg { color: var(--primary); }
+
+  /* Side-by-side desktop+mobile layout for B */
+  .vBm__compare {
+    display: flex; gap: 2rem; align-items: flex-start; justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1320px;
+    margin: 0 auto;
+  }
+  .vBm__compare-label {
+    text-align: center;
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--ink-3);
+    font-weight: 700;
+    margin-bottom: .75rem;
+  }
+  .vBm__compare-label b { color: var(--ink); }
+  .vBm__compare-col { display: flex; flex-direction: column; align-items: center; }
+
+  /* ============================================================ */
+  /* VARIANT C — Tactile                                          */
+  /* ============================================================ */
+  .vC__top {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .vC__zone-name { font-size: 1.6rem; font-weight: 800; color: var(--ink); margin: 0; }
+  .vC__zone-path { font-size: .72rem; color: var(--ink-3); margin-top: .15rem; }
+  .vC__mini-metrics {
+    display: flex; gap: 1.5rem;
+    align-items: center;
+  }
+  .vC__mini-metric {
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .vC__mini-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vC__mini-icon svg { width: 16px; height: 16px; }
+  .vC__mini-icon--motion { background: var(--green-light); color: var(--green); }
+  .vC__mini-icon--lights { background: var(--amber-light); color: var(--amber); }
+  .vC__mini-icon--shutters { background: var(--shutter-light); color: var(--shutter); }
+  .vC__mini-val {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+  }
+  .vC__mini-lab { font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); margin-top: .15rem; }
+  .vC__mode-pill {
+    display: inline-flex; align-items: center; gap: .55rem;
+    padding: .5rem .9rem;
+    background: var(--green-light);
+    color: var(--green);
+    font-weight: 600;
+    font-size: .82rem;
+    border-radius: 999px;
+  }
+  .vC__mode-pill::before { content: "●"; }
+
+  /* Light tiles (big, tactile) */
+  .vC__group-title {
+    display: flex; align-items: baseline; gap: .75rem;
+    margin: 2rem 0 .85rem;
+  }
+  .vC__group-title h2 {
+    font-size: 1rem; font-weight: 700; margin: 0; color: var(--ink);
+  }
+  .vC__group-title-meta {
+    font-size: .78rem; color: var(--ink-3);
+  }
+  .vC__group-title-action {
+    margin-left: auto;
+    font-size: .78rem; color: var(--primary);
+    font-weight: 600; cursor: pointer;
+  }
+
+  .vC__lights {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .vC__light {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 1.25rem 1.25rem 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 140ms, box-shadow 140ms;
+  }
+  .vC__light:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .vC__light--on {
+    background: linear-gradient(160deg, #FFFDF6 0%, #FFF1D4 100%);
+    border-color: rgba(212,150,63,.35);
+  }
+  .vC__light-head {
+    display: flex; align-items: center; gap: .65rem; margin-bottom: 1rem;
+  }
+  .vC__light-bulb {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: #F0F0F0;
+    color: var(--ink-3);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 200ms;
+  }
+  .vC__light--on .vC__light-bulb {
+    background: radial-gradient(circle, #FFD27A 0%, #D4963F 100%);
+    color: white;
+    box-shadow: 0 0 20px rgba(212,150,63,.45);
+  }
+  .vC__light-bulb svg { width: 18px; height: 18px; }
+  .vC__light-name { font-weight: 600; font-size: .95rem; flex: 1; }
+  .vC__light-state {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-3);
+  }
+  .vC__light--on .vC__light-state { color: var(--amber); }
+  .vC__light-slider-wrap {
+    position: relative;
+    height: 8px;
+    background: rgba(0,0,0,.06);
+    border-radius: 999px;
+    margin-bottom: .55rem;
+  }
+  .vC__light-slider {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: linear-gradient(90deg, var(--amber) 0%, #FFD27A 100%);
+    border-radius: 999px;
+  }
+  .vC__light-slider-knob {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 16px; height: 16px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,.18);
+    border: 2px solid var(--amber);
+  }
+  .vC__light-meta {
+    display: flex; justify-content: space-between;
+    font-size: .75rem;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+  }
+  .vC__light-meta .pct { font-weight: 600; color: var(--ink-2); }
+  .vC__light--on .vC__light-meta .pct { color: var(--amber-hover); }
+
+  /* Shutters strip */
+  .vC__shutters {
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .vC__shutter {
+    display: grid;
+    grid-template-columns: 38px 1fr 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    padding: .85rem 1.25rem;
+    border-top: 1px solid var(--line);
+  }
+  .vC__shutter:first-child { border-top: 0; }
+  .vC__shutter-icon {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    background: var(--shutter-light);
+    color: var(--shutter);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vC__shutter-name { font-weight: 600; font-size: .92rem; }
+  .vC__shutter-state {
+    font-size: .72rem;
+    color: var(--ink-3);
+    font-family: var(--font-mono);
+  }
+  .vC__shutter-bar {
+    height: 6px;
+    background: rgba(0,0,0,.06);
+    border-radius: 999px;
+    position: relative;
+    width: 100%;
+  }
+  .vC__shutter-bar::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; height: 100%;
+    width: var(--w, 0%);
+    background: var(--shutter);
+    border-radius: 999px;
+  }
+  .vC__shutter-ctrl {
+    display: flex; gap: .25rem;
+  }
+  .vC__shutter-btn {
+    width: 30px; height: 30px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-2);
+  }
+  .vC__shutter-btn:hover { background: var(--shutter-light); color: var(--shutter); border-color: var(--shutter); }
+
+  /* Modes carousel (cards) */
+  .vC__modes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .vC__mode-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .vC__mode-card--active {
+    border-color: var(--green);
+    background: linear-gradient(160deg, white 0%, var(--green-light) 100%);
+  }
+  .vC__mode-card-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: .65rem;
+  }
+  .vC__mode-card--active .vC__mode-card-icon { background: var(--green); color: white; }
+  .vC__mode-card-name { font-weight: 700; font-size: 1rem; margin-bottom: .15rem; }
+  .vC__mode-card-meta { font-size: .75rem; color: var(--ink-3); }
+  .vC__mode-card--active .vC__mode-card-meta { color: var(--green); font-weight: 600; }
+
+  /* Recipes — large highlighted card */
+  .vC__recipe-card {
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    padding: 1.1rem 1.3rem 1.25rem;
+    margin-top: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .vC__recipe-card::before {
+    content: "";
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+  }
+  .vC__recipe-head {
+    display: flex; align-items: center; gap: .65rem; margin-bottom: .6rem;
+  }
+  .vC__recipe-badge {
+    font-size: .62rem;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--accent);
+    background: var(--amber-light);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+  .vC__recipe-name { font-weight: 700; font-size: 1.05rem; flex: 1; }
+  .vC__recipe-toggle {
+    width: 38px; height: 22px;
+    border-radius: 999px;
+    background: var(--green);
+    position: relative;
+  }
+  .vC__recipe-toggle::after {
+    content: "";
+    position: absolute; top: 3px; right: 3px;
+    width: 16px; height: 16px;
+    background: white;
+    border-radius: 50%;
+  }
+  .vC__recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .75rem;
+    margin-top: .85rem;
+  }
+  .vC__recipe-prop {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: .5rem .65rem;
+  }
+  .vC__recipe-prop-label {
+    font-size: .58rem;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--ink-3);
+    margin-bottom: .15rem;
+  }
+  .vC__recipe-prop-value {
+    font-family: var(--font-mono);
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* Notes */
+  .notes {
+    max-width: 1280px;
+    margin: 1.25rem auto 0;
+    padding: 1rem 1.25rem;
+    background: rgba(0,0,0,.03);
+    border: 1px dashed var(--line-2);
+    border-radius: 8px;
+    font-size: .82rem;
+    color: var(--ink-2);
+  }
+  .notes b { color: var(--ink); }
+  .notes ul { margin: .35rem 0 0; padding-left: 1.2rem; }
+  .notes li { margin: .15rem 0; }
+
+  /* Current vs proposed inline label */
+  .vs-current {
+    max-width: 1280px;
+    margin: 0 auto 2rem;
+    display: flex; align-items: center; gap: 1rem;
+    padding: .9rem 1.1rem;
+    background: var(--primary-light);
+    border: 1px solid rgba(26,79,110,.18);
+    border-radius: 8px;
+    font-size: .85rem;
+    color: var(--primary);
+  }
+  .vs-current svg { width: 18px; height: 18px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav__brand">Sowel · zone-view redesign proposals</span>
+  <a href="#vA">A · Glanceable</a>
+  <a href="#vB">B · Dashboard</a>
+  <a href="#vBm">B · Mobile</a>
+  <a href="#vC">C · Tactile</a>
+</nav>
+
+<div class="vs-current">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><circle cx="12" cy="16" r=".5"/></svg>
+  <div>
+    Each variant below is a redesign of the <b>Séjour</b> zone view (Grange Neuve). Real data preserved: 334 lx, Calm 16 min, 1/3 lights on, 3 shutters closed, Lumière soir mode active, Motion Light (Dimmable) recipe enabled. Use the nav to jump between proposals.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT A — Glanceable                                       -->
+<!-- ============================================================ -->
+<section id="vA" class="variant">
+  <div class="variant__head">
+    <div class="variant__tag"><span>A</span><span>Glanceable — hero card + tile grid</span></div>
+    <h2 class="variant__title">A zone you read in one second</h2>
+    <p class="variant__sub">Promote zone status as the hero of the page. Equipment becomes a tile grid (glanceable). Modes &amp; recipes get their own focused panels with one-tap interactions.</p>
+  </div>
+
+  <div class="ui">
+    <!-- Sidebar -->
+    <aside class="sb">
+      <div class="sb__logo">
+        <svg viewBox="25 15 150 155" fill="none" stroke="#1A4F6E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M100 30 L160 90 Q165 95 160 100 L160 150 Q160 158 152 158 L48 158 Q40 158 40 150 L40 100 Q35 95 40 90 Z"/>
+          <path d="M75 115 Q100 140 125 115" stroke="#3B95C2"/>
+          <path d="M78 95 Q83 87 88 95" stroke="#3B95C2"/>
+          <path d="M112 95 Q117 87 122 95" stroke="#3B95C2"/>
+        </svg>
+        <b>SOWEL</b>
+      </div>
+      <div class="sb__group">
+        <div class="sb__item"><span>⊟</span><span>Dashboard</span></div>
+        <div class="sb__item sb__item--active"><span>⌂</span><span>Maison</span><span class="sb__chev">⌄</span></div>
+        <div class="sb__sub">
+          <div class="sb__sub-item">Extérieur</div>
+          <div class="sb__sub-item">Sous-sol</div>
+          <div class="sb__sub-item">RDC</div>
+          <div class="sb__sub" style="margin-left:.65rem">
+            <div class="sb__sub-item">Entrée</div>
+            <div class="sb__sub-item">Bureau</div>
+            <div class="sb__sub-item">Cuisine</div>
+            <div class="sb__sub-item sb__sub-item--active">Séjour</div>
+          </div>
+          <div class="sb__sub-item">Etage 1</div>
+          <div class="sb__sub-item">Etage 2</div>
+        </div>
+        <div class="sb__item"><span>≡</span><span>Modes</span></div>
+        <div class="sb__item"><span>↗</span><span>Analyse</span></div>
+        <div class="sb__item"><span>⚡</span><span>Energy</span></div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+      <div class="vA__topbar">
+        <div class="vA__breadcrumb">Grange Neuve · <b>Séjour</b></div>
+        <div class="vA__clock"><span>🕐</span> 22:57:12</div>
+        <div class="vA__sun"><span>🌙</span> <b>Night</b> · sunset 20:54</div>
+      </div>
+
+      <!-- Hero zone card -->
+      <div class="vA__hero">
+        <div class="vA__zone-title">
+          <div class="vA__zone-name">Séjour</div>
+          <div class="vA__zone-status">Calm · Lumière soir</div>
+        </div>
+        <div class="vA__zone-sub">2 lights on, 3 shutters closed · last motion 16 min ago</div>
+        <div class="vA__metrics">
+          <div class="vA__metric">
+            <div class="vA__metric-label">☀ Luminosity</div>
+            <div class="vA__metric-value">334<span class="u">lx</span></div>
+            <svg class="vA__metric-spark" viewBox="0 0 120 18">
+              <polyline fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5" points="0,12 10,8 20,10 30,5 40,6 50,3 60,2 70,4 80,7 90,9 100,11 110,12 120,13"/>
+            </svg>
+          </div>
+          <div class="vA__metric">
+            <div class="vA__metric-label">⚭ Motion</div>
+            <div class="vA__metric-value">Calm</div>
+            <div class="vA__metric-foot">last <b>16 min ago</b></div>
+          </div>
+          <div class="vA__metric">
+            <div class="vA__metric-label">💡 Lights</div>
+            <div class="vA__metric-value">1<span class="u">/ 3</span></div>
+            <div class="vA__metric-foot"><b>4%</b> avg brightness</div>
+          </div>
+          <div class="vA__metric">
+            <div class="vA__metric-label">▭ Shutters</div>
+            <div class="vA__metric-value">0<span class="u">/ 3</span></div>
+            <div class="vA__metric-foot"><b>Closed</b></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Zone-wide actions -->
+      <div class="vA__actions">
+        <button class="vA__action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg> All lights on</button>
+        <button class="vA__action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="2" y1="22" x2="22" y2="2"/></svg> All lights off</button>
+        <button class="vA__action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V3h18v18"/><path d="M7 21V9h10v12"/></svg> Open shutters</button>
+        <button class="vA__action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V3h18v18"/><path d="M3 9h18M3 15h18"/></svg> Close shutters</button>
+      </div>
+
+      <!-- Lights tiles -->
+      <div class="vA__section-title">💡 Lights <span class="vA__section-title-count">3</span></div>
+      <div class="vA__tiles">
+        <div class="vA__tile">
+          <div class="vA__tile-head">
+            <div class="vA__tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg></div>
+            <span class="vA__tile-state vA__tile-state--off">Off</span>
+          </div>
+          <div class="vA__tile-name">Applique x1</div>
+          <div class="vA__tile-value">0%</div>
+          <div class="vA__tile-slider"><div class="vA__tile-slider-fill" style="width:0%"></div></div>
+        </div>
+        <div class="vA__tile vA__tile--on">
+          <div class="vA__tile-head">
+            <div class="vA__tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg></div>
+            <span class="vA__tile-state vA__tile-state--on">On</span>
+          </div>
+          <div class="vA__tile-name">Appliques x2</div>
+          <div class="vA__tile-value">4%</div>
+          <div class="vA__tile-slider"><div class="vA__tile-slider-fill" style="width:4%"></div></div>
+        </div>
+        <div class="vA__tile">
+          <div class="vA__tile-head">
+            <div class="vA__tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2"/></svg></div>
+            <span class="vA__tile-state vA__tile-state--off">Off</span>
+          </div>
+          <div class="vA__tile-name">Spots</div>
+          <div class="vA__tile-value">—</div>
+          <div class="vA__tile-slider"><div class="vA__tile-slider-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Shutters tiles -->
+      <div class="vA__section-title">▭ Shutters <span class="vA__section-title-count">3</span></div>
+      <div class="vA__tiles">
+        <div class="vA__tile vA__tile--shutter">
+          <div class="vA__tile-head">
+            <div class="vA__tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+            <span class="vA__tile-state vA__tile-state--closed">Closed</span>
+          </div>
+          <div class="vA__tile-name">Volet Ouest</div>
+          <div class="vA__tile-value">0%</div>
+        </div>
+        <div class="vA__tile vA__tile--shutter">
+          <div class="vA__tile-head">
+            <div class="vA__tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+            <span class="vA__tile-state vA__tile-state--closed">Closed</span>
+          </div>
+          <div class="vA__tile-name">Volet Sud</div>
+          <div class="vA__tile-value">0%</div>
+        </div>
+        <div class="vA__tile vA__tile--shutter">
+          <div class="vA__tile-head">
+            <div class="vA__tile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+            <span class="vA__tile-state vA__tile-state--closed">Closed</span>
+          </div>
+          <div class="vA__tile-name">Volet Sud Ouest</div>
+          <div class="vA__tile-value">0%</div>
+        </div>
+      </div>
+
+      <!-- Behaviors: modes + recipes side by side -->
+      <div class="vA__behaviors">
+        <div class="vA__panel">
+          <div class="vA__panel-head">
+            <div class="vA__panel-title">Modes</div>
+            <span class="vA__panel-count">1 active</span>
+          </div>
+          <div class="vA__mode">
+            <div class="vA__mode-dot"></div>
+            <div class="vA__mode-name">Lumière jour</div>
+            <div class="vA__mode-meta">1 action</div>
+            <div class="vA__mode-apply">Apply</div>
+          </div>
+          <div class="vA__mode">
+            <div class="vA__mode-dot"></div>
+            <div class="vA__mode-name">Lumière nuit</div>
+            <div class="vA__mode-meta">1 action</div>
+            <div class="vA__mode-apply">Apply</div>
+          </div>
+          <div class="vA__mode vA__mode--active">
+            <div class="vA__mode-dot"></div>
+            <div class="vA__mode-name">Lumière soir</div>
+            <div class="vA__mode-meta">4 actions · globally active</div>
+            <div class="vA__mode-apply">Active</div>
+          </div>
+        </div>
+
+        <div class="vA__panel">
+          <div class="vA__panel-head">
+            <div class="vA__panel-title">Recipes</div>
+            <span class="vA__panel-count">1</span>
+          </div>
+          <div class="vA__recipe">
+            <div class="vA__recipe-head">
+              <div class="vA__recipe-name">Motion Light (Dimmable)</div>
+              <div class="vA__recipe-toggle"></div>
+            </div>
+            <div class="vA__recipe-meta">
+              Lights: <b>Applique x1, Appliques x2</b><br/>
+              Timeout <b>10m</b> · Brightness <b>254</b> · Lux ≤ <b>2300</b><br/>
+              Slot 1: <b>21:00 → 100%</b>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <b>Intent.</b> Le but est de répondre en 1 seconde : « ça va dans cette pièce ? »
+    <ul>
+      <li>La hero card bleue centralise toutes les métriques de zone agrégées avec leurs sparklines — c'est ça que tu lis en arrivant</li>
+      <li>Équipements en tuiles 3-col, avec couleurs sémantiques (ambre = lumière, bleu acier = volet)</li>
+      <li>Toggle on/off et slider sont directement sur la tuile — pas besoin de cliquer pour entrer</li>
+      <li>Modes et Recipes en bas, en panneaux égaux — la recette active est un toggle vert direct</li>
+      <li>Inconvénient : moins d'infos d'un coup que ton design actuel. Bon pour mobile / tablette, peut frustrer les power-users sur écran 27"</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- VARIANT B — Dashboard                                        -->
+<!-- ============================================================ -->
+<section id="vB" class="variant" style="background:#FBFAF5;">
+  <div class="variant__head">
+    <div class="variant__tag"><span>B</span><span>Dashboard — info-dense, power user</span></div>
+    <h2 class="variant__title">Tout sur un écran, comme un cockpit</h2>
+    <p class="variant__sub">Pour les power users qui veulent voir équipements, modes, recettes et activité récente en un seul scroll. Ribbon de métriques en haut, colonne événements/modes à droite.</p>
+  </div>
+
+  <div class="ui">
+    <!-- Sidebar (same) -->
+    <aside class="sb">
+      <div class="sb__logo">
+        <svg viewBox="25 15 150 155" fill="none" stroke="#1A4F6E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M100 30 L160 90 Q165 95 160 100 L160 150 Q160 158 152 158 L48 158 Q40 158 40 150 L40 100 Q35 95 40 90 Z"/>
+          <path d="M75 115 Q100 140 125 115" stroke="#3B95C2"/>
+          <path d="M78 95 Q83 87 88 95" stroke="#3B95C2"/>
+          <path d="M112 95 Q117 87 122 95" stroke="#3B95C2"/>
+        </svg>
+        <b>SOWEL</b>
+      </div>
+      <div class="sb__group">
+        <div class="sb__item"><span>⊟</span><span>Dashboard</span></div>
+        <div class="sb__item sb__item--active"><span>⌂</span><span>Maison</span><span class="sb__chev">⌄</span></div>
+        <div class="sb__sub">
+          <div class="sb__sub-item">Extérieur</div>
+          <div class="sb__sub-item">Sous-sol</div>
+          <div class="sb__sub-item">RDC</div>
+          <div class="sb__sub" style="margin-left:.65rem">
+            <div class="sb__sub-item">Cuisine</div>
+            <div class="sb__sub-item sb__sub-item--active">Séjour</div>
+          </div>
+          <div class="sb__sub-item">Etage 1</div>
+        </div>
+        <div class="sb__item"><span>≡</span><span>Modes</span></div>
+        <div class="sb__item"><span>↗</span><span>Analyse</span></div>
+        <div class="sb__item"><span>⚡</span><span>Energy</span></div>
+      </div>
+    </aside>
+
+    <div class="main" style="background:#FBFAF5">
+      <div class="vB__top">
+        <div>
+          <div class="vB__breadcrumb">Grange Neuve · RDC</div>
+          <h1 class="vB__title">Séjour</h1>
+        </div>
+        <div class="vB__filters">
+          <button class="vB__filter-chip vB__filter-chip--active">All</button>
+          <button class="vB__filter-chip">Lights</button>
+          <button class="vB__filter-chip">Shutters</button>
+          <button class="vB__filter-chip">Sensors</button>
+          <button class="vB__filter-chip">Switches</button>
+        </div>
+      </div>
+
+      <!-- Metric ribbon -->
+      <div class="vB__ribbon">
+        <div class="vB__ribbon-cell">
+          <div class="vB__ribbon-label">☀ Luminosity</div>
+          <div class="vB__ribbon-value">334<span class="u">lx</span></div>
+          <svg class="vB__ribbon-spark" viewBox="0 0 200 18">
+            <polyline fill="none" stroke="#246588" stroke-width="1.5" points="0,12 15,9 30,11 45,5 60,6 75,3 90,2 105,4 120,7 135,9 150,11 165,12 180,13 200,12"/>
+          </svg>
+        </div>
+        <div class="vB__ribbon-cell">
+          <div class="vB__ribbon-label">⚭ Motion</div>
+          <div class="vB__ribbon-value">Calm</div>
+          <div class="vB__ribbon-trend">last <b style="color:var(--ink-2)">16 min</b> ago</div>
+        </div>
+        <div class="vB__ribbon-cell">
+          <div class="vB__ribbon-label">💡 Lights on</div>
+          <div class="vB__ribbon-value">1<span class="u">/3</span></div>
+          <div class="vB__ribbon-trend">avg <span class="up">4%</span> brightness</div>
+        </div>
+        <div class="vB__ribbon-cell">
+          <div class="vB__ribbon-label">▭ Shutters open</div>
+          <div class="vB__ribbon-value">0<span class="u">/3</span></div>
+          <div class="vB__ribbon-trend">all <b>Closed</b></div>
+        </div>
+      </div>
+
+      <!-- Two columns -->
+      <div class="vB__cols">
+
+        <!-- Left col: equipment list -->
+        <div class="vB__panel">
+          <div class="vB__panel-head">
+            <div class="vB__panel-title">Equipments</div>
+            <span class="vB__panel-count">12</span>
+          </div>
+
+          <div class="vB__sub-head">💡 Lights · 1 / 3 on</div>
+          <div class="vB__row">
+            <div class="vB__row-icon vB__row-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/></svg></div>
+            <div><div class="vB__row-name">Applique x1</div></div>
+            <div class="vB__row-slider"><span style="--w:0"></span></div>
+            <div class="vB__row-toggle"></div>
+          </div>
+          <div class="vB__row">
+            <div class="vB__row-icon vB__row-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/></svg></div>
+            <div><div class="vB__row-name">Appliques x2</div><div class="vB__row-sub">4% · on since 1h14</div></div>
+            <div class="vB__row-slider" style="position:relative"><span style="position:absolute;left:0;top:0;height:100%;width:4%;background:var(--amber);border-radius:999px;display:block"></span></div>
+            <div class="vB__row-toggle vB__row-toggle--on"></div>
+          </div>
+          <div class="vB__row">
+            <div class="vB__row-icon vB__row-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41"/></svg></div>
+            <div><div class="vB__row-name">Spots</div></div>
+            <div></div>
+            <div class="vB__row-toggle"></div>
+          </div>
+
+          <div class="vB__sub-head">▭ Shutters · 0 / 3 open</div>
+          <div class="vB__row">
+            <div class="vB__row-icon vB__row-icon--shutter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+            <div><div class="vB__row-name">Volet Ouest</div></div>
+            <div class="vB__row-value">Closed</div>
+            <div></div>
+          </div>
+          <div class="vB__row">
+            <div class="vB__row-icon vB__row-icon--shutter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+            <div><div class="vB__row-name">Volet Sud</div></div>
+            <div class="vB__row-value">Closed</div>
+            <div></div>
+          </div>
+          <div class="vB__row">
+            <div class="vB__row-icon vB__row-icon--shutter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+            <div><div class="vB__row-name">Volet Sud Ouest</div></div>
+            <div class="vB__row-value">Closed</div>
+            <div></div>
+          </div>
+
+          <div class="vB__sub-head">📡 Sensors · 3</div>
+          <div class="vB__row">
+            <div class="vB__row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0 1 18 0"/></svg></div>
+            <div><div class="vB__row-name">PIRL</div></div>
+            <div class="vB__row-value">334 lx · 100%</div>
+            <div></div>
+          </div>
+          <div class="vB__row">
+            <div class="vB__row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0 1 18 0"/></svg></div>
+            <div><div class="vB__row-name">PIR_00</div></div>
+            <div class="vB__row-value">Clear · 100%</div>
+            <div></div>
+          </div>
+          <div class="vB__row">
+            <div class="vB__row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0 1 18 0"/></svg></div>
+            <div><div class="vB__row-name">PIR_01</div></div>
+            <div class="vB__row-value">Clear · 85%</div>
+            <div></div>
+          </div>
+        </div>
+
+        <!-- Right col: modes + recipes + activity -->
+        <div>
+          <div class="vB__panel" style="margin-bottom:1rem">
+            <div class="vB__panel-head">
+              <div class="vB__panel-title">Modes</div>
+              <span class="vB__panel-count">1 / 3</span>
+            </div>
+            <div class="vB__row">
+              <div class="vB__row-icon"><span style="font-size:11px">○</span></div>
+              <div><div class="vB__row-name">Lumière jour</div><div class="vB__row-sub">1 action</div></div>
+              <div></div>
+              <div style="font-size:.75rem;color:var(--primary);font-weight:600;cursor:pointer">Apply</div>
+            </div>
+            <div class="vB__row">
+              <div class="vB__row-icon"><span style="font-size:11px">○</span></div>
+              <div><div class="vB__row-name">Lumière nuit</div><div class="vB__row-sub">1 action</div></div>
+              <div></div>
+              <div style="font-size:.75rem;color:var(--primary);font-weight:600;cursor:pointer">Apply</div>
+            </div>
+            <div class="vB__row" style="background:rgba(43,170,104,.05)">
+              <div class="vB__row-icon" style="background:var(--green-light);color:var(--green)"><span style="font-size:11px">●</span></div>
+              <div><div class="vB__row-name" style="color:var(--green)">Lumière soir</div><div class="vB__row-sub">4 actions · globally active</div></div>
+              <div></div>
+              <div style="font-size:.75rem;color:var(--green);font-weight:700">Active</div>
+            </div>
+          </div>
+
+          <div class="vB__panel" style="margin-bottom:1rem">
+            <div class="vB__panel-head">
+              <div class="vB__panel-title">Recipes</div>
+              <span class="vB__panel-count">1</span>
+            </div>
+            <div class="vB__row">
+              <div class="vB__row-icon vB__row-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.13-7.59 5 5 0 0 0-9.2 0 4 4 0 0 0-2.13 7.59c.41.2.73.58.73 1.04V21M6 17h12"/></svg></div>
+              <div><div class="vB__row-name">Motion Light (Dimmable)</div><div class="vB__row-sub">Timeout 10m · Lux ≤ 2300</div></div>
+              <div></div>
+              <div class="vB__row-toggle vB__row-toggle--on"></div>
+            </div>
+          </div>
+
+          <div class="vB__panel">
+            <div class="vB__panel-head">
+              <div class="vB__panel-title">Activity</div>
+              <span class="vB__panel-count">live</span>
+            </div>
+            <div class="vB__events">
+              <div class="vB__event">
+                <span class="vB__event-time">22:41</span>
+                <span class="vB__event-text"><b>Appliques x2</b> turned on by <b>Motion Light</b> <span class="ok">→ 4%</span></span>
+              </div>
+              <div class="vB__event">
+                <span class="vB__event-time">22:40</span>
+                <span class="vB__event-text">Motion detected on <b>PIR_00</b></span>
+              </div>
+              <div class="vB__event">
+                <span class="vB__event-time">21:00</span>
+                <span class="vB__event-text">Mode <b>Lumière soir</b> activated by calendar</span>
+              </div>
+              <div class="vB__event">
+                <span class="vB__event-time">20:54</span>
+                <span class="vB__event-text"><b>Sunset</b> — Night phase begins</span>
+              </div>
+              <div class="vB__event">
+                <span class="vB__event-time">20:30</span>
+                <span class="vB__event-text"><b>Volet Sud</b> closed by <b>Sunset Shutters</b></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <b>Intent.</b> Garde la densité d'info de l'actuel, mais lui donne un vrai squelette « cockpit ».
+    <ul>
+      <li>Ribbon métriques 4 colonnes — toujours visible, avec sparkline pour Luminosity (data InfluxDB déjà là)</li>
+      <li>Filtres en chips en haut (All / Lights / Shutters / Sensors / Switches) — recherche/filtre instant</li>
+      <li>Colonne droite ajoute un panneau <b>Activity</b> (log d'événements de la zone) — c'est ce qui manque le plus dans l'actuel pour comprendre <i>pourquoi</i> tel équipement a changé d'état</li>
+      <li>Toggles inline (lights, recipe) — pas besoin de clic supplémentaire</li>
+      <li>Bon pour ton usage personnel quotidien, gros écran. Moins beau sur mobile</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- VARIANT B — MOBILE                                           -->
+<!-- ============================================================ -->
+<section id="vBm" class="variant" style="background:#FBFAF5">
+  <div class="variant__head">
+    <div class="variant__tag"><span>B · Mobile</span><span>Same dashboard, condensed to a 412px screen</span></div>
+    <h2 class="variant__title">B sur ton téléphone</h2>
+    <p class="variant__sub">La même variante Dashboard, restructurée pour un viewport 412px (iPhone Pro). Sidebar absente (remplacée par une bottom bar), ribbon en 2×2, panneaux en accordéon vertical, tabs en bas pour switcher Equipments / Modes / Recipes / Activity sans scroller.</p>
+  </div>
+
+  <div class="vBm__row">
+    <div class="vBm__phone">
+      <div class="vBm__screen">
+
+        <!-- Status bar -->
+        <div class="vBm__status">
+          <span>22:57</span>
+          <span class="vBm__status-right">⚡ · 5G · 87%</span>
+        </div>
+
+        <!-- Top bar -->
+        <div class="vBm__topbar">
+          <div class="vBm__back">←</div>
+          <div class="vBm__title-block">
+            <h1>Séjour</h1>
+            <div class="sub">Grange Neuve · RDC</div>
+          </div>
+          <div class="vBm__icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/></svg></div>
+        </div>
+
+        <!-- Body -->
+        <div class="vBm__body">
+
+          <!-- Ribbon 2x2 -->
+          <div class="vBm__ribbon">
+            <div class="vBm__ribbon-cell">
+              <div class="vBm__ribbon-label">☀ Luminosity</div>
+              <div class="vBm__ribbon-value">334<span class="u">lx</span></div>
+              <div class="vBm__ribbon-foot">trending down</div>
+            </div>
+            <div class="vBm__ribbon-cell">
+              <div class="vBm__ribbon-label">⚭ Motion</div>
+              <div class="vBm__ribbon-value">Calm</div>
+              <div class="vBm__ribbon-foot">16 min ago</div>
+            </div>
+            <div class="vBm__ribbon-cell">
+              <div class="vBm__ribbon-label">💡 Lights</div>
+              <div class="vBm__ribbon-value">1<span class="u">/ 3</span></div>
+              <div class="vBm__ribbon-foot">avg 4%</div>
+            </div>
+            <div class="vBm__ribbon-cell">
+              <div class="vBm__ribbon-label">▭ Shutters</div>
+              <div class="vBm__ribbon-value">0<span class="u">/ 3</span></div>
+              <div class="vBm__ribbon-foot">all closed</div>
+            </div>
+          </div>
+
+          <!-- Filter chips (horizontal scroll) -->
+          <div class="vBm__chips">
+            <button class="vBm__chip vBm__chip--active">All</button>
+            <button class="vBm__chip">Lights</button>
+            <button class="vBm__chip">Shutters</button>
+            <button class="vBm__chip">Sensors</button>
+            <button class="vBm__chip">Switches</button>
+            <button class="vBm__chip">Media</button>
+          </div>
+
+          <!-- Active mode pill (sticky-ish indicator) -->
+          <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(43,170,104,.08);padding:.55rem .85rem;border-radius:8px;margin-bottom:.85rem;border:1px solid rgba(43,170,104,.18)">
+            <div style="display:flex;align-items:center;gap:.4rem">
+              <span style="color:var(--green)">●</span>
+              <span style="font-weight:600;font-size:.82rem;color:var(--green)">Lumière soir</span>
+              <span style="font-size:.7rem;color:var(--ink-3)">· 4 actions</span>
+            </div>
+            <button style="background:transparent;border:1px solid rgba(43,170,104,.3);color:var(--green);font-size:.7rem;padding:3px 10px;border-radius:4px;font-weight:600">Change</button>
+          </div>
+
+          <!-- Equipments -->
+          <div class="vBm__panel">
+            <div class="vBm__panel-head">
+              <span class="vBm__panel-title">Equipments</span>
+              <span class="vBm__panel-count">12</span>
+            </div>
+            <div class="vBm__sub-head">💡 Lights · 1 / 3</div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon vBm__row-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/></svg></div>
+              <div><div class="vBm__row-name">Applique x1</div></div>
+              <div></div>
+              <div class="vBm__row-toggle"></div>
+            </div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon vBm__row-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/></svg></div>
+              <div><div class="vBm__row-name">Appliques x2</div><div class="vBm__row-sub">4% · 1h14</div></div>
+              <div></div>
+              <div class="vBm__row-toggle vBm__row-toggle--on"></div>
+            </div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon vBm__row-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2"/></svg></div>
+              <div><div class="vBm__row-name">Spots</div></div>
+              <div></div>
+              <div class="vBm__row-toggle"></div>
+            </div>
+
+            <div class="vBm__sub-head">▭ Shutters · 0 / 3</div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon vBm__row-icon--shutter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+              <div><div class="vBm__row-name">Volet Ouest</div></div>
+              <div class="vBm__row-value">Closed</div>
+              <div></div>
+            </div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon vBm__row-icon--shutter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+              <div><div class="vBm__row-name">Volet Sud</div></div>
+              <div class="vBm__row-value">Closed</div>
+              <div></div>
+            </div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon vBm__row-icon--shutter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+              <div><div class="vBm__row-name">Volet Sud Ouest</div></div>
+              <div class="vBm__row-value">Closed</div>
+              <div></div>
+            </div>
+
+            <div class="vBm__sub-head">📡 Sensors · 3 clear</div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0 1 18 0"/></svg></div>
+              <div><div class="vBm__row-name">PIRL</div></div>
+              <div class="vBm__row-value">334lx · 100%</div>
+              <div></div>
+            </div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0 1 18 0"/></svg></div>
+              <div><div class="vBm__row-name">PIR_00</div><div class="vBm__row-sub">Clear</div></div>
+              <div class="vBm__row-value">100%</div>
+              <div></div>
+            </div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0 1 18 0"/></svg></div>
+              <div><div class="vBm__row-name">PIR_01</div><div class="vBm__row-sub">Clear</div></div>
+              <div class="vBm__row-value">85%</div>
+              <div></div>
+            </div>
+          </div>
+
+          <!-- Recipes -->
+          <div class="vBm__panel">
+            <div class="vBm__panel-head">
+              <span class="vBm__panel-title">Recipes</span>
+              <span class="vBm__panel-count">1 active</span>
+            </div>
+            <div class="vBm__row-eq">
+              <div class="vBm__row-icon vBm__row-icon--amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.13-7.59 5 5 0 0 0-9.2 0 4 4 0 0 0-2.13 7.59c.41.2.73.58.73 1.04V21M6 17h12"/></svg></div>
+              <div><div class="vBm__row-name">Motion Light (Dim)</div><div class="vBm__row-sub">10m · Lux ≤ 2300</div></div>
+              <div></div>
+              <div class="vBm__row-toggle vBm__row-toggle--on"></div>
+            </div>
+          </div>
+
+          <!-- Activity -->
+          <div class="vBm__panel">
+            <div class="vBm__panel-head">
+              <span class="vBm__panel-title">Activity</span>
+              <span class="vBm__panel-count">live</span>
+            </div>
+            <div class="vBm__event">
+              <span class="vBm__event-time">22:41</span>
+              <span class="vBm__event-text"><b>Appliques x2</b> on by Motion Light <span class="ok">→ 4%</span></span>
+            </div>
+            <div class="vBm__event">
+              <span class="vBm__event-time">22:40</span>
+              <span class="vBm__event-text">Motion on <b>PIR_00</b></span>
+            </div>
+            <div class="vBm__event">
+              <span class="vBm__event-time">21:00</span>
+              <span class="vBm__event-text">Mode <b>Lumière soir</b> applied</span>
+            </div>
+            <div class="vBm__event">
+              <span class="vBm__event-time">20:54</span>
+              <span class="vBm__event-text"><b>Sunset</b> · Night phase</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom tab bar -->
+        <div class="vBm__tabs">
+          <div class="vBm__tab vBm__tab--active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            Zone
+          </div>
+          <div class="vBm__tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M21 12.8A9 9 0 1 1 11.2 3"/></svg>
+            Modes
+          </div>
+          <div class="vBm__tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18M3 12h18M21 3v18"/></svg>
+            Analyse
+          </div>
+          <div class="vBm__tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>
+            Settings
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <b>Intent (mobile).</b> Mêmes données, même architecture que B desktop, mais adaptée au pouce :
+    <ul>
+      <li>Ribbon 2×2 (au lieu de 4 colonnes) — la luminosité et le motion restent en haut</li>
+      <li>Bandeau du mode actif en évidence sous le ribbon (cliquable pour changer) — c'est l'info la plus utile en mobile (« quel mode est appliqué là ? »)</li>
+      <li>Chips de filtre scrollables horizontalement — natif sur mobile</li>
+      <li>Equipments, Recipes et Activity en panneaux empilés (1 col) — déjà 1 col en desktop, juste resserré</li>
+      <li>Bottom tab bar fixe : Zone / Modes / Analyse / Settings — navigation principale au pouce, sidebar non nécessaire en mobile</li>
+      <li>Targets touch &gt; 44px (les toggles font 32×18 mais leur zone tactile est élargie à 44×44 dans la pratique)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- VARIANT C — Tactile                                          -->
+<!-- ============================================================ -->
+<section id="vC" class="variant" style="background:#F5F2EC">
+  <div class="variant__head">
+    <div class="variant__tag"><span>C</span><span>Tactile — consumer / smart home app feel</span></div>
+    <h2 class="variant__title">Une maison qu'on touche, pas qu'on configure</h2>
+    <p class="variant__sub">Inspiration Apple Home / Hue : gros boutons tangibles, ampoules qui s'allument visuellement, modes en cartes. Pour quand un visiteur ou un membre de la famille arrive sur l'UI.</p>
+  </div>
+
+  <div class="ui">
+    <aside class="sb">
+      <div class="sb__logo">
+        <svg viewBox="25 15 150 155" fill="none" stroke="#1A4F6E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M100 30 L160 90 Q165 95 160 100 L160 150 Q160 158 152 158 L48 158 Q40 158 40 150 L40 100 Q35 95 40 90 Z"/>
+          <path d="M75 115 Q100 140 125 115" stroke="#3B95C2"/>
+          <path d="M78 95 Q83 87 88 95" stroke="#3B95C2"/>
+          <path d="M112 95 Q117 87 122 95" stroke="#3B95C2"/>
+        </svg>
+        <b>SOWEL</b>
+      </div>
+      <div class="sb__group">
+        <div class="sb__item"><span>⊟</span><span>Dashboard</span></div>
+        <div class="sb__item sb__item--active"><span>⌂</span><span>Maison</span><span class="sb__chev">⌄</span></div>
+        <div class="sb__sub">
+          <div class="sb__sub-item">RDC</div>
+          <div class="sb__sub" style="margin-left:.65rem">
+            <div class="sb__sub-item">Cuisine</div>
+            <div class="sb__sub-item sb__sub-item--active">Séjour</div>
+          </div>
+          <div class="sb__sub-item">Etage 1</div>
+        </div>
+        <div class="sb__item"><span>≡</span><span>Modes</span></div>
+        <div class="sb__item"><span>↗</span><span>Analyse</span></div>
+        <div class="sb__item"><span>⚡</span><span>Energy</span></div>
+      </div>
+    </aside>
+
+    <div class="main" style="background:#F5F2EC">
+      <!-- Top zone bar -->
+      <div class="vC__top">
+        <div>
+          <h1 class="vC__zone-name">Séjour</h1>
+          <div class="vC__zone-path">Grange Neuve · RDC</div>
+        </div>
+        <div class="vC__mini-metrics">
+          <div class="vC__mini-metric">
+            <div class="vC__mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M2 12h2M20 12h2"/></svg></div>
+            <div><div class="vC__mini-val">334 lx</div><div class="vC__mini-lab">Luminosity</div></div>
+          </div>
+          <div class="vC__mini-metric">
+            <div class="vC__mini-icon vC__mini-icon--motion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M9 14l3-3 3 3M9 21l3-3 3 3"/></svg></div>
+            <div><div class="vC__mini-val">Calm</div><div class="vC__mini-lab">16 min ago</div></div>
+          </div>
+          <div class="vC__mini-metric">
+            <div class="vC__mini-icon vC__mini-icon--lights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/></svg></div>
+            <div><div class="vC__mini-val">1 / 3</div><div class="vC__mini-lab">Lights on</div></div>
+          </div>
+          <div class="vC__mini-metric">
+            <div class="vC__mini-icon vC__mini-icon--shutters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+            <div><div class="vC__mini-val">0 / 3</div><div class="vC__mini-lab">Shutters open</div></div>
+          </div>
+        </div>
+        <div class="vC__mode-pill">Lumière soir</div>
+      </div>
+
+      <!-- Lights (big tactile cards) -->
+      <div class="vC__group-title">
+        <h2>Lights</h2>
+        <span class="vC__group-title-meta">3 lights · 1 on · avg 4%</span>
+        <span class="vC__group-title-action">All on · All off</span>
+      </div>
+      <div class="vC__lights">
+        <div class="vC__light">
+          <div class="vC__light-head">
+            <div class="vC__light-bulb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/></svg></div>
+            <div class="vC__light-name">Applique x1</div>
+            <div class="vC__light-state">Off</div>
+          </div>
+          <div class="vC__light-slider-wrap">
+            <div class="vC__light-slider" style="width:0%"></div>
+            <div class="vC__light-slider-knob" style="left:0%"></div>
+          </div>
+          <div class="vC__light-meta"><span>0%</span><span class="pct">Tap to turn on</span></div>
+        </div>
+        <div class="vC__light vC__light--on">
+          <div class="vC__light-head">
+            <div class="vC__light-bulb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/></svg></div>
+            <div class="vC__light-name">Appliques x2</div>
+            <div class="vC__light-state">On</div>
+          </div>
+          <div class="vC__light-slider-wrap">
+            <div class="vC__light-slider" style="width:4%"></div>
+            <div class="vC__light-slider-knob" style="left:4%"></div>
+          </div>
+          <div class="vC__light-meta"><span>4% · on 1h14</span><span class="pct">By Motion Light</span></div>
+        </div>
+        <div class="vC__light">
+          <div class="vC__light-head">
+            <div class="vC__light-bulb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M2 12h2M20 12h2"/></svg></div>
+            <div class="vC__light-name">Spots</div>
+            <div class="vC__light-state">Off</div>
+          </div>
+          <div class="vC__light-slider-wrap">
+            <div class="vC__light-slider" style="width:0%"></div>
+            <div class="vC__light-slider-knob" style="left:0%"></div>
+          </div>
+          <div class="vC__light-meta"><span>—</span><span class="pct">Tap to turn on</span></div>
+        </div>
+      </div>
+
+      <!-- Shutters -->
+      <div class="vC__group-title">
+        <h2>Shutters</h2>
+        <span class="vC__group-title-meta">3 shutters · all closed</span>
+        <span class="vC__group-title-action">Open all · Close all</span>
+      </div>
+      <div class="vC__shutters">
+        <div class="vC__shutter">
+          <div class="vC__shutter-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+          <div><div class="vC__shutter-name">Volet Ouest</div><div class="vC__shutter-state">Closed</div></div>
+          <div class="vC__shutter-bar" style="--w:0%"></div>
+          <div class="vC__shutter-ctrl">
+            <button class="vC__shutter-btn">↑</button>
+            <button class="vC__shutter-btn">■</button>
+            <button class="vC__shutter-btn">↓</button>
+          </div>
+        </div>
+        <div class="vC__shutter">
+          <div class="vC__shutter-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+          <div><div class="vC__shutter-name">Volet Sud</div><div class="vC__shutter-state">Closed</div></div>
+          <div class="vC__shutter-bar" style="--w:0%"></div>
+          <div class="vC__shutter-ctrl">
+            <button class="vC__shutter-btn">↑</button>
+            <button class="vC__shutter-btn">■</button>
+            <button class="vC__shutter-btn">↓</button>
+          </div>
+        </div>
+        <div class="vC__shutter">
+          <div class="vC__shutter-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></div>
+          <div><div class="vC__shutter-name">Volet Sud Ouest</div><div class="vC__shutter-state">Closed</div></div>
+          <div class="vC__shutter-bar" style="--w:0%"></div>
+          <div class="vC__shutter-ctrl">
+            <button class="vC__shutter-btn">↑</button>
+            <button class="vC__shutter-btn">■</button>
+            <button class="vC__shutter-btn">↓</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modes carousel -->
+      <div class="vC__group-title">
+        <h2>Modes</h2>
+        <span class="vC__group-title-meta">1 active</span>
+      </div>
+      <div class="vC__modes">
+        <div class="vC__mode-card">
+          <div class="vC__mode-card-icon">☀</div>
+          <div class="vC__mode-card-name">Lumière jour</div>
+          <div class="vC__mode-card-meta">1 action · tap to apply</div>
+        </div>
+        <div class="vC__mode-card">
+          <div class="vC__mode-card-icon">🌙</div>
+          <div class="vC__mode-card-name">Lumière nuit</div>
+          <div class="vC__mode-card-meta">1 action · tap to apply</div>
+        </div>
+        <div class="vC__mode-card vC__mode-card--active">
+          <div class="vC__mode-card-icon">●</div>
+          <div class="vC__mode-card-name">Lumière soir</div>
+          <div class="vC__mode-card-meta">Active · 4 actions</div>
+        </div>
+      </div>
+
+      <!-- Recipe card -->
+      <div class="vC__recipe-card">
+        <div class="vC__recipe-head">
+          <span class="vC__recipe-badge">Recipe · Active</span>
+          <span class="vC__recipe-name">Motion Light (Dimmable)</span>
+          <div class="vC__recipe-toggle"></div>
+        </div>
+        <div style="font-size:.85rem;color:var(--ink-2)">Applies to <b>Applique x1, Appliques x2</b>. Adjusts brightness with time of day.</div>
+        <div class="vC__recipe-grid">
+          <div class="vC__recipe-prop">
+            <div class="vC__recipe-prop-label">Timeout</div>
+            <div class="vC__recipe-prop-value">10 min</div>
+          </div>
+          <div class="vC__recipe-prop">
+            <div class="vC__recipe-prop-label">Lux threshold</div>
+            <div class="vC__recipe-prop-value">≤ 2300</div>
+          </div>
+          <div class="vC__recipe-prop">
+            <div class="vC__recipe-prop-label">Slot 1</div>
+            <div class="vC__recipe-prop-value">21:00 · 100%</div>
+          </div>
+          <div class="vC__recipe-prop">
+            <div class="vC__recipe-prop-label">Today</div>
+            <div class="vC__recipe-prop-value">14 trigs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <b>Intent.</b> Direction "smart home consumer" — l'UI doit donner envie d'interagir.
+    <ul>
+      <li>Top bar avec mini-metrics + pastille du mode actif → toujours visible</li>
+      <li>Lights en grandes cartes : l'ampoule s'illumine vraiment quand on est ON (gradient radial doré + glow)</li>
+      <li>Shutters avec contrôles directs ↑■↓ + position-bar visuelle</li>
+      <li>Modes en cartes flippables (gros boutons type Apple Home shortcuts)</li>
+      <li>La recipe a sa propre carte distincte avec un bandeau accent → c'est l'auto-magie visible</li>
+      <li>Pas top pour 30+ équipements (verbeux). Inverse du Variant B</li>
+    </ul>
+  </div>
+</section>
+
+<footer style="max-width:1280px;margin:2rem auto 3rem;padding:1.5rem;text-align:center;color:var(--ink-3);font-size:.82rem">
+  <p><b style="color:var(--ink)">Comparaison rapide</b> · <b style="color:var(--primary)">A Glanceable</b> — visiteur/mobile · <b style="color:var(--primary)">B Dashboard</b> — power user/desktop · <b style="color:var(--primary)">C Tactile</b> — usage quotidien famille</p>
+  <p style="margin-top:.5rem">Les 3 partagent : sidebar de navigation existante (inchangée), même couleurs Sowel (primary <code>#1A4F6E</code>, accent <code>#D4963F</code>), même fonts (Inter + JetBrains Mono).</p>
+</footer>
+
+</body>
+</html>

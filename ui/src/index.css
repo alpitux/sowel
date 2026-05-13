@@ -3,87 +3,63 @@
 @import "@fontsource/inter/500.css";
 @import "@fontsource/inter/600.css";
 @import "@fontsource/jetbrains-mono/400.css";
+@import "../../design-system/tokens.css";
 
 /* ============================================================
-   Winch Design System — Tailwind v4 Theme
+   Sowel Design System — Tailwind v4 Theme
+   Light/dark palettes live in design-system/tokens.css.
+   The `.dark` class toggle on <html> (ui/src/theme.ts) is honored via
+   the extended `[data-theme="dark"], .dark` selector in tokens.css.
    ============================================================ */
 
 @theme {
-  /* Colors — Light mode (Ocean palette) */
-  --color-primary: #1A4F6E;
-  --color-primary-mid: #7FB8D4;
-  --color-primary-light: #E6F0F6;
-  --color-primary-hover: #13405A;
-  --color-accent: #D4963F;
-  --color-accent-hover: #BB8232;
-  --color-accent-light: #FDF0E0;
-  --color-background: #F8FAFB;
-  --color-surface: #FFFFFF;
-  --color-surface-raised: #FFFFFF;
-  --color-text: #1A1A1A;
-  --color-text-secondary: #6B7280;
-  --color-text-tertiary: #9CA3AF;
-  --color-border: #E1E6EA;
-  --color-border-light: #EDF0F3;
-  --color-active: #FACC15;
-  --color-active-text: #A16207;
-  --color-success: #3D8B6E;
-  --color-warning: #C88B3A;
-  --color-error: #C0453A;
+  /* Colors — resolved from design-system/tokens.css */
+  --color-primary:        var(--p-500);
+  --color-primary-mid:    var(--p-100);
+  --color-primary-light:  var(--p-50);
+  --color-primary-hover:  var(--p-600);
+  --color-accent:         var(--a-500);
+  --color-accent-hover:   var(--a-600);
+  --color-accent-light:   var(--a-50);
+  --color-background:     var(--n-50);
+  --color-surface:        var(--n-0);
+  --color-surface-raised: var(--n-0);
+  --color-text:           var(--n-700);
+  --color-text-secondary: var(--n-600);
+  --color-text-tertiary:  var(--n-400);
+  --color-border:         var(--line-2);
+  --color-border-light:   var(--line);
+  --color-active:         var(--a-500);
+  --color-active-text:    var(--a-600);
+  --color-success:        var(--green-500);
+  --color-warning:        var(--a-500);
+  --color-error:          var(--red-500);
 
   /* Typography */
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono);
 
-  /* Font sizes — Winch specific */
+  /* Font sizes — Sowel specific (no design-system equivalent yet) */
   --font-size-data-lg: 28px;
   --font-size-data-md: 20px;
 
-  /* Border radius */
+  /* Border radius — kept at production values; spec 098 will align to design system */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  /* Shadows — resolved from design-system tokens (auto-darken in dark mode) */
+  --shadow-sm: var(--sh-1);
+  --shadow-md: var(--sh-2);
+  --shadow-lg: var(--sh-3);
 }
 
 /* ============================================================
-   Dark mode overrides — deep navy slate palette
+   Dark mode widget SVG boost (production-specific, kept outside @theme)
    ============================================================ */
 
-.dark {
-  --color-primary: #4A9FCC;
-  --color-primary-mid: #5CB3E0;
-  --color-primary-light: #1A2E42;
-  --color-primary-hover: #5CB3E0;
-  --color-accent: #E0A84F;
-  --color-accent-hover: #EBB85F;
-  --color-accent-light: #3A2A14;
-  --color-background: #111827;
-  --color-surface: #1E293B;
-  --color-surface-raised: #253040;
-  --color-text: #E8EAED;
-  --color-text-secondary: #94A3B8;
-  --color-text-tertiary: #64748B;
-  --color-border: #2D3A4F;
-  --color-border-light: #253040;
-  --color-active: #EAB308;
-  --color-active-text: #FDE68A;
-  --color-success: #5BB98C;
-  --color-warning: #E0A84F;
-  --color-error: #E05A50;
-
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.20);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.30);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.40);
-
-  /* Boost widget SVG icon visibility on dark backgrounds */
-  svg[viewBox="0 0 56 56"] {
-    filter: brightness(1.6);
-  }
+.dark svg[viewBox="0 0 56 56"] {
+  filter: brightness(1.6);
 }
 
 /* ============================================================
