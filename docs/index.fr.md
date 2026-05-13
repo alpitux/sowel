@@ -89,34 +89,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 3 — Une petite histoire                                 -->
-<!-- =========================================================== -->
-<div class="sowel-flip__page">
-<div class="sowel-section">
-
-<div class="sowel-story">
-
-<p class="sowel-eyebrow">Une petite histoire</p>
-
-<p class="sowel-paragraph">Prenez <em>Constant Light</em>. Une cuisine éclairée à une luminosité confortable toute la journée. Pour bien faire, il faut plusieurs détecteurs de mouvement qui prolongent le même minuteur sans se contrarier, une cible de luminosité qui s'adapte au lux naturel, et des exemptions pour les repas, la nuit, ou quand quelqu'un appuie sur l'interrupteur.</p>
-
-<p class="sowel-paragraph">Ou prenez <em>Solar EV Charging</em>. Le chargeur doit monter en puissance exactement au rythme du surplus produit par vos panneaux, et redescendre dès qu'un nuage passe. Le calcul tient sur une ligne ; l'orchestration, non.</p>
-
-<ul class="sowel-bullets">
-  <li>plusieurs entrées qui doivent rester synchronisées (capteurs, compteurs, plannings)</li>
-  <li>des décisions en temps réel qui suivent les mesures live, pas des instantanés</li>
-  <li>des replis sûrs pour chaque cas particulier</li>
-</ul>
-
-<p class="sowel-paragraph">Chaque règle prise isolément est triviale. Le difficile, ce sont les <strong>combinaisons</strong>. <strong>Sowel encode cette complexité une fois pour toutes</strong>, éprouvée sur le terrain, et la livre sous forme de recette. Posez-la sur une zone, passez à la suite.</p>
-
-</div>
-
-</div>
-</div>
-
-<!-- =========================================================== -->
-<!-- Page 4 — Cinq couches                                        -->
+<!-- Page 3 — Cinq couches                                        -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section">
@@ -183,7 +156,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 5 — Déployez en quelques minutes                        -->
+<!-- Page 4 — Déployez en quelques minutes                        -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section sowel-section--feature">
@@ -209,7 +182,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 6 — Faites le tour                                      -->
+<!-- Page 5 — Faites le tour                                      -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section">
