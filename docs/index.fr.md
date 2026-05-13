@@ -178,7 +178,7 @@ hide:
 
 </div>
 
-<div class="sowel-section">
+<div class="sowel-section sowel-section--feature">
 
 <p class="sowel-eyebrow">Déployez en quelques minutes. À vous dès le premier jour.</p>
 
