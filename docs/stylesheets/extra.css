@@ -773,21 +773,21 @@
 
 .md-typeset .sowel-hero__eyebrow {
   font-family: var(--sowel-display);
-  font-size: 0.95rem;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--md-accent-fg-color);
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.9rem;
 }
 
 .md-typeset .sowel-hero__tagline {
   font-family: var(--sowel-display);
-  font-size: clamp(2.8rem, 5.6vw, 5.2rem);
+  font-size: clamp(1.9rem, 3.6vw, 3rem);
   font-weight: 800;
-  letter-spacing: -0.032em;
-  line-height: 1.02;
-  margin: 0 0 1.4rem;
+  letter-spacing: -0.028em;
+  line-height: 1.05;
+  margin: 0 0 1.1rem;
   color: var(--md-primary-fg-color);
   border-bottom: none;
   font-feature-settings: "cv05", "cv08", "cv11", "ss01";
@@ -801,11 +801,11 @@
 [data-md-color-scheme="slate"] .sowel-hero__tagline em { color: #8FB3C7; opacity: 1; }
 
 .md-typeset .sowel-hero__lead {
-  font-size: 1.25rem;
-  line-height: 1.5;
+  font-size: clamp(0.95rem, 1.1vw, 1.1rem);
+  line-height: 1.55;
   color: var(--md-default-fg-color);
-  margin: 0 0 1.75rem;
-  max-width: 36rem;
+  margin: 0 0 1.5rem;
+  max-width: 32rem;
 }
 
 .sowel-hero__ctas {
