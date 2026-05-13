@@ -740,6 +740,17 @@
   height: 1.75rem;
   filter: brightness(0) invert(1);
 }
+/* MkDocs Material applies opacity / focus halos on header buttons.
+ * Suppress them on the logo so hover/focus don't 'flash' the wink. */
+.md-header__button.md-logo,
+.md-header__button.md-logo:hover,
+.md-header__button.md-logo:focus,
+.md-header__button.md-logo:focus-visible {
+  opacity: 1;
+  background: none;
+  box-shadow: none;
+  outline: none;
+}
 
 /* Hide the tabs row site-wide. It only carries Home + 2 section tabs,
  * which the sidebar already exposes, and its dark-on-dark labels were
