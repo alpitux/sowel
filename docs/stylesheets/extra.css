@@ -1014,3 +1014,107 @@
   }
   .sowel-mock__metrics { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ============================================================
+   Landing — section-snap scroll experience
+   Each section behaves like a "screen". Scoped to landing only via
+   :has(.sowel-hero--split) so the rest of the docs is untouched.
+   Disabled on mobile (cramped) and for reduced-motion users.
+   ============================================================ */
+
+@media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+  html:has(.sowel-hero--split) {
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 5.5rem;
+    scroll-behavior: smooth;
+  }
+  html:has(.sowel-hero--split) .sowel-hero--split,
+  html:has(.sowel-hero--split) .sowel-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
+    min-height: calc(100vh - 6rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: safe center;
+  }
+  /* Keep the hero grid intact while still being a flex column */
+  html:has(.sowel-hero--split) .sowel-hero--split {
+    display: grid;
+  }
+}
+
+/* ============================================================
+   Reveal animation — fade-up on scroll into view
+   Wired by docs/javascripts/landing.js (IntersectionObserver).
+   Stagger via --sowel-i set per child within a grid.
+   ============================================================ */
+
+.sowel-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: calc(var(--sowel-i, 0) * 80ms);
+  will-change: opacity, transform;
+}
+.sowel-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sowel-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ============================================================
+   Hero scroll cue — a soft "↓ scroll" hint at the bottom
+   ============================================================ */
+
+.sowel-hero--split { position: relative; }
+
+.sowel-scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  text-decoration: none;
+  color: var(--md-primary-fg-color);
+  font-family: var(--sowel-display);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.sowel-scroll-cue:hover {
+  opacity: 1;
+  color: var(--md-primary-fg-color);
+}
+.sowel-scroll-cue__chev {
+  width: 1.4rem;
+  height: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  animation: sowel-cue-bounce 2.2s ease-in-out infinite;
+}
+.sowel-scroll-cue__chev svg { width: 0.85rem; height: 0.85rem; }
+[data-md-color-scheme="slate"] .sowel-scroll-cue { color: #C9DCE7; }
+
+@keyframes sowel-cue-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sowel-scroll-cue__chev { animation: none; }
+}
+@media (max-width: 900px) {
+  .sowel-scroll-cue { display: none; }
+}
