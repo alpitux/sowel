@@ -1108,6 +1108,14 @@
   /* The .md-typeset article still leaves ~0.5rem of leading above
    * its first child; cancel it on the flip itself. */
   html:has(.sowel-flip) .sowel-flip { margin-top: -0.5rem; }
+  /* MkDocs Material "back to top" pill is meaningless inside the
+   * flipbook (the user isn't navigating a long page) — and visually
+   * pollutes the hero. Hide it. */
+  html:has(.sowel-flip) .md-top { display: none !important; }
+  /* The tabs row only shows "Home" on the landing (the rest of the
+   * nav is hidden via front-matter), so the row is pure empty space.
+   * Hide it to slim the header. */
+  html:has(.sowel-flip) .md-tabs { display: none; }
 }
 
 /* Mobile / reduced-motion fallback: stack pages vertically. */
