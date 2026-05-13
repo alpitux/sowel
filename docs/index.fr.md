@@ -67,10 +67,6 @@ hide:
 </div>
 
 </div>
-<span class="sowel-scroll-cue" aria-hidden="true">
-  <span>Défilez pour tourner</span>
-  <span class="sowel-scroll-cue__chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
-</span>
 </div>
 
 </div>

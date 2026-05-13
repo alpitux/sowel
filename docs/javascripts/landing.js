@@ -56,6 +56,19 @@
       return mqSmall.matches || mqReduced.matches;
     }
 
+    // === Scroll cue (fixed bottom-right, only visible on the first page) =
+    var cueLabel = (document.documentElement.lang || "en").startsWith("fr") ? "Défilez" : "Scroll";
+    var cue = document.createElement("span");
+    cue.className = "sowel-scroll-cue";
+    cue.setAttribute("aria-hidden", "true");
+    cue.innerHTML =
+      "<span>" +
+      cueLabel +
+      '</span><span class="sowel-scroll-cue__chev">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>' +
+      "</span>";
+    document.body.appendChild(cue);
+
     // === Page indicator (dots) ==========================================
     var dots = document.createElement("div");
     dots.className = "sowel-flip__dots";
@@ -108,6 +121,11 @@
       // Nearest page wins the dot highlight
       var current = Math.round(progress * (n - 1));
       setActiveDot(current);
+
+      // Fade out the scroll cue as soon as the user has started flipping.
+      // 0.04 ≈ a 4% scroll (one nudge of the wheel) is enough.
+      cue.style.opacity = progress > 0.04 ? "0" : "";
+      cue.style.pointerEvents = progress > 0.04 ? "none" : "";
     }
 
     function goTo(idx) {
