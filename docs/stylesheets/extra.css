@@ -1016,58 +1016,160 @@
 }
 
 /* ============================================================
-   Landing — section-snap scroll experience
-   Each section behaves like a "screen". Scoped to landing only via
-   :has(.sowel-hero--split) so the rest of the docs is untouched.
-   Disabled on mobile (cramped) and for reduced-motion users.
+   Landing — horizontal "flipbook" scroll experience
+   --------------------------------------------------------------
+   Layout:
+     .sowel-flip          (tall outer container, height = N * 100vh)
+       .sowel-flip__pin   (position: sticky, full viewport, overflow-x: hidden)
+         .sowel-flip__track  (display: flex, width = N * 100vw, translated by JS)
+           .sowel-flip__page * N   (each 100vw × 100vh)
+
+   The user scrolls VERTICALLY. JS reads the outer container's
+   scroll progress and applies translateX on the track, so it
+   feels like flipping book pages.
+
+   Disabled on viewports <900px and for reduced-motion: the flip
+   container behaves as a normal block, pages stack vertically.
    ============================================================ */
 
 @media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
-  html:has(.sowel-hero--split) {
-    scroll-snap-type: y proximity;
-    scroll-padding-top: 5.5rem;
-    scroll-behavior: smooth;
+  .sowel-flip {
+    position: relative;
+    /* page count is set inline as --sowel-flip-n, default 5 */
+    height: calc(var(--sowel-flip-n, 5) * 100vh);
   }
-  html:has(.sowel-hero--split) .sowel-hero--split,
-  html:has(.sowel-hero--split) .sowel-section {
-    scroll-snap-align: start;
-    scroll-snap-stop: normal;
-    min-height: calc(100vh - 6rem);
+  .sowel-flip__pin {
+    position: sticky;
+    /* Matches the mkdocs material header + tabs height (~3rem + ~2.4rem). */
+    top: var(--sowel-flip-top, 5.4rem);
+    height: calc(100vh - var(--sowel-flip-top, 5.4rem));
+    overflow: hidden;
+  }
+  .sowel-flip__track {
+    display: flex;
+    width: calc(var(--sowel-flip-n, 5) * 100vw);
+    height: 100%;
+    will-change: transform;
+    /* Tiny smoothing so wheel ticks don't look digital. */
+    transition: transform 80ms linear;
+  }
+  .sowel-flip__page {
+    flex: 0 0 100vw;
+    height: 100%;
+    overflow-y: auto;
+    padding: 1.5rem clamp(1.25rem, 5vw, 4rem);
     display: flex;
     flex-direction: column;
-    justify-content: safe center;
-  }
-  /* Keep the hero grid intact while still being a flex column */
-  html:has(.sowel-hero--split) .sowel-hero--split {
-    display: grid;
+    justify-content: center;
   }
 }
 
+/* Mobile / reduced-motion fallback: stack pages vertically. */
+.sowel-flip__page {
+  padding: 1.5rem 1.25rem;
+}
+@media (max-width: 899px), (prefers-reduced-motion: reduce) {
+  .sowel-flip { height: auto; }
+  .sowel-flip__pin { position: static; height: auto; overflow: visible; }
+  .sowel-flip__track { display: block; width: auto; height: auto; transform: none !important; }
+  .sowel-flip__page { width: auto; height: auto; overflow: visible; padding: 2.5rem 1.25rem; }
+}
+
+/* Inside a flip page, the existing .sowel-section becomes the
+ * content shell — its big top margin makes no sense here. */
+.sowel-flip__page > .sowel-section,
+.sowel-flip__page .sowel-section {
+  margin-top: 0;
+}
+/* The hero page hosts the gradient full-bleed; the hero inner block
+ * keeps the content centered at 72rem max so it doesn't stretch on
+ * ultra-wide screens. */
+.sowel-flip__page--hero {
+  padding: 0;
+  background: linear-gradient(135deg,
+    var(--md-primary-fg-color--light) 0%,
+    var(--sowel-cream) 70%);
+}
+[data-md-color-scheme="slate"] .sowel-flip__page--hero {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--md-primary-fg-color) 35%, transparent) 0%,
+    var(--sowel-cream) 70%);
+}
+.sowel-flip__page--hero .sowel-hero--split {
+  background: none;
+  margin: 0 auto;
+  border-radius: 0;
+  width: 100%;
+  max-width: 72rem;
+  padding: clamp(2rem, 6vh, 4rem) clamp(1.5rem, 6vw, 3rem) clamp(2.5rem, 6vh, 4rem);
+}
+
+/* === Five-layers pillar grid (5 cards wide on the flip page) === */
+.sowel-cards--pillars {
+  grid-template-columns: repeat(5, 1fr) !important;
+  gap: 0.85rem;
+  max-width: none;
+}
+.sowel-cards--pillars .sowel-card {
+  padding: 1rem 1.05rem 0.95rem;
+  border-radius: 12px;
+}
+.sowel-cards--pillars .sowel-card h3 { font-size: 0.92rem; margin-bottom: 0.25rem; }
+.sowel-cards--pillars .sowel-card__lead { font-size: 0.78rem; margin-bottom: 0.35rem; }
+.sowel-cards--pillars .sowel-card p { font-size: 0.76rem; line-height: 1.5; }
+.sowel-cards--pillars .sowel-card__icon { width: 2.1rem; height: 2.1rem; margin-bottom: 0.55rem; border-radius: 8px; }
+.sowel-cards--pillars .sowel-card__icon svg { width: 1.1rem; height: 1.1rem; }
+@media (max-width: 1200px) {
+  .sowel-cards--pillars { grid-template-columns: repeat(3, 1fr) !important; }
+}
+@media (max-width: 720px) {
+  .sowel-cards--pillars { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
 /* ============================================================
-   Reveal animation — fade-up on scroll into view
-   Wired by docs/javascripts/landing.js (IntersectionObserver).
-   Stagger via --sowel-i set per child within a grid.
+   Page indicator — dots fixed bottom-right (book pages position)
+   Wired by landing.js: each click flips to that page, the
+   active one is set via aria-current="true".
    ============================================================ */
 
-.sowel-reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition:
-    opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  transition-delay: calc(var(--sowel-i, 0) * 80ms);
-  will-change: opacity, transform;
+.sowel-flip__dots {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.55rem 0.4rem;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
 }
-.sowel-reveal.is-visible {
-  opacity: 1;
-  transform: none;
+[data-md-color-scheme="slate"] .sowel-flip__dots {
+  background: rgba(0, 0, 0, 0.4);
 }
-@media (prefers-reduced-motion: reduce) {
-  .sowel-reveal { opacity: 1; transform: none; transition: none; }
+.sowel-flip__dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--md-default-fg-color) 25%, transparent);
+  cursor: pointer;
+  transition: background 200ms ease, transform 200ms ease;
+}
+.sowel-flip__dot:hover { background: var(--md-primary-fg-color); }
+.sowel-flip__dot[aria-current="true"] {
+  background: var(--md-primary-fg-color);
+  transform: scale(1.35);
+}
+@media (max-width: 899px), (prefers-reduced-motion: reduce) {
+  .sowel-flip__dots { display: none; }
 }
 
 /* ============================================================
-   Hero scroll cue — a soft "↓ scroll" hint at the bottom
+   Hero scroll cue — "↓ Scroll to flip" hint inside the hero page
    ============================================================ */
 
 .sowel-hero--split { position: relative; }
@@ -1075,7 +1177,7 @@
 .sowel-scroll-cue {
   position: absolute;
   left: 50%;
-  bottom: 1rem;
+  bottom: 0.5rem;
   transform: translateX(-50%);
   display: inline-flex;
   flex-direction: column;
@@ -1089,12 +1191,9 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   opacity: 0.7;
-  transition: opacity 200ms ease, transform 200ms ease;
+  transition: opacity 200ms ease;
 }
-.sowel-scroll-cue:hover {
-  opacity: 1;
-  color: var(--md-primary-fg-color);
-}
+.sowel-scroll-cue:hover { opacity: 1; }
 .sowel-scroll-cue__chev {
   width: 1.4rem;
   height: 1.4rem;
@@ -1107,7 +1206,6 @@
 }
 .sowel-scroll-cue__chev svg { width: 0.85rem; height: 0.85rem; }
 [data-md-color-scheme="slate"] .sowel-scroll-cue { color: #C9DCE7; }
-
 @keyframes sowel-cue-bounce {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(5px); }
@@ -1115,6 +1213,9 @@
 @media (prefers-reduced-motion: reduce) {
   .sowel-scroll-cue__chev { animation: none; }
 }
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .sowel-scroll-cue { display: none; }
 }
+
+/* Kept for the hero entrance only — no longer used elsewhere. */
+.sowel-reveal { opacity: 1; transform: none; transition: none; }

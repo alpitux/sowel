@@ -4,6 +4,15 @@ hide:
   - toc
 ---
 
+<div class="sowel-flip">
+<div class="sowel-flip__pin">
+<div class="sowel-flip__track">
+
+<!-- =========================================================== -->
+<!-- Page 1 — Hero                                                -->
+<!-- =========================================================== -->
+<div class="sowel-flip__page sowel-flip__page--hero">
+
 <div class="sowel-hero sowel-hero--split">
 <div class="sowel-hero__copy">
 
@@ -58,13 +67,19 @@ hide:
 </div>
 
 </div>
-<a class="sowel-scroll-cue" href="#learn-more" aria-label="Scroll to learn more">
-  <span>Scroll</span>
+<span class="sowel-scroll-cue" aria-hidden="true">
+  <span>Scroll to flip</span>
   <span class="sowel-scroll-cue__chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
-</a>
+</span>
 </div>
 
-<div class="sowel-section" id="learn-more">
+</div>
+
+<!-- =========================================================== -->
+<!-- Page 2 — A different way                                     -->
+<!-- =========================================================== -->
+<div class="sowel-flip__page">
+<div class="sowel-section">
 
 <p class="sowel-eyebrow">A different way to automate your home</p>
 
@@ -75,7 +90,12 @@ hide:
 <p class="sowel-paragraph">The best automation is the one you forget about. Your home just works.</p>
 
 </div>
+</div>
 
+<!-- =========================================================== -->
+<!-- Page 3 — A small story                                       -->
+<!-- =========================================================== -->
+<div class="sowel-flip__page">
 <div class="sowel-section">
 
 <div class="sowel-story">
@@ -92,45 +112,32 @@ hide:
   <li>safe fallbacks for every edge case (sensor offline, network hiccup, user override)</li>
 </ul>
 
-<p class="sowel-paragraph">Each rule on its own is trivial. The hard part is the <strong>combinations</strong>. IFTTT-style rules fall apart on the first overlap. Hand-built automations get debugged for a week, then quietly accumulate corner cases nobody dares touch.</p>
-
-<p class="sowel-paragraph"><strong>Sowel encodes this complexity once</strong>, road-tested, and ships it as a recipe. Drop it on a zone and move on.</p>
+<p class="sowel-paragraph">Each rule on its own is trivial. The hard part is the <strong>combinations</strong>. <strong>Sowel encodes this complexity once</strong>, road-tested, and ships it as a recipe. Drop it on a zone and move on.</p>
 
 </div>
 
 </div>
+</div>
 
+<!-- =========================================================== -->
+<!-- Page 4 — Five layers                                         -->
+<!-- =========================================================== -->
+<div class="sowel-flip__page">
 <div class="sowel-section">
 
-<p class="sowel-eyebrow">Where every other home automation tool sees triggers, Sowel sees a home.</p>
+<p class="sowel-eyebrow">Where every other tool sees triggers, Sowel sees a home.</p>
 
-<p class="sowel-paragraph">Most tools start at the wires and ask you to bolt scripts on top. Sowel starts at the home and lets the wires fall into place. Five layers describe your house in the same words you'd use yourself, each one a little less abstract than the one below it:</p>
+<p class="sowel-paragraph">Five layers describe your house in the same words you'd use yourself, each one a little less abstract than the one below it.</p>
 
-<ul class="sowel-bullets">
-  <li><strong>Devices</strong> are auto-discovered and normalized into one data model.</li>
-  <li><strong>Equipments</strong> name what those devices actually do.</li>
-  <li><strong>Zones</strong> group equipments by space, with auto-aggregated metrics.</li>
-  <li><strong>Modes</strong> flip the whole house in one tap.</li>
-  <li><strong>Recipes</strong> make it run on its own.</li>
-</ul>
-
-<p class="sowel-paragraph">And the cherry on top:</p>
-
-<ul class="sowel-bullets">
-  <li>Integrations and recipes ship as <strong>plugins</strong>, distributed from GitHub: <em>Zigbee2MQTT</em>, <em>Netatmo</em>, <em>Shelly</em>, <em>Panasonic Comfort Cloud</em>, <em>weather forecasts</em>, and many more. Install what you need, ignore the rest.</li>
-  <li>Everything sits on a small, typed <strong>API and event bus</strong>, so extending Sowel is a single TypeScript file, not a fork.</li>
-</ul>
-
-<div class="sowel-cards">
+<div class="sowel-cards sowel-cards--pillars">
 
 <div class="sowel-card">
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 9h2"/><path d="M20 15h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
   </div>
-  <h3>Devices. What's on your network.</h3>
-  <p class="sowel-card__lead">Whatever the brand, whatever the protocol, Sowel models them all the same way.</p>
-  <p>About fifty semantic categories match what a home actually measures: temperature, motion, brightness, contact, energy, water, presence. Each integration plugin (Zigbee, MQTT, a cloud API, a LoRa bridge) translates its raw protocol into that shared vocabulary, so every device lands with the right category, type, and unit, ready to bind.</p>
-  <p class="sowel-card__example" data-label="Example">A Zigbee bulb, a Shelly relay, and a Netatmo station all expose <em>temperature</em> the same way — same category, same unit, same equipment binding.</p>
+  <h3>Devices</h3>
+  <p class="sowel-card__lead">What's on your network.</p>
+  <p>Auto-discovered, normalized into one shared vocabulary regardless of brand or protocol.</p>
   <p class="sowel-card__more"><a href="user/devices/">Read more →</a></p>
 </div>
 
@@ -138,10 +145,9 @@ hide:
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
   </div>
-  <h3>Equipments. What's in your room.</h3>
-  <p class="sowel-card__lead">Sowel standardizes the things every home has — lights, shutters, thermostats, sensors, gates, meters.</p>
-  <p>Each equipment has a known type, a name, and a predictable set of controls. Bind one device or several — three IKEA dimmers behind a wall, a Zigbee bulb, a cloud-driven heat pump — and Sowel hides the wiring behind a single handle you can use, group, and reason about.</p>
-  <p class="sowel-card__example" data-label="Example">A wall dimmer and the ceiling spots it controls become a single <em>Kitchen Lights</em> equipment you can dim from one place.</p>
+  <h3>Equipments</h3>
+  <p class="sowel-card__lead">What's in your room.</p>
+  <p>Lights, shutters, thermostats, meters — standardized, with predictable controls, one handle per thing.</p>
   <p class="sowel-card__more"><a href="user/equipments/">Read more →</a></p>
 </div>
 
@@ -149,10 +155,9 @@ hide:
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
   </div>
-  <h3>Zones. Your home's topology.</h3>
-  <p class="sowel-card__lead">Sowel turns your layout into a thinking map of your house.</p>
-  <p>Group equipments into zones, by room, by floor, by purpose. Sowel rolls up their data automatically — averages, OR-of-all, max — so a zone always knows its own state. No formulas, no glue code, no dashboards to wire.</p>
-  <p class="sowel-card__example" data-label="Example">Three PIR sensors in your <em>Living Room</em> zone become a single presence signal — anyone moves anywhere, the zone is occupied.</p>
+  <h3>Zones</h3>
+  <p class="sowel-card__lead">Your home's topology.</p>
+  <p>Group equipments by room or floor; Sowel rolls up their data automatically — averages, OR-of-all, max.</p>
   <p class="sowel-card__more"><a href="user/zones/">Read more →</a></p>
 </div>
 
@@ -160,10 +165,9 @@ hide:
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
   </div>
-  <h3>Modes. Your home's rhythms.</h3>
-  <p class="sowel-card__lead">Sowel makes the whole house move in tune with your habits.</p>
-  <p>Define modes for the rhythms you live by — Day, Evening, Night. One tap (or a schedule) flips every zone over: brightness targets, motion behaviour, heating setpoints, recipes on or off.</p>
-  <p class="sowel-card__example" data-label="Example">At sunset your home switches to <em>Evening</em> — dimmers drop to 40%, lights warm up, and the kids' rooms stop reacting to motion.</p>
+  <h3>Modes</h3>
+  <p class="sowel-card__lead">Your home's rhythms.</p>
+  <p>Day, Evening, Night — one tap (or a schedule) flips every zone over: brightness, heating, recipes.</p>
   <p class="sowel-card__more"><a href="user/modes/">Read more →</a></p>
 </div>
 
@@ -171,17 +175,21 @@ hide:
   <div class="sowel-card__icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.13-7.59 5 5 0 0 0-9.2 0 4 4 0 0 0-2.13 7.59c.41.2.73.58.73 1.04V20a1 1 0 0 0 1 1z"/><path d="M6 17h12"/></svg>
   </div>
-  <h3>Recipes. Your home's reflexes.</h3>
-  <p class="sowel-card__lead">Sowel ships them tested. Drop one on a zone, no scripting.</p>
-  <p>Choose from a curated catalogue: motion-triggered lighting, presence-based heating, scheduled irrigation, sunset shutters. Set a few values, and it runs. No flows to wire, no logic programming.</p>
-  <p class="sowel-card__example" data-label="Example">The <em>Motion Light (Dimmable)</em> recipe keeps a room at the right brightness whenever someone's there — vivid by day, gentle in the evening, dim at night. One recipe, three modes, zero code.</p>
+  <h3>Recipes</h3>
+  <p class="sowel-card__lead">Your home's reflexes.</p>
+  <p>Drop a tested pattern on a zone, set a few values, it runs. No flows, no scripting.</p>
   <p class="sowel-card__more"><a href="user/recipes/">Read more →</a></p>
 </div>
 
 </div>
 
 </div>
+</div>
 
+<!-- =========================================================== -->
+<!-- Page 5 — Deploy in minutes                                   -->
+<!-- =========================================================== -->
+<div class="sowel-flip__page">
 <div class="sowel-section sowel-section--feature">
 
 <p class="sowel-eyebrow">Deploy in minutes. Yours from day one.</p>
@@ -191,21 +199,28 @@ hide:
     <strong>One command.</strong> <code>curl ... | sh</code> on any Docker host — Linux, macOS, Raspberry Pi. Sowel and InfluxDB up in under a minute.
   </div>
   <div class="sowel-pill">
-    <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware: a Raspberry Pi, an old PC, a Proxmox VM, whatever you've got lying around.
+    <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware — a Raspberry Pi, an old PC, a Proxmox VM.
   </div>
   <div class="sowel-pill">
-    <strong>Plug in what you own.</strong> Zigbee, Panasonic, Netatmo, Shelly, Legrand, MQTT-anything. Install integrations like you install apps, skip what you don't need.
+    <strong>Plug in what you own.</strong> Zigbee, Panasonic, Netatmo, Shelly, Legrand, MQTT-anything. Install integrations like apps; skip what you don't need.
   </div>
   <div class="sowel-pill">
-    <strong>Self-updating.</strong> Plugins and the engine update from GitHub. No SSH, no fiddling, no reboots scheduled at 3 a.m.
+    <strong>Self-updating.</strong> Plugins and the engine update from GitHub. No SSH, no fiddling, no 3 a.m. reboots.
   </div>
 </div>
 
 </div>
+</div>
 
+<!-- =========================================================== -->
+<!-- Page 6 — Take a tour                                         -->
+<!-- =========================================================== -->
+<div class="sowel-flip__page">
 <div class="sowel-section">
 
-<p class="sowel-eyebrow">Take a tour</p>
+<p class="sowel-eyebrow">Where to next?</p>
+
+<p class="sowel-paragraph">Sowel is open source under AGPL-3.0 — pick the door that fits.</p>
 
 <div class="sowel-cards sowel-cards--two">
 
@@ -229,6 +244,11 @@ hide:
 
 </div>
 
+</div>
+</div>
+
+</div>
+</div>
 </div>
 
 <p class="sowel-foot">Sowel is licensed under <a href="https://github.com/mchacher/sowel/blob/main/LICENSE">AGPL-3.0</a> · <a href="https://github.com/mchacher/sowel">GitHub</a></p>
