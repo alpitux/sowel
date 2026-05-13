@@ -30,7 +30,7 @@ hide:
 
 <h1 class="sowel-hero__tagline"><span class="nowrap">Ne programmez pas</span> votre maison.<em>Appliquez-lui des recettes.</em></h1>
 
-<p class="sowel-hero__lead">Sowel embarque des recettes éprouvées pour ce dont chaque maison a vraiment besoin : Motion Light, Sunset Shutters, Presence Heating, Solar Charging. Posez-en une sur une pièce, réglez quelques valeurs, c'est fait.</p>
+<p class="sowel-hero__lead">Sowel embarque des recettes éprouvées pour ce dont chaque maison a vraiment besoin : Lumière par détection, Volets au coucher, Chauffage par présence, Recharge solaire. Posez-en une sur une pièce, réglez quelques valeurs, c'est fait.</p>
 
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Commencer <span class="md-icon md-icon--arrow">→</span></a>
@@ -65,7 +65,7 @@ hide:
     </div>
   </div>
   <div class="sowel-mock__recipe">
-    <b>● Motion Light</b> : maintient les lumières à 4% jusqu'à 06:14, puis remonte
+    <b>● Lumière par détection</b> : maintient les lumières à 4% jusqu'à 06:14, puis remonte
   </div>
 </div>
 
@@ -85,7 +85,7 @@ hide:
 
 <p class="sowel-paragraph">La plupart des outils de domotique vous transforment en développeur à temps partiel : fichiers YAML, scripts, flows, conditions, cas particuliers. Le résultat est un plat de spaghettis fragile que seule une personne du foyer arrive à dépanner.</p>
 
-<p class="sowel-paragraph"><strong>Sowel prend le chemin inverse.</strong> Choisissez une recette (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) et appliquez-la à une zone. Vous configurez quelques réglages évidents (une durée, une température, une plage horaire), pas un langage de programmation.</p>
+<p class="sowel-paragraph"><strong>Sowel prend le chemin inverse.</strong> Choisissez une recette (<em>Lumière par détection</em>, <em>Chauffage par présence</em>, <em>Volets au coucher</em>) et appliquez-la à une zone. Vous configurez quelques réglages évidents (une durée, une température, une plage horaire), pas un langage de programmation.</p>
 
 <p class="sowel-subtitle">La meilleure automatisation est celle qu'on oublie. Votre maison fonctionne, tout simplement.</p>
 
@@ -118,7 +118,7 @@ hide:
   <div class="sowel-recipe-mock__head">
     <span class="sowel-recipe-mock__dot"></span>
     <div>
-      <strong>Motion Light</strong>
+      <strong>Lumière par détection</strong>
       <small>appliquée au Séjour</small>
     </div>
     <span class="sowel-recipe-mock__badge">Active</span>
