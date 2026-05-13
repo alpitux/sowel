@@ -1163,6 +1163,236 @@
   padding: clamp(2rem, 6vh, 4rem) clamp(1.5rem, 6vw, 3rem) clamp(2.5rem, 6vh, 4rem);
 }
 
+/* ============================================================
+   Split-page layout — text on the left, illustration on the right
+   (matches the hero's visual rhythm)
+   ============================================================ */
+
+.sowel-section--split {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: center;
+  max-width: 78rem;
+  margin: 0 auto;
+}
+@media (max-width: 880px) {
+  .sowel-section--split { grid-template-columns: 1fr; gap: 2rem; }
+}
+.sowel-section__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+/* === YAML "spaghetti" mock — an IDE-flavoured code block === */
+.sowel-yaml-mock {
+  background: #1F2A33;
+  color: #C5CFD6;
+  border-radius: 12px;
+  padding: 0;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  box-shadow: 0 16px 40px -16px rgba(15, 30, 45, 0.45);
+  overflow: hidden;
+  transform: rotate(-1deg);
+}
+.sowel-yaml-mock__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.sowel-yaml-mock__bar > span {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+.sowel-yaml-mock__bar > span:first-child { background: #E06262; }
+.sowel-yaml-mock__bar > span:nth-child(2) { background: #E0B062; }
+.sowel-yaml-mock__bar > span:nth-child(3) { background: #6FB07C; }
+.sowel-yaml-mock__bar em {
+  margin-left: 0.4rem;
+  font-style: normal;
+  font-family: var(--sowel-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+.sowel-yaml-mock__code {
+  margin: 0;
+  padding: 0.85rem 1rem 1rem;
+  white-space: pre;
+  overflow-x: auto;
+  scrollbar-width: none;
+  color: #C5CFD6;
+}
+.sowel-yaml-mock__code::-webkit-scrollbar { display: none; }
+.sowel-yaml-mock__code .k { color: #7FB3D5; }
+.sowel-yaml-mock__code .s { color: #E0B062; }
+
+/* "vs." divider between the two mocks */
+.sowel-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.15rem 0;
+}
+.sowel-vs span {
+  font-family: var(--sowel-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--md-accent-fg-color);
+  padding: 0.18rem 0.7rem;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  background: var(--md-default-bg-color);
+}
+
+/* === Sowel recipe mock — what a recipe instance actually looks like === */
+.sowel-recipe-mock {
+  background: #fff;
+  color: var(--sowel-ink);
+  border-radius: 14px;
+  padding: 0.95rem 1.1rem 1rem;
+  box-shadow:
+    0 20px 50px -18px rgba(26, 79, 110, 0.30),
+    0 6px 18px -6px rgba(26, 79, 110, 0.18);
+  transform: rotate(1.2deg);
+}
+[data-md-color-scheme="slate"] .sowel-recipe-mock { background: #163040; color: #E5E7EB; }
+.sowel-recipe-mock__head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+.sowel-recipe-mock__dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--sowel-mock-amber);
+  box-shadow: 0 0 0 4px var(--sowel-mock-amber-light);
+  flex-shrink: 0;
+}
+.sowel-recipe-mock__head > div { flex: 1; line-height: 1.2; }
+.sowel-recipe-mock__head strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--md-primary-fg-color);
+}
+[data-md-color-scheme="slate"] .sowel-recipe-mock__head strong { color: #6FB3D9; }
+.sowel-recipe-mock__head small {
+  display: block;
+  font-size: 0.66rem;
+  color: var(--sowel-ink-muted);
+  margin-top: 0.1rem;
+}
+.sowel-recipe-mock__badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.55rem;
+  background: rgba(43, 170, 104, 0.14);
+  color: var(--sowel-mock-green);
+  border-radius: 999px;
+}
+.sowel-recipe-mock__rows { display: flex; flex-direction: column; gap: 0.35rem; }
+.sowel-recipe-mock__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  background: var(--md-primary-fg-color--light);
+  font-size: 0.78rem;
+}
+[data-md-color-scheme="slate"] .sowel-recipe-mock__row { background: rgba(255, 255, 255, 0.06); }
+.sowel-recipe-mock__row > span { color: var(--sowel-ink-muted); }
+.sowel-recipe-mock__row kbd {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--md-primary-fg-color);
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+[data-md-color-scheme="slate"] .sowel-recipe-mock__row kbd { color: #C9DCE7; }
+
+/* === Terminal mock for the "Deploy in minutes" page === */
+.sowel-terminal-mock {
+  margin: 0 auto 1.4rem;
+  max-width: 56rem;
+  background: #1F2A33;
+  color: #D6E0E6;
+  border-radius: 12px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  overflow: hidden;
+  box-shadow:
+    0 24px 60px -22px rgba(15, 30, 45, 0.45),
+    0 8px 20px -8px rgba(15, 30, 45, 0.30);
+}
+.sowel-terminal-mock__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.95rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.sowel-terminal-mock__bar > span {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+.sowel-terminal-mock__bar > span:first-child { background: #E06262; }
+.sowel-terminal-mock__bar > span:nth-child(2) { background: #E0B062; }
+.sowel-terminal-mock__bar > span:nth-child(3) { background: #6FB07C; }
+.sowel-terminal-mock__bar em {
+  margin-left: 0.5rem;
+  font-style: normal;
+  font-family: var(--sowel-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+.sowel-terminal-mock__code {
+  margin: 0;
+  padding: 1rem 1.25rem 1.15rem;
+  white-space: pre;
+  overflow-x: auto;
+  scrollbar-width: none;
+  color: #D6E0E6;
+}
+.sowel-terminal-mock__code::-webkit-scrollbar { display: none; }
+.sowel-terminal-mock__code .prompt { color: var(--sowel-mock-amber); font-weight: 700; }
+.sowel-terminal-mock__code .url    { color: #7FB3D5; text-decoration: underline; text-underline-offset: 0.15em; }
+.sowel-terminal-mock__code .ok     { color: var(--sowel-mock-green); font-weight: 700; }
+
+/* On the deploy page, the pills grid drops to 3-column once we
+ * have a marquee terminal mock above. */
+.sowel-flip__page .sowel-pills { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 960px) {
+  .sowel-flip__page .sowel-pills { grid-template-columns: 1fr; }
+}
+
 /* === Five-layers pillar grid (5 cards wide on the flip page) === */
 .sowel-cards--pillars {
   grid-template-columns: repeat(5, 1fr) !important;
