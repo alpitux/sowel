@@ -156,6 +156,16 @@
       // 0.04 ≈ a 4% scroll (one nudge of the wheel) is enough.
       cue.style.opacity = progress > 0.04 ? "0" : "";
       cue.style.pointerEvents = progress > 0.04 ? "none" : "";
+
+      // The hero (page 1) already carries the Sowel logo + wordmark
+      // in its copy column, so hide the duplicate header house mark
+      // while we're on slide 1; bring it back from slide 2 onward.
+      var headerLogo = document.querySelector(".md-header__button.md-logo");
+      if (headerLogo) {
+        var onHero = progress < 0.5 / (n - 1);
+        headerLogo.style.opacity = onHero ? "0" : "";
+        headerLogo.style.pointerEvents = onHero ? "none" : "";
+      }
     }
 
     function goTo(idx) {

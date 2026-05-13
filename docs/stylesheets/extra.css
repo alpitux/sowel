@@ -733,7 +733,12 @@
 .md-header__button.md-logo {
   padding: 0.3rem;
   margin-right: 0.2rem;
+  transition: opacity 280ms ease;
 }
+/* On the landing the hero (slide 1) already carries the Sowel
+ * brand mark in its copy column, so start the header logo hidden
+ * and let landing.js fade it back in from slide 2 onward. */
+html:has(.sowel-flip) .md-header__button.md-logo { opacity: 0; }
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
   width: 1.75rem;
