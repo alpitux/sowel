@@ -246,14 +246,12 @@
   margin: 0 0 0.85rem;
 }
 
-/* Pages 2 ("A different way") and 3 ("Five layers / intro") share
- * the same heavier typographic weight, distinct from the rest of
- * the flip pages. */
-.md-typeset .sowel-section--split:not(.sowel-section--next) .sowel-eyebrow {
+/* All split pages (2, 3, 5) share the heavier typographic weight. */
+.md-typeset .sowel-section--split .sowel-eyebrow {
   font-size: clamp(1.75rem, 2.9vw, 2.4rem);
   margin: 0 0 1.15rem;
 }
-.md-typeset .sowel-section--split:not(.sowel-section--next) .sowel-paragraph {
+.md-typeset .sowel-section--split .sowel-paragraph {
   font-size: 1.1rem;
   line-height: 1.55;
   margin: 0 0 0.95rem;
@@ -1271,14 +1269,18 @@
 .sowel-section--next {
   grid-template-columns: 1fr 1.2fr;
   align-items: center;
+  /* Extra breathing room on the right so the CTA cards don't sit
+   * flush against the viewport edge. */
+  padding-right: clamp(1.5rem, 4vw, 4rem);
 }
 .sowel-section--next .sowel-section__visual {
   align-items: center;
   justify-content: center;
 }
 .sowel-logo--xl {
-  width: clamp(14rem, 24vw, 22rem);
-  height: clamp(14rem, 24vw, 22rem);
+  /* Was clamp(14rem, 24vw, 22rem); shrunk 10 %. */
+  width: clamp(12.6rem, 21.6vw, 19.8rem);
+  height: clamp(12.6rem, 21.6vw, 19.8rem);
   filter: drop-shadow(0 18px 36px rgba(26, 79, 110, 0.22));
 }
 
