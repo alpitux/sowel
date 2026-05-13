@@ -217,6 +217,20 @@
 .md-typeset .sowel-flip__page .sowel-eyebrow {
   font-size: clamp(2.4rem, 4.5vw, 3.8rem);
   margin: 0 0 1.5rem;
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+@media (max-width: 600px) {
+  /* On mobile the flip pages stack vertically and the desktop
+     experience-sized eyebrow becomes oversized for a narrow column
+     (a long French word like "d'automatiser" would break mid-word). */
+  .md-typeset .sowel-flip__page .sowel-eyebrow {
+    font-size: clamp(1.6rem, 7vw, 2.2rem);
+    line-height: 1.12;
+  }
+  .md-typeset .sowel-flip__page .sowel-paragraph {
+    font-size: 1.02rem;
+  }
 }
 [data-md-color-scheme="slate"] .sowel-eyebrow {
   color: #C9DCE7;
@@ -233,6 +247,33 @@
   font-size: 1.25rem;
   line-height: 1.55;
   margin: 0 0 1.1rem;
+}
+
+/* A closing "dek" — italic editorial line that wraps up the section. */
+.md-typeset .sowel-subtitle {
+  font-family: var(--sowel-display);
+  font-size: 1.45rem;
+  line-height: 1.35;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--md-primary-fg-color);
+  margin: 1.2rem 0 0;
+  max-width: 60rem;
+  text-wrap: balance;
+}
+[data-md-color-scheme="slate"] .md-typeset .sowel-subtitle { color: #C9DCE7; }
+.md-typeset .sowel-flip__page .sowel-subtitle {
+  font-size: 1.7rem;
+  margin: 1.4rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--md-primary-fg-color) 18%, transparent);
+}
+@media (max-width: 600px) {
+  .md-typeset .sowel-flip__page .sowel-subtitle {
+    font-size: 1.18rem;
+    padding-top: 0.85rem;
+    margin: 1.15rem 0 0;
+  }
 }
 .sowel-paragraph strong {
   color: var(--md-accent-fg-color);
@@ -670,21 +711,10 @@
   box-shadow: 0 1px 0 color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
 }
 
-.md-tabs {
-  background: transparent;
-  color: var(--md-primary-fg-color);
-  border-bottom: 1px solid color-mix(in srgb, var(--md-default-fg-color) 8%, transparent);
-}
-
-.md-tabs__link {
-  font-weight: 500;
-  letter-spacing: 0.005em;
-  opacity: 0.78;
-}
-.md-tabs__link--active,
-.md-tabs__link:hover {
-  opacity: 1;
-}
+/* Hide the tabs row site-wide. It only carries Home + 2 section tabs,
+ * which the sidebar already exposes, and its dark-on-dark labels were
+ * invisible against the header background — pure 49px of empty space. */
+.md-tabs { display: none; }
 
 
 /* ============================================================
@@ -759,8 +789,8 @@
 
 .sowel-hero--split {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 2.5rem;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 2.75rem;
   align-items: center;
 }
 @media (max-width: 880px) {
@@ -783,20 +813,38 @@
 
 .md-typeset .sowel-hero__tagline {
   font-family: var(--sowel-display);
-  font-size: clamp(1.9rem, 3.6vw, 3rem);
+  font-size: clamp(2rem, 5.4vw, 4.8rem);
   font-weight: 800;
-  letter-spacing: -0.028em;
-  line-height: 1.05;
-  margin: 0 0 1.1rem;
+  letter-spacing: -0.032em;
+  line-height: 1;
+  margin: 0 0 1.2rem;
   color: var(--md-primary-fg-color);
   border-bottom: none;
   font-feature-settings: "cv05", "cv08", "cv11", "ss01";
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: manual;
+}
+.sowel-hero__tagline .nowrap { white-space: nowrap; }
+@media (max-width: 600px) {
+  /* On narrow screens, allow the title to break anywhere — keeping a
+     nowrap phrase together would push the layout into horizontal overflow. */
+  .sowel-hero__tagline .nowrap { white-space: normal; }
 }
 [data-md-color-scheme="slate"] .md-typeset .sowel-hero__tagline { color: #C9DCE7; }
 .sowel-hero__tagline em {
-  font-style: normal;
+  display: block;
+  font-style: italic;
+  font-size: clamp(1.35rem, 3.5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.024em;
+  line-height: 1.08;
+  margin-top: 0.35rem;
   color: var(--md-primary-fg-color);
-  opacity: 0.78;
+  opacity: 0.82;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 [data-md-color-scheme="slate"] .sowel-hero__tagline em { color: #8FB3C7; opacity: 1; }
 
@@ -1116,10 +1164,6 @@
    * flipbook (the user isn't navigating a long page) — and visually
    * pollutes the hero. Hide it. */
   html:has(.sowel-flip) .md-top { display: none !important; }
-  /* The tabs row only shows "Home" on the landing (the rest of the
-   * nav is hidden via front-matter), so the row is pure empty space.
-   * Hide it to slim the header. */
-  html:has(.sowel-flip) .md-tabs { display: none; }
 }
 
 /* Mobile / reduced-motion fallback: stack pages vertically. */
@@ -1131,6 +1175,25 @@
   .sowel-flip__pin { position: static; height: auto; overflow: visible; }
   .sowel-flip__track { display: block; width: auto; height: auto; transform: none !important; }
   .sowel-flip__page { width: auto; height: auto; overflow: visible; padding: 2.5rem 1.25rem; }
+
+  /* Grid items default to min-content width, which lets wide children
+     (pre, mocks, long words) push the column past the viewport. Force
+     them to be shrinkable. */
+  .sowel-flip__page .sowel-section,
+  .sowel-flip__page .sowel-section__copy,
+  .sowel-flip__page .sowel-section__visual { min-width: 0; }
+
+  /* Code-style mocks must not exceed their container — they may
+     scroll internally on touch. */
+  .sowel-flip__page .sowel-yaml-mock,
+  .sowel-flip__page .sowel-recipe-mock,
+  .sowel-flip__page .sowel-terminal-mock,
+  .sowel-flip__page .sowel-mock { max-width: 100%; }
+  .sowel-flip__page pre { max-width: 100%; }
+
+  /* "Where to next?" section uses 1fr 1.2fr on desktop — flatten to
+     a single column so cards have room to read on mobile. */
+  .sowel-flip__page .sowel-section--next { grid-template-columns: 1fr; }
 }
 
 /* Inside a flip page, the existing .sowel-section becomes the
@@ -1430,6 +1493,9 @@
 @media (max-width: 720px) {
   .sowel-cards--pillars { grid-template-columns: repeat(2, 1fr) !important; }
 }
+@media (max-width: 480px) {
+  .sowel-cards--pillars { grid-template-columns: 1fr !important; }
+}
 
 /* ============================================================
    Page indicator — dots fixed bottom-right (book pages position)
@@ -1529,3 +1595,391 @@
 
 /* Kept for the hero entrance only — no longer used elsewhere. */
 .sowel-reveal { opacity: 1; transform: none; transition: none; }
+
+/* ============================================================
+   Page 3 illustration — nested home model + Modes/Recipes engines.
+   Two-column on desktop, stacked on mobile. The left side is a
+   compact nesting (Home > Zone > Equipment > Device); the right
+   side hosts the two "engines" that act on the model.
+   ============================================================ */
+
+.sowel-stack {
+  width: 100%;
+  max-width: 78rem;
+  margin: 0.8rem auto 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: stretch;
+}
+@media (max-width: 880px) {
+  .sowel-stack {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* When the stack is in a flip page, the parent eyebrow and lead are
+ * already large; tighten internal spacing so the visual fits one screen. */
+.sowel-flip__page .sowel-eyebrow:has(+ .sowel-paragraph + .sowel-stack),
+.sowel-flip__page .sowel-paragraph:has(+ .sowel-stack) {
+  margin-bottom: 0.6rem;
+}
+
+.sowel-stack__house {
+  background: var(--md-default-bg-color);
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+  padding: 1.1rem 1.25rem 1.25rem;
+  box-shadow: 0 6px 20px -14px var(--sowel-warm-shadow-strong);
+  position: relative;
+}
+.sowel-stack__house::before {
+  content: attr(data-caption);
+  position: absolute;
+  top: -0.6rem;
+  left: 1.2rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--md-default-bg-color);
+  color: var(--sowel-ink-muted);
+  padding: 0 0.5rem;
+}
+
+.md-typeset .sowel-nested {
+  border: 1.5px solid var(--md-primary-fg-color);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem 0.8rem;
+  position: relative;
+  background: var(--md-default-bg-color);
+}
+.md-typeset .sowel-nested + .sowel-nested { margin-top: 0.7rem; }
+.md-typeset .sowel-nested--home { background: var(--md-primary-fg-color--light); }
+.md-typeset .sowel-nested--zone { background: color-mix(in srgb, var(--md-primary-fg-color--light) 40%, var(--md-default-bg-color)); }
+.md-typeset .sowel-nested--equipment { background: var(--md-default-bg-color); }
+.md-typeset .sowel-nested--device {
+  background: var(--sowel-cream-soft);
+  border-style: dashed;
+  opacity: 0.85;
+}
+.md-typeset .sowel-nested__tag {
+  position: absolute;
+  top: -0.55rem;
+  left: 0.8rem;
+  background: var(--md-primary-fg-color);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.12rem 0.55rem;
+  border-radius: 999px;
+}
+.md-typeset .sowel-nested__tag--zone { background: var(--sowel-mock-green, #2BAA68); }
+.md-typeset .sowel-nested__tag--equipment { background: var(--sowel-ink); }
+.md-typeset .sowel-nested__tag--device { background: var(--sowel-ink-muted); }
+.md-typeset .sowel-nested__nest {
+  margin-top: 0.65rem;
+  border-left: 2px dashed color-mix(in srgb, var(--md-primary-fg-color) 35%, transparent);
+  padding-left: 1rem;
+  margin-left: 0.35rem;
+}
+.md-typeset .sowel-nested__name {
+  font-weight: 700;
+  color: var(--md-primary-fg-color);
+  font-size: 0.96rem;
+  letter-spacing: -0.015em;
+}
+.md-typeset .sowel-nested__name--mono {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.82rem;
+}
+.md-typeset .sowel-nested__hint {
+  color: var(--sowel-ink-muted);
+  font-size: 0.78rem;
+  margin-left: 0.35rem;
+}
+
+/* Right column: stacked engine cards */
+.sowel-engines {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 0.85rem;
+}
+.sowel-engine {
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--md-primary-fg-color) 30%, transparent);
+  background: linear-gradient(150deg,
+    var(--md-primary-fg-color--light) 0%,
+    var(--md-default-bg-color) 70%);
+  padding: 0.85rem 1.1rem 1rem;
+  position: relative;
+  box-shadow: 0 8px 22px -16px rgba(26, 79, 110, 0.35);
+}
+[data-md-color-scheme="slate"] .sowel-engine {
+  background: linear-gradient(150deg,
+    color-mix(in srgb, var(--md-primary-fg-color) 35%, transparent) 0%,
+    var(--md-default-bg-color) 70%);
+}
+.sowel-engine__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+.md-typeset .sowel-engine__kicker {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--md-accent-fg-color);
+  margin: 0;
+}
+.md-typeset .sowel-engine__title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--md-primary-fg-color);
+  margin: 0;
+  letter-spacing: -0.015em;
+  border: none;
+  padding: 0;
+}
+.md-typeset .sowel-engine__title-count {
+  font-weight: 500;
+  color: var(--sowel-ink-muted);
+  font-size: 0.78rem;
+  margin-left: 0.4rem;
+}
+.md-typeset .sowel-engine__hint {
+  color: var(--sowel-ink-muted);
+  font-size: 0.78rem;
+  margin: 0.6rem 0 0;
+  font-style: italic;
+  max-width: none;
+}
+.sowel-engine__pulse {
+  margin-left: auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--md-accent-fg-color);
+  animation: sowel-pulse 1.6s ease-out infinite;
+}
+@keyframes sowel-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--md-accent-fg-color) 50%, transparent); }
+  70%  { box-shadow: 0 0 0 9px color-mix(in srgb, var(--md-accent-fg-color) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--md-accent-fg-color) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sowel-engine__pulse { animation: none; }
+}
+
+/* Modes bar */
+.sowel-mode-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+.sowel-mode-pill {
+  border: 1.5px solid color-mix(in srgb, var(--md-primary-fg-color) 22%, transparent);
+  background: var(--md-default-bg-color);
+  border-radius: 10px;
+  padding: 0.6rem 0.45rem 0.65rem;
+  text-align: center;
+}
+.sowel-mode-pill__icon {
+  display: block;
+  margin: 0 auto 0.3rem;
+  color: var(--sowel-ink-muted);
+}
+.md-typeset .sowel-mode-pill__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--sowel-ink-muted);
+  margin: 0;
+}
+.sowel-mode-pill--active {
+  border-color: var(--md-primary-fg-color);
+  background: var(--md-primary-fg-color);
+  box-shadow: 0 6px 18px -8px rgba(26, 79, 110, 0.55);
+}
+.sowel-mode-pill--active .sowel-mode-pill__icon { color: #fff; }
+.md-typeset .sowel-mode-pill--active .sowel-mode-pill__label { color: #fff; }
+
+/* Recipes list */
+.sowel-recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.sowel-recipe-card {
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 9%, transparent);
+  border-left: 3px solid var(--md-accent-fg-color);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem 0.7rem;
+  box-shadow: 0 2px 6px var(--sowel-warm-shadow);
+}
+.md-typeset .sowel-recipe-card__name {
+  font-weight: 700;
+  color: var(--md-primary-fg-color);
+  font-size: 0.92rem;
+  margin: 0 0 0.2rem;
+  letter-spacing: -0.01em;
+}
+.md-typeset .sowel-recipe-card__flow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.74rem;
+  color: var(--sowel-ink-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+.md-typeset .sowel-recipe-card__flow .arr {
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
+  padding: 0 0.2rem;
+}
+.md-typeset .sowel-recipe-card__flow .room {
+  color: var(--md-primary-fg-color);
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .sowel-mode-bar { gap: 0.3rem; }
+  .sowel-mode-pill { padding: 0.5rem 0.3rem 0.55rem; }
+  .md-typeset .sowel-mode-pill__label { font-size: 0.72rem; }
+  .md-typeset .sowel-recipe-card__flow { font-size: 0.7rem; }
+}
+
+/* ============================================================
+   Floating recipes (above the house) and a Mode chip that
+   "lands" on the Zone — meant to convey orthogonal engines
+   that aren't part of the spatial hierarchy.
+   ============================================================ */
+
+.sowel-floats {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.6rem;
+  margin: 0.4rem 0 1.4rem;
+  position: relative;
+  padding: 0 0.4rem;
+}
+.sowel-float-recipe {
+  position: relative;
+  background: var(--md-default-bg-color);
+  border: 1px solid color-mix(in srgb, var(--md-accent-fg-color) 30%, transparent);
+  border-left: 3px solid var(--md-accent-fg-color);
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem 0.55rem;
+  box-shadow: 0 10px 22px -10px rgba(168, 50, 50, 0.28),
+              0 2px 6px var(--sowel-warm-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  animation: sowel-bob 3.4s ease-in-out infinite;
+}
+.sowel-float-recipe--1 { transform: rotate(-1.8deg); }
+.sowel-float-recipe--2 { transform: rotate(1.6deg); animation-delay: -1.7s; }
+@keyframes sowel-bob {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sowel-float-recipe { animation: none; }
+}
+.md-typeset .sowel-float-recipe__name {
+  font-weight: 700;
+  color: var(--md-primary-fg-color);
+  font-size: 0.82rem;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.md-typeset .sowel-float-recipe__flow {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  color: var(--sowel-ink-muted);
+  margin: 0;
+  line-height: 1.3;
+}
+.md-typeset .sowel-float-recipe__flow .arr {
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
+  padding: 0 0.15rem;
+}
+/* Dashed thread that drops from each recipe toward the home below. */
+.sowel-float-recipe::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1.1rem;
+  width: 1.5px;
+  height: 1.1rem;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--md-accent-fg-color) 55%, transparent) 0 3px,
+    transparent 3px 6px
+  );
+  transform: rotate(0deg);
+}
+
+/* Zone box becomes a positioning context for the floating Mode chip. */
+.sowel-nested--zone { position: relative; }
+.sowel-float-mode {
+  position: absolute;
+  top: -0.7rem;
+  right: 0.7rem;
+  background: linear-gradient(135deg,
+    var(--md-primary-fg-color) 0%,
+    var(--md-primary-fg-color--dark) 100%);
+  color: #fff;
+  padding: 0.22rem 0.6rem 0.28rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 18px -4px rgba(26, 79, 110, 0.45),
+              0 2px 4px var(--sowel-warm-shadow);
+  transform: rotate(3deg);
+  animation: sowel-float-mode 3s ease-in-out infinite;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  z-index: 2;
+}
+.sowel-float-mode::before {
+  content: "·";
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 1.1em;
+  line-height: 0;
+}
+.sowel-float-mode::after {
+  /* a small dashed leash going down into the Zone box */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -0.85rem;
+  width: 1.5px;
+  height: 0.85rem;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(26, 79, 110, 0.55) 0 3px,
+    transparent 3px 6px
+  );
+}
+@keyframes sowel-float-mode {
+  0%, 100% { transform: rotate(3deg) translateY(0); }
+  50%      { transform: rotate(3deg) translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sowel-float-mode { animation: none; }
+}
+@media (max-width: 600px) {
+  .sowel-floats { gap: 0.4rem; }
+  .md-typeset .sowel-float-recipe__name { font-size: 0.74rem; }
+  .md-typeset .sowel-float-recipe__flow { font-size: 0.6rem; }
+  .sowel-float-mode { font-size: 0.56rem; padding: 0.18rem 0.5rem 0.22rem; }
+}
