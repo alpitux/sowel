@@ -246,6 +246,23 @@
   margin: 0 0 0.85rem;
 }
 
+/* Page 2 ("A different way") gets a touch more typographic weight
+ * than the inner pages, and its illustration is scaled down 15 %
+ * so the copy reads as the lead. */
+.md-typeset .sowel-section--split:not(.sowel-section--intro):not(.sowel-section--next) .sowel-eyebrow {
+  font-size: clamp(1.75rem, 2.9vw, 2.4rem);
+  margin: 0 0 1.15rem;
+}
+.md-typeset .sowel-section--split:not(.sowel-section--intro):not(.sowel-section--next) .sowel-paragraph {
+  font-size: 1.1rem;
+  line-height: 1.55;
+  margin: 0 0 0.95rem;
+}
+.sowel-section--split:not(.sowel-section--intro):not(.sowel-section--next) .sowel-section__visual {
+  transform: scale(0.85);
+  transform-origin: center;
+}
+
 /* A closing "dek" — italic editorial line that wraps up the section. */
 .md-typeset .sowel-subtitle {
   font-family: var(--sowel-display);
