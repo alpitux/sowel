@@ -74,16 +74,59 @@ hide:
 <!-- Page 2 — A different way                                     -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
-<div class="sowel-section">
+<div class="sowel-section sowel-section--split">
+<div class="sowel-section__copy">
 
 <p class="sowel-eyebrow">A different way to automate your home</p>
 
 <p class="sowel-paragraph">Most home automation tools turn you into a part-time developer: YAML files, scripts, flows, conditions, edge cases. The result is fragile spaghetti that only one person in the household can debug.</p>
 
-<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Instead of writing automations, you <strong>pick a recipe</strong> (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Pool Pump Schedule</em>, <em>Sunset Shutters</em>) and <strong>apply it to a zone</strong>. Each recipe encodes a thoughtful, road-tested pattern that strikes the right balance between comfort, safety, and energy efficiency. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
+<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Pick a recipe (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) and <strong>apply it to a zone</strong>. You configure a few obvious settings — a duration, a temperature, a time window — not a programming language.</p>
 
 <p class="sowel-paragraph">The best automation is the one you forget about. Your home just works.</p>
 
+</div>
+<div class="sowel-section__visual">
+
+<div class="sowel-yaml-mock" aria-hidden="true">
+  <div class="sowel-yaml-mock__bar">
+    <span></span><span></span><span></span>
+    <em>automation.yaml</em>
+  </div>
+  <pre class="sowel-yaml-mock__code"><span class="k">automation:</span>
+  - <span class="k">alias:</span> <span class="s">"Living-room motion"</span>
+    <span class="k">trigger:</span>
+      - <span class="k">platform:</span> state
+        <span class="k">entity_id:</span> binary_sensor.lr_pir
+        <span class="k">to:</span> <span class="s">"on"</span>
+    <span class="k">condition:</span>
+      - <span class="k">condition:</span> numeric_state
+        <span class="k">entity_id:</span> sensor.lr_lux
+        <span class="k">below:</span> 80
+    <span class="k">action:</span>
+      - <span class="k">service:</span> light.turn_on
+        <span class="k">data:</span> { <span class="k">brightness_pct:</span> 60 }</pre>
+</div>
+
+<div class="sowel-vs"><span>vs.</span></div>
+
+<div class="sowel-recipe-mock" aria-hidden="true">
+  <div class="sowel-recipe-mock__head">
+    <span class="sowel-recipe-mock__dot"></span>
+    <div>
+      <strong>Motion Light</strong>
+      <small>applied to Living Room</small>
+    </div>
+    <span class="sowel-recipe-mock__badge">Active</span>
+  </div>
+  <div class="sowel-recipe-mock__rows">
+    <div class="sowel-recipe-mock__row"><span>Brightness</span><kbd>60 %</kbd></div>
+    <div class="sowel-recipe-mock__row"><span>Hold time</span><kbd>5 min</kbd></div>
+    <div class="sowel-recipe-mock__row"><span>Lux threshold</span><kbd>80</kbd></div>
+  </div>
+</div>
+
+</div>
 </div>
 </div>
 
@@ -162,10 +205,19 @@ hide:
 
 <p class="sowel-eyebrow">Deploy in minutes. Yours from day one.</p>
 
-<div class="sowel-pills">
-  <div class="sowel-pill">
-    <strong>One command.</strong> <code>curl ... | sh</code> on any Docker host — Linux, macOS, Raspberry Pi. Sowel and InfluxDB up in under a minute.
+<div class="sowel-terminal-mock" aria-hidden="true">
+  <div class="sowel-terminal-mock__bar">
+    <span></span><span></span><span></span>
+    <em>sowel · install</em>
   </div>
+  <pre class="sowel-terminal-mock__code"><span class="prompt">$</span> curl -fsSL <span class="url">https://sowel.org/install.sh</span> | sh
+<span class="ok">✓</span> Docker detected
+<span class="ok">✓</span> Pulling sowel:1.5.10 and influxdb:2.7…
+<span class="ok">✓</span> Volumes initialised, settings seeded
+<span class="ok">✓</span> Sowel is running on <span class="url">http://localhost:3000</span></pre>
+</div>
+
+<div class="sowel-pills">
   <div class="sowel-pill">
     <strong>Stays at home.</strong> No cloud, no telemetry, no third-party account. Your data lives on your hardware — a Raspberry Pi, an old PC, a Proxmox VM.
   </div>
