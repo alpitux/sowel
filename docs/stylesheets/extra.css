@@ -739,6 +739,14 @@
  * brand mark in its copy column, so start the header logo hidden
  * and let landing.js fade it back in from slide 2 onward. */
 html:has(.sowel-flip) .md-header__button.md-logo { opacity: 0; }
+/* MkDocs Material swaps the header title from 'Sowel Documentation'
+ * (site_name) to the current page's nav label ('Home') once the
+ * user scrolls. On the landing the flip IS the home page, so the
+ * 'Home' breadcrumb adds nothing — keep 'Sowel Documentation'
+ * pinned by hiding the page-title topic. */
+html:has(.sowel-flip) .md-header__topic[data-md-component="header-topic"] {
+  display: none;
+}
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
   width: 1.75rem;
