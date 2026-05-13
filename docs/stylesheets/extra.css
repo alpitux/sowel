@@ -1271,7 +1271,7 @@
   align-items: center;
   /* Extra breathing room on the right so the CTA cards don't sit
    * flush against the viewport edge. */
-  padding-right: clamp(1.5rem, 4vw, 4rem);
+  padding-right: clamp(2.5rem, 7vw, 8rem);
 }
 .sowel-section--next .sowel-section__visual {
   align-items: center;
