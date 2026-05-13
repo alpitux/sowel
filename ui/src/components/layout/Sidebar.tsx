@@ -116,6 +116,10 @@ export function Sidebar() {
 
   const adminActive = ADMIN_ROUTES.some((r) => location.pathname.startsWith(r));
   const energyActive = location.pathname.startsWith("/energy");
+  const modesSubActive = !collapsed && expandedSection === "modes" && location.pathname.startsWith("/modes/");
+  const analyseSubActive = !collapsed && expandedSection === "analyse" && location.pathname.startsWith("/analyse/");
+  const energySubActive = !collapsed && expandedSection === "energy" && energyActive;
+  const adminSubActive = !collapsed && expandedSection === "admin" && adminActive;
 
   return (
     <aside
@@ -182,6 +186,7 @@ export function Sidebar() {
           icon={<Layers size={ICON_SIZE} strokeWidth={1.5} />}
           collapsed={collapsed}
           end
+          subActive={modesSubActive}
           expanded={collapsed ? undefined : expandedSection === "modes"}
           title={collapsed ? t("nav.modes") : undefined}
           onClick={(e) => {
@@ -202,6 +207,7 @@ export function Sidebar() {
           icon={<BarChart3 size={ICON_SIZE} strokeWidth={1.5} />}
           collapsed={collapsed}
           end
+          subActive={analyseSubActive}
           expanded={collapsed ? undefined : expandedSection === "analyse"}
           title={collapsed ? t("nav.analyse") : undefined}
           onClick={(e) => {
@@ -223,6 +229,7 @@ export function Sidebar() {
               icon={<Zap size={ICON_SIZE} strokeWidth={1.5} />}
               collapsed={collapsed}
               active={energyActive}
+              subActive={energySubActive}
               expanded={collapsed ? undefined : expandedSection === "energy"}
               title={collapsed ? t("nav.energy") : undefined}
               onClick={(e) => {
@@ -275,6 +282,7 @@ export function Sidebar() {
                 label={t("nav.administration")}
                 icon={<Shield size={ICON_SIZE} strokeWidth={1.5} />}
                 active={adminActive}
+                subActive={adminSubActive}
                 expanded={expandedSection === "admin"}
                 onClick={() => toggleSection("admin")}
               />
