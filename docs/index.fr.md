@@ -240,7 +240,7 @@ hide:
 <div class="sowel-flip__page">
 <div class="sowel-section sowel-section--feature">
 
-<p class="sowel-eyebrow">Déployez en quelques minutes. À vous dès le premier jour.</p>
+<p class="sowel-eyebrow">Déployez en quelques minutes. Et ça marche chez vous !</p>
 
 <div class="sowel-terminal-mock" aria-hidden="true">
   <div class="sowel-terminal-mock__bar">
