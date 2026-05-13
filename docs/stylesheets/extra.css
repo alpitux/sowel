@@ -1476,14 +1476,15 @@
   max-width: none;
 }
 .sowel-cards--pillars .sowel-card {
-  padding: 1rem 1.05rem 0.95rem;
-  border-radius: 12px;
+  padding: 0.75rem 0.85rem 0.75rem;
+  border-radius: 10px;
 }
-.sowel-cards--pillars .sowel-card h3 { font-size: 0.92rem; margin-bottom: 0.25rem; }
-.sowel-cards--pillars .sowel-card__lead { font-size: 0.78rem; margin-bottom: 0.35rem; }
-.sowel-cards--pillars .sowel-card p { font-size: 0.76rem; line-height: 1.5; }
-.sowel-cards--pillars .sowel-card__icon { width: 2.1rem; height: 2.1rem; margin-bottom: 0.55rem; border-radius: 8px; }
-.sowel-cards--pillars .sowel-card__icon svg { width: 1.1rem; height: 1.1rem; }
+.sowel-cards--pillars .sowel-card h3 { font-size: 0.82rem; margin-bottom: 0.18rem; }
+.sowel-cards--pillars .sowel-card__lead { font-size: 0.72rem; margin-bottom: 0.25rem; }
+.sowel-cards--pillars .sowel-card p { font-size: 0.7rem; line-height: 1.45; margin-bottom: 0.25rem; }
+.sowel-cards--pillars .sowel-card__icon { width: 1.7rem; height: 1.7rem; margin-bottom: 0.4rem; border-radius: 7px; }
+.sowel-cards--pillars .sowel-card__icon svg { width: 0.95rem; height: 0.95rem; }
+.sowel-cards--pillars .sowel-card__more { margin-top: 0.35rem; font-size: 0.7rem; }
 @media (max-width: 1200px) {
   .sowel-cards--pillars { grid-template-columns: repeat(3, 1fr) !important; }
 }
@@ -1625,9 +1626,9 @@
 
 .sowel-stack__house {
   background: var(--md-default-bg-color);
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
-  padding: 1.1rem 1.25rem 1.25rem;
+  padding: 0.85rem 1rem 1rem;
   box-shadow: 0 6px 20px -14px var(--sowel-warm-shadow-strong);
   position: relative;
 }
@@ -1647,12 +1648,12 @@
 
 .md-typeset .sowel-nested {
   border: 1.5px solid var(--md-primary-fg-color);
-  border-radius: 12px;
-  padding: 0.7rem 0.9rem 0.8rem;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem 0.55rem;
   position: relative;
   background: var(--md-default-bg-color);
 }
-.md-typeset .sowel-nested + .sowel-nested { margin-top: 0.7rem; }
+.md-typeset .sowel-nested + .sowel-nested { margin-top: 0.5rem; }
 .md-typeset .sowel-nested--home { background: var(--md-primary-fg-color--light); }
 .md-typeset .sowel-nested--zone { background: color-mix(in srgb, var(--md-primary-fg-color--light) 40%, var(--md-default-bg-color)); }
 .md-typeset .sowel-nested--equipment { background: var(--md-default-bg-color); }
@@ -1678,15 +1679,15 @@
 .md-typeset .sowel-nested__tag--equipment { background: var(--sowel-ink); }
 .md-typeset .sowel-nested__tag--device { background: var(--sowel-ink-muted); }
 .md-typeset .sowel-nested__nest {
-  margin-top: 0.65rem;
+  margin-top: 0.5rem;
   border-left: 2px dashed color-mix(in srgb, var(--md-primary-fg-color) 35%, transparent);
-  padding-left: 1rem;
-  margin-left: 0.35rem;
+  padding-left: 0.85rem;
+  margin-left: 0.3rem;
 }
 .md-typeset .sowel-nested__name {
   font-weight: 700;
   color: var(--md-primary-fg-color);
-  font-size: 0.96rem;
+  font-size: 0.86rem;
   letter-spacing: -0.015em;
 }
 .md-typeset .sowel-nested__name--mono {
@@ -1695,7 +1696,7 @@
 }
 .md-typeset .sowel-nested__hint {
   color: var(--sowel-ink-muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   margin-left: 0.35rem;
 }
 
@@ -1863,6 +1864,17 @@
   margin: 0.4rem 0 1.4rem;
   position: relative;
   padding: 0 0.4rem;
+}
+
+/* On narrow viewports the nested home model becomes a 2000px+ tall
+ * column (every padding stacks vertically), so it stops working as
+ * an illustration. The five pillar cards below already tell the same
+ * story in a phone-friendly format; hide the schema and the floating
+ * recipes on small screens. */
+@media (max-width: 880px) {
+  .sowel-section--intro .sowel-section__visual {
+    display: none;
+  }
 }
 .sowel-float-recipe {
   position: relative;
