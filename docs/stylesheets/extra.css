@@ -204,7 +204,7 @@
 
 /* Acts as a section title on the landing — big and bold, primary blue.
  * Inside flip pages it goes even larger to fill the viewport. */
-.sowel-eyebrow {
+.md-typeset .sowel-eyebrow {
   font-family: var(--sowel-display);
   font-size: clamp(2rem, 3.6vw, 3rem);
   font-weight: 800;
@@ -214,7 +214,7 @@
   margin: 0 0 1.2rem;
   max-width: 56rem;
 }
-.sowel-flip__page .sowel-eyebrow {
+.md-typeset .sowel-flip__page .sowel-eyebrow {
   font-size: clamp(2.4rem, 4.5vw, 3.8rem);
   margin: 0 0 1.5rem;
 }
@@ -222,14 +222,14 @@
   color: #C9DCE7;
 }
 
-.sowel-paragraph {
+.md-typeset .sowel-paragraph {
   font-size: 1.1rem;
   line-height: 1.55;
   color: var(--md-default-fg-color);
   margin: 0 0 1rem;
   max-width: 60rem;
 }
-.sowel-flip__page .sowel-paragraph {
+.md-typeset .sowel-flip__page .sowel-paragraph {
   font-size: 1.25rem;
   line-height: 1.55;
   margin: 0 0 1.1rem;
@@ -771,28 +771,28 @@
 .sowel-hero--split .sowel-hero__copy { text-align: left; }
 .sowel-hero--split .sowel-hero__copy > * { margin-left: 0; margin-right: 0; }
 
-.sowel-hero__eyebrow {
+.md-typeset .sowel-hero__eyebrow {
   font-family: var(--sowel-display);
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--md-accent-fg-color);
-  margin: 0 0 1rem;
+  margin: 0 0 1.25rem;
 }
 
-.sowel-hero__tagline {
+.md-typeset .sowel-hero__tagline {
   font-family: var(--sowel-display);
-  font-size: clamp(2.2rem, 4.5vw, 4rem);
+  font-size: clamp(2.8rem, 5.6vw, 5.2rem);
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.032em;
   line-height: 1.02;
-  margin: 0 0 1.1rem;
+  margin: 0 0 1.4rem;
   color: var(--md-primary-fg-color);
   border-bottom: none;
   font-feature-settings: "cv05", "cv08", "cv11", "ss01";
 }
-[data-md-color-scheme="slate"] .sowel-hero__tagline { color: #C9DCE7; }
+[data-md-color-scheme="slate"] .md-typeset .sowel-hero__tagline { color: #C9DCE7; }
 .sowel-hero__tagline em {
   font-style: normal;
   color: var(--md-primary-fg-color);
@@ -800,25 +800,29 @@
 }
 [data-md-color-scheme="slate"] .sowel-hero__tagline em { color: #8FB3C7; opacity: 1; }
 
-.sowel-hero__lead {
-  font-size: 1.05rem;
-  line-height: 1.55;
+.md-typeset .sowel-hero__lead {
+  font-size: 1.25rem;
+  line-height: 1.5;
   color: var(--md-default-fg-color);
-  margin: 0 0 1.4rem;
-  max-width: 34rem;
+  margin: 0 0 1.75rem;
+  max-width: 36rem;
 }
 
 .sowel-hero__ctas {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 0.9rem;
+  gap: 0.6rem;
+  margin: 0 0 1.1rem;
 }
-.sowel-hero__ctas .md-button { margin: 0; }
+.sowel-hero__ctas .md-button {
+  margin: 0;
+  font-size: 0.85rem;
+  padding: 0.65em 1.5em;
+}
 
 .sowel-hero__ghost {
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
   color: var(--md-primary-fg-color);
@@ -836,11 +840,11 @@
 .sowel-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.22rem 0.65rem;
+  gap: 0.4rem;
+  padding: 0.32rem 0.85rem;
   border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 18%, transparent);
   border-radius: 999px;
-  font-size: 0.62rem;
+  font-size: 0.78rem;
   font-weight: 500;
   color: var(--sowel-ink-muted);
   background: rgba(255, 255, 255, 0.6);

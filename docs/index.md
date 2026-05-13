@@ -25,7 +25,6 @@ hide:
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Get started <span class="md-icon md-icon--arrow">→</span></a>
   <a class="md-button" href="user/">Read the user guide</a>
-  <a class="sowel-hero__ghost" href="https://github.com/mchacher/sowel/blob/main/plugins/registry.json">Browse 23 plugins →</a>
 </p>
 
 <p class="sowel-hero__badges">
