@@ -27,12 +27,6 @@ hide:
   <a class="md-button" href="user/">Lire le guide utilisateur</a>
 </p>
 
-<p class="sowel-hero__badges">
-  <span class="sowel-badge sowel-badge--ok">Pas de cloud, pas de télémétrie</span>
-  <span class="sowel-badge">Multi-arch · prêt pour Raspberry Pi</span>
-  <span class="sowel-badge">AGPL-3.0 · v1.5.10</span>
-</p>
-
 </div>
 <div class="sowel-hero__mock-wrap">
 
@@ -236,7 +230,18 @@ hide:
 <!-- Page 5 — Faites le tour                                      -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
-<div class="sowel-section">
+<div class="sowel-section sowel-section--split sowel-section--next">
+<div class="sowel-section__visual">
+
+<svg class="sowel-logo sowel-logo--xl" xmlns="http://www.w3.org/2000/svg" viewBox="25 15 150 155" aria-hidden="true">
+  <path class="house"     d="M100 30 L160 90 Q165 95 160 100 L160 150 Q160 158 152 158 L48 158 Q40 158 40 150 L40 100 Q35 95 40 90 Z"/>
+  <path class="smile"     d="M75 115 Q100 140 125 115"/>
+  <path class="left-eye"  d="M78 95 Q83 87 88 95"/>
+  <path class="right-eye" d="M112 95 Q117 87 122 95"/>
+</svg>
+
+</div>
+<div class="sowel-section__copy">
 
 <p class="sowel-eyebrow">Et maintenant ?</p>
 
@@ -264,6 +269,7 @@ hide:
 
 </div>
 
+</div>
 </div>
 </div>
 
