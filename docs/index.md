@@ -75,7 +75,7 @@ hide:
 
 <p class="sowel-paragraph">Most home automation tools turn you into a part-time developer: YAML files, scripts, flows, conditions, edge cases. The result is fragile spaghetti that only one person in the household can debug.</p>
 
-<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Pick a recipe (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) and <strong>apply it to a zone</strong>. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
+<p class="sowel-paragraph"><strong>Sowel takes the opposite path.</strong> Pick a recipe (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) and apply it to a zone. You configure a few obvious settings (a duration, a temperature, a time window), not a programming language.</p>
 
 <p class="sowel-paragraph">The best automation is the one you forget about. Your home just works.</p>
 

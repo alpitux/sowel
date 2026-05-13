@@ -75,7 +75,7 @@ hide:
 
 <p class="sowel-paragraph">La plupart des outils de domotique vous transforment en développeur à temps partiel : fichiers YAML, scripts, flows, conditions, cas particuliers. Le résultat est un plat de spaghettis fragile que seule une personne du foyer arrive à dépanner.</p>
 
-<p class="sowel-paragraph"><strong>Sowel prend le chemin inverse.</strong> Choisissez une recette (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) et <strong>appliquez-la à une zone</strong>. Vous configurez quelques réglages évidents (une durée, une température, une plage horaire), pas un langage de programmation.</p>
+<p class="sowel-paragraph"><strong>Sowel prend le chemin inverse.</strong> Choisissez une recette (<em>Motion Light</em>, <em>Presence Thermostat</em>, <em>Sunset Shutters</em>) et appliquez-la à une zone. Vous configurez quelques réglages évidents (une durée, une température, une plage horaire), pas un langage de programmation.</p>
 
 <p class="sowel-paragraph">La meilleure automatisation est celle qu'on oublie. Votre maison fonctionne, tout simplement.</p>
 
