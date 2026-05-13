@@ -4,25 +4,60 @@ hide:
   - toc
 ---
 
-<div class="sowel-hero">
+<div class="sowel-hero sowel-hero--split">
+<div class="sowel-hero__copy">
 
-<svg class="sowel-logo" xmlns="http://www.w3.org/2000/svg" viewBox="25 15 150 155" aria-label="Logo Sowel">
-  <path class="house"     d="M100 30 L160 90 Q165 95 160 100 L160 150 Q160 158 152 158 L48 158 Q40 158 40 150 L40 100 Q35 95 40 90 Z"/>
-  <path class="smile"     d="M75 115 Q100 140 125 115"/>
-  <path class="left-eye"  d="M78 95 Q83 87 88 95"/>
-  <path class="right-eye" d="M112 95 Q117 87 122 95"/>
-</svg>
+<p class="sowel-hero__eyebrow">Une autre façon d'automatiser votre maison</p>
 
-<h1 class="sowel-wordmark">Sowel</h1>
+<h1 class="sowel-hero__tagline">Ne programmez pas votre maison.<br/><em>Appliquez-lui des recettes.</em></h1>
 
-<p class="sowel-lede"><strong>Ne programmez pas votre maison. <em>Appliquez-lui des recettes.</em></strong><br/>
-Un moteur de domotique pour le <em>confort</em>, la <em>sécurité</em> et l'<em>efficacité énergétique</em>, sans écrire une seule ligne de code.</p>
+<p class="sowel-hero__lead">Sowel est un moteur de domotique qui pense en pièces, modes et recettes — pas en fichiers YAML. Choisissez une recette, posez-la sur une zone, votre maison fonctionne toute seule.</p>
 
-<p class="sowel-cta">
+<p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Commencer <span class="md-icon md-icon--arrow">→</span></a>
-  <a class="md-button" href="https://github.com/mchacher/sowel">Voir sur GitHub</a>
+  <a class="md-button" href="user/">Lire le guide utilisateur</a>
+  <a class="sowel-hero__ghost" href="https://github.com/mchacher/sowel/blob/main/plugins/registry.json">Parcourir les 23 plugins →</a>
 </p>
 
+<p class="sowel-hero__badges">
+  <span class="sowel-badge sowel-badge--ok">Pas de cloud, pas de télémétrie</span>
+  <span class="sowel-badge">Multi-arch · prêt pour Raspberry Pi</span>
+  <span class="sowel-badge">AGPL-3.0 · v1.5.10</span>
+</p>
+
+</div>
+<div class="sowel-hero__mock-wrap">
+
+<div class="sowel-mock" aria-hidden="true">
+  <div class="sowel-mock__title">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="sowel-mock__zone">Séjour</span>
+    <span class="sowel-mock__mode">Lumière soir</span>
+  </div>
+  <div class="sowel-mock__metrics">
+    <div class="sowel-mock__metric"><div class="sowel-mock__metric-label">Lux</div><div class="sowel-mock__metric-value">334</div></div>
+    <div class="sowel-mock__metric sowel-mock__metric--motion"><div class="sowel-mock__metric-label">Présence</div><div class="sowel-mock__metric-value">Calme</div></div>
+    <div class="sowel-mock__metric sowel-mock__metric--lights"><div class="sowel-mock__metric-label">Lumières</div><div class="sowel-mock__metric-value">1/3</div></div>
+    <div class="sowel-mock__metric"><div class="sowel-mock__metric-label">Volets</div><div class="sowel-mock__metric-value">0/3</div></div>
+  </div>
+  <div class="sowel-mock__cards">
+    <div class="sowel-mock__card sowel-mock__card--on">
+      <span class="sowel-mock__card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg></span>
+      <span class="sowel-mock__card-title">Appliques x2</span>
+      <span class="sowel-mock__card-state sowel-mock__card-state--dim">Dim 4%</span>
+    </div>
+    <div class="sowel-mock__card sowel-mock__card--shutter">
+      <span class="sowel-mock__card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/></svg></span>
+      <span class="sowel-mock__card-title">Volet Sud</span>
+      <span class="sowel-mock__card-state sowel-mock__card-state--closed">Fermé</span>
+    </div>
+  </div>
+  <div class="sowel-mock__recipe">
+    <b>● Motion Light</b> — maintient les lumières à 4% jusqu'à 06:14, puis remonte
+  </div>
+</div>
+
+</div>
 </div>
 
 <div class="sowel-section">
