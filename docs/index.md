@@ -89,34 +89,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 3 — A small story                                       -->
-<!-- =========================================================== -->
-<div class="sowel-flip__page">
-<div class="sowel-section">
-
-<div class="sowel-story">
-
-<p class="sowel-eyebrow">A small story</p>
-
-<p class="sowel-paragraph">Take <em>Constant Light</em>. A kitchen lit at a comfortable brightness all day. To do it right you need several motion sensors that extend the same timer without fighting each other, a brightness target that bends with the natural lux coming in through the window, and exemptions for meals, nighttime, or when someone hits the switch.</p>
-
-<p class="sowel-paragraph">Or take <em>Solar EV Charging</em>. The charger should ramp up exactly as fast as your panels are producing surplus, and back off the moment a cloud passes or the dishwasher turns on. The arithmetic is one line; the orchestration is not.</p>
-
-<ul class="sowel-bullets">
-  <li>multiple inputs that have to stay in sync (sensors, meters, schedules)</li>
-  <li>real-time decisions that follow live measurements, not snapshots</li>
-  <li>safe fallbacks for every edge case (sensor offline, network hiccup, user override)</li>
-</ul>
-
-<p class="sowel-paragraph">Each rule on its own is trivial. The hard part is the <strong>combinations</strong>. <strong>Sowel encodes this complexity once</strong>, road-tested, and ships it as a recipe. Drop it on a zone and move on.</p>
-
-</div>
-
-</div>
-</div>
-
-<!-- =========================================================== -->
-<!-- Page 4 — Five layers                                         -->
+<!-- Page 3 — Five layers                                         -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section">
@@ -183,7 +156,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 5 — Deploy in minutes                                   -->
+<!-- Page 4 — Deploy in minutes                                   -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section sowel-section--feature">
@@ -209,7 +182,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 6 — Take a tour                                         -->
+<!-- Page 5 — Take a tour                                         -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section">
