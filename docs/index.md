@@ -20,7 +20,7 @@ hide:
 
 <h1 class="sowel-hero__tagline">Don't program your home.<br/><em>Apply recipes to it.</em></h1>
 
-<p class="sowel-hero__lead">Sowel is a home automation engine that thinks in rooms, modes and recipes — not in YAML files. Pick a recipe, drop it on a zone, and your house works.</p>
+<p class="sowel-hero__lead">Sowel ships proven recipes for what every home actually needs — Motion Light, Sunset Shutters, Presence Heating, Solar Charging. Drop one on a room, set a few values, you're done.</p>
 
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Get started <span class="md-icon md-icon--arrow">→</span></a>
