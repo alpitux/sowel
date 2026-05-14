@@ -294,14 +294,28 @@ function ZoneHeroLead({
   if (zone.description) segments.push(zone.description);
 
   if (aggData) {
-    if (aggData.lightsTotal > 0 && aggData.lightsOn > 0) {
-      segments.push(t("zone.lead.lightsOn", { defaultValue: "{{count}} lumière allumée", count: aggData.lightsOn }));
+    if (aggData.lightsTotal > 0) {
+      if (aggData.lightsOn > 0) {
+        segments.push(t("zone.lead.lightsOn", { defaultValue: "{{count}} lumière allumée", count: aggData.lightsOn }));
+      } else if (aggData.lightsTotal > 1) {
+        segments.push(t("zone.lead.allLightsOff", { defaultValue: "toutes les lumières éteintes" }));
+      } else {
+        segments.push(t("zone.lead.lightOff", { defaultValue: "lumière éteinte" }));
+      }
     }
     if (aggData.shuttersTotal > 0) {
       if (aggData.shuttersOpen === aggData.shuttersTotal) {
-        segments.push(t("zone.lead.allShuttersOpen", { defaultValue: "tous les volets ouverts" }));
+        if (aggData.shuttersTotal > 1) {
+          segments.push(t("zone.lead.allShuttersOpen", { defaultValue: "tous les volets ouverts" }));
+        } else {
+          segments.push(t("zone.lead.shutterOpen", { defaultValue: "volet ouvert" }));
+        }
       } else if (aggData.shuttersOpen > 0) {
         segments.push(t("zone.lead.shuttersOpen", { defaultValue: "{{count}} volet ouvert", count: aggData.shuttersOpen }));
+      } else if (aggData.shuttersTotal > 1) {
+        segments.push(t("zone.lead.allShuttersClosed", { defaultValue: "tous les volets fermés" }));
+      } else {
+        segments.push(t("zone.lead.shutterClosed", { defaultValue: "volet fermé" }));
       }
     }
   }
