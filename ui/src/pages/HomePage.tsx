@@ -144,7 +144,7 @@ export function HomePage() {
               <Menu size={18} strokeWidth={1.5} />
             </button>
           )}
-          <h1 className="text-[28px] sm:text-[42px] font-bold text-text leading-[1.1] tracking-tight">
+          <h1>
             {currentZone.name}
           </h1>
         </div>

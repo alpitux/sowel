@@ -151,7 +151,7 @@ export function ModeDetailPage() {
             )}
           </div>
           <div className="min-w-0">
-            <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px] truncate">
+            <h1 className="truncate">
               {mode.name}
             </h1>
             {mode.description && (
@@ -481,7 +481,7 @@ function CalendarScheduleSection({
               }`}>
                 {action === "on" ? t("common.on") : t("common.off")}
               </span>
-              <span className="text-[18px] font-semibold text-text tabular-nums font-mono">
+              <span className="text-[28px] sm:text-[42px] font-bold text-text leading-[1.1] tracking-tight tabular-nums font-mono">
                 {slot.time}
               </span>
               <span className="text-[13px] text-text-secondary">

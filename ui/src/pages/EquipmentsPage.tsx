@@ -42,7 +42,7 @@ export function EquipmentsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
+          <h1>
             {t("equipments.title")}
           </h1>
         </div>

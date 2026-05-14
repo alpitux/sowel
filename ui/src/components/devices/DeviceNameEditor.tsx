@@ -61,7 +61,7 @@ export function DeviceNameEditor({ name, onSave }: DeviceNameEditorProps) {
   if (!editing) {
     return (
       <div className="flex items-center gap-2 group">
-        <h1 className="text-[24px] font-semibold text-text leading-[32px]">
+        <h1>
           {name}
         </h1>
         <button
@@ -85,7 +85,7 @@ export function DeviceNameEditor({ name, onSave }: DeviceNameEditorProps) {
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={saving}
-          className="text-[24px] font-semibold text-text leading-[32px] bg-transparent border-b-2 border-primary outline-none px-0 py-0 w-auto min-w-[200px]"
+          className="text-[28px] sm:text-[42px] font-bold text-text leading-[1.1] tracking-tight bg-transparent border-b-2 border-primary outline-none px-0 py-0 w-auto min-w-[200px]"
         />
         <button
           onClick={handleSave}

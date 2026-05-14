@@ -370,7 +370,7 @@ function ThermostatEquipmentWidget({
         <div className="flex flex-col items-start gap-2 pl-2">
           {insideTemp !== null ? (
             <div className="flex items-baseline gap-0.5">
-              <span className="text-[18px] font-semibold text-text tabular-nums leading-none font-mono">
+              <span className="text-[28px] sm:text-[42px] font-bold text-text leading-[1.1] tracking-tight tabular-nums leading-none font-mono">
                 {insideTemp.toFixed(1)}
               </span>
               <span className="text-[12px] font-medium text-text-tertiary">°C</span>

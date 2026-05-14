@@ -116,7 +116,7 @@ export function LiveEnergyPage() {
     <div className="p-4 sm:p-6">
       <div className="flex items-center gap-1.5 mb-6">
         <EnergyMobileNav />
-        <h1 className="text-[18px] font-semibold text-text">{t("energy.live")}</h1>
+        <h1>{t("energy.live")}</h1>
       </div>
 
       {!hasSources ? (
