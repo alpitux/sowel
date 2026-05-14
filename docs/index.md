@@ -30,7 +30,7 @@ hide:
 
 <h1 class="sowel-hero__tagline">Don't program your home.<em>Apply recipes to it.</em></h1>
 
-<p class="sowel-hero__lead">Sowel ships proven recipes for what every home actually needs: Motion Light, Sunset Shutters, Presence Heating, Solar Charging. Drop one on a room, set a few values, you're done.</p>
+<p class="sowel-hero__lead">Sowel ships proven recipes for what every home actually needs: Motion Light, Sunset Shutters, Presence Heating, Solar Charging, Auto Watering. Drop one on a room, set a few values, you're done.</p>
 
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Get started <span class="md-icon md-icon--arrow">→</span></a>
@@ -65,7 +65,7 @@ hide:
     </div>
   </div>
   <div class="sowel-mock__recipe">
-    <b>● Motion Light</b>: keeps lights at 4% until 06:14, then ramps up
+    <b>● Motion Light (Dimmable)</b> · 4 % on motion · evening time slot
   </div>
 </div>
 
