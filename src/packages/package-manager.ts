@@ -579,15 +579,16 @@ export class PackageManager {
     mkdirSync(extractDir, { recursive: true });
 
     // ── Tar extraction hardening (spec 089 C1) ────────────────
-    // --no-absolute-names: refuse entries with absolute paths
-    // --no-same-owner: do not preserve archive uid/gid (Linux only flag)
-    // --no-same-permissions: do not preserve archive mode bits
-    // BSD tar (macOS) does not support --no-absolute-names; fall back to
-    // no flags on macOS and rely on the symlink post-scan.
+    // GNU tar strips leading slashes from absolute paths by default
+    // ("Removing leading `/'" warning), so a tarball entry `/tmp/owned`
+    // extracts to `<extract>/tmp/owned` — safe.
+    // We add:
+    //   --no-same-owner: don't preserve archive uid/gid (GNU only)
+    //   --no-same-permissions: don't preserve archive mode bits (GNU only)
+    // BSD tar (macOS dev) doesn't accept these flags. The defence-in-depth
+    // symlink post-scan and path-prefix check still run on every platform.
     const tarFlags =
-      process.platform === "linux"
-        ? ["--no-absolute-names", "--no-same-owner", "--no-same-permissions"]
-        : [];
+      process.platform === "linux" ? ["--no-same-owner", "--no-same-permissions"] : [];
     try {
       await execFile("tar", ["-xzf", tarballPath, "-C", extractDir, ...tarFlags]);
     } catch (err) {
