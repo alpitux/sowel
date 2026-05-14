@@ -6,10 +6,6 @@ import {
   Home,
   ChevronDown,
   ChevronRight,
-  Lightbulb,
-  LightbulbOff,
-  ArrowUpFromLine,
-  ArrowDownToLine,
   Plus,
   Menu,
   X,
@@ -23,6 +19,7 @@ import { useZoneAggregation } from "../store/useZoneAggregation";
 import { executeZoneOrder, getHistoryStatus } from "../api";
 import { ZoneEquipmentsView } from "../components/home/ZoneEquipmentsView";
 import { ZoneAggregationPills } from "../components/home/ZoneAggregationPills";
+import { ZoneCommands, type ZoneOrder } from "../components/home/ZoneCommands";
 import { ZoneRecipesSection } from "../components/recipes/ZoneRecipesSection";
 import { ZoneModesSection } from "../components/home/ZoneModesSection";
 import { EquipmentForm } from "../components/equipments/EquipmentForm";
@@ -85,9 +82,9 @@ export function HomePage() {
   }, [equipments, zoneId]);
 
   const aggData = zoneId ? aggregationData[zoneId] : undefined;
-  const [commandLoading, setCommandLoading] = useState<string | null>(null);
+  const [commandLoading, setCommandLoading] = useState<ZoneOrder | null>(null);
 
-  const handleZoneCommand = useCallback(async (orderKey: string) => {
+  const handleZoneCommand = useCallback(async (orderKey: ZoneOrder) => {
     if (!zoneId) return;
     setCommandLoading(orderKey);
     try {
@@ -164,63 +161,13 @@ export function HomePage() {
         )}
         {/* Zone command buttons */}
         {aggData && (aggData.lightsTotal > 0 || aggData.shuttersTotal > 0) && (
-          <div className="flex flex-wrap items-center gap-2 mt-3">
-            {aggData.lightsTotal > 0 && (
-              <>
-                <button
-                  onClick={() => handleZoneCommand("allLightsOn")}
-                  disabled={commandLoading !== null}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-text-secondary bg-surface border border-border rounded-[6px] hover:bg-active/8 hover:text-active-text hover:border-active/40 transition-colors duration-150 disabled:opacity-50"
-                >
-                  {commandLoading === "allLightsOn" ? (
-                    <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
-                  ) : (
-                    <Lightbulb size={14} strokeWidth={1.5} />
-                  )}
-                  {t("zones.commands.allLightsOn")}
-                </button>
-                <button
-                  onClick={() => handleZoneCommand("allLightsOff")}
-                  disabled={commandLoading !== null}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-text-secondary bg-surface border border-border rounded-[6px] hover:bg-border-light transition-colors duration-150 disabled:opacity-50"
-                >
-                  {commandLoading === "allLightsOff" ? (
-                    <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
-                  ) : (
-                    <LightbulbOff size={14} strokeWidth={1.5} />
-                  )}
-                  {t("zones.commands.allLightsOff")}
-                </button>
-              </>
-            )}
-            {aggData.shuttersTotal > 0 && (
-              <>
-                <button
-                  onClick={() => handleZoneCommand("allShuttersOpen")}
-                  disabled={commandLoading !== null}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-text-secondary bg-surface border border-border rounded-[6px] hover:bg-primary/6 hover:text-primary hover:border-primary/40 transition-colors duration-150 disabled:opacity-50"
-                >
-                  {commandLoading === "allShuttersOpen" ? (
-                    <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
-                  ) : (
-                    <ArrowUpFromLine size={14} strokeWidth={1.5} />
-                  )}
-                  {t("zones.commands.allShuttersOpen")}
-                </button>
-                <button
-                  onClick={() => handleZoneCommand("allShuttersClose")}
-                  disabled={commandLoading !== null}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium text-text-secondary bg-surface border border-border rounded-[6px] hover:bg-border-light transition-colors duration-150 disabled:opacity-50"
-                >
-                  {commandLoading === "allShuttersClose" ? (
-                    <Loader2 size={14} strokeWidth={1.5} className="animate-spin" />
-                  ) : (
-                    <ArrowDownToLine size={14} strokeWidth={1.5} />
-                  )}
-                  {t("zones.commands.allShuttersClose")}
-                </button>
-              </>
-            )}
+          <div className="mt-3">
+            <ZoneCommands
+              hasLights={aggData.lightsTotal > 0}
+              hasShutters={aggData.shuttersTotal > 0}
+              loading={commandLoading}
+              onCommand={handleZoneCommand}
+            />
           </div>
         )}
       </div>
