@@ -308,22 +308,23 @@ function CollapsibleSection({
   }, [storageKey]);
 
   return (
-    <section>
-      <div className="flex items-center gap-1.5 mb-2">
+    <section className="bg-surface border border-border-light rounded-lg overflow-hidden">
+      {/* Panel head — primary-tinted bar, matches design-system .panel__head (spec 100) */}
+      <div className="flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-primary-light border-b border-primary-mid/20">
         <button
           onClick={toggle}
-          className="flex items-center gap-1.5 group cursor-pointer"
+          className="flex items-center gap-1.5 group cursor-pointer flex-1 min-w-0"
         >
           <ChevronDown
             size={14}
             strokeWidth={2}
-            className={`text-text-tertiary transition-transform duration-200 ${collapsed ? "-rotate-90" : ""}`}
+            className={`text-primary/70 transition-transform duration-200 ${collapsed ? "-rotate-90" : ""}`}
           />
-          <h2 className="text-[13px] font-semibold text-text-secondary uppercase tracking-widest group-hover:text-text transition-colors duration-150">
+          <h2 className="text-[12px] font-semibold text-primary uppercase tracking-widest">
             {title}
           </h2>
         </button>
-        {headerRight && <div className="ml-auto">{headerRight}</div>}
+        {headerRight && <div className="flex-shrink-0">{headerRight}</div>}
       </div>
       {!collapsed && children}
     </section>
