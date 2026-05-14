@@ -134,7 +134,7 @@ export function HomePage() {
       )}
 
       {/* Zone header + status bar */}
-      <div className="max-w-[720px] mb-5">
+      <div className="max-w-[1200px] mb-5">
         <div className="flex items-center gap-1.5">
           {/* Mobile burger button */}
           {tree.length > 0 && (
@@ -172,8 +172,9 @@ export function HomePage() {
         )}
       </div>
 
-      {/* Sections: Equipments + Behaviors */}
-      <div className="max-w-[720px] space-y-6">
+      {/* Sections: Equipments (left) + Behaviors (right) — 2-col on desktop, stacked on mobile (spec 100) */}
+      <div className="max-w-[1200px] grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
+        {/* Left column — Équipements */}
         <CollapsibleSection
           title={t("equipments.title")}
           storageKey="section-equipments"
@@ -195,14 +196,18 @@ export function HomePage() {
           />
         </CollapsibleSection>
 
-        {zoneId && (
-          <CollapsibleSection title={t("behaviors.title")} storageKey="section-behaviors">
-            <div className="space-y-3">
-              <ZoneModesSection zoneId={zoneId} />
-              <ZoneRecipesSection zoneId={zoneId} zoneName={currentZone.name} />
-            </div>
-          </CollapsibleSection>
-        )}
+        {/* Right column — Comportements + future Activity feed (spec 101 slot) */}
+        <div className="space-y-6">
+          {zoneId && (
+            <CollapsibleSection title={t("behaviors.title")} storageKey="section-behaviors">
+              <div className="space-y-3">
+                <ZoneModesSection zoneId={zoneId} />
+                <ZoneRecipesSection zoneId={zoneId} zoneName={currentZone.name} />
+              </div>
+            </CollapsibleSection>
+          )}
+          {/* TODO spec 101: ActivityPanel slot */}
+        </div>
       </div>
 
       {showEquipmentForm && zoneId && (
