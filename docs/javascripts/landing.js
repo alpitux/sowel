@@ -185,6 +185,49 @@
       window.scrollTo({ top: targetY, behavior: "smooth" });
     }
 
+    // === Touch swipe: left/right gesture flips pages =====================
+    // iPads / tablets find horizontal swipe more natural than vertical
+    // scroll for a page-turner, so wire that up explicitly.
+    var touchStartX = null;
+    var touchStartY = null;
+    var SWIPE_MIN = 60; // minimum horizontal distance (px)
+    var SWIPE_OFFSET = 30; // grace so a near-diagonal still counts
+    window.addEventListener(
+      "touchstart",
+      function (e) {
+        if (isDisabled()) return;
+        if (e.touches.length !== 1) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      },
+      { passive: true },
+    );
+    window.addEventListener(
+      "touchend",
+      function (e) {
+        if (isDisabled()) return;
+        if (touchStartX === null) return;
+        var t = e.changedTouches[0];
+        var dx = t.clientX - touchStartX;
+        var dy = t.clientY - touchStartY;
+        touchStartX = null;
+        touchStartY = null;
+        if (Math.abs(dx) < SWIPE_MIN) return;
+        // Reject mostly-vertical swipes (page scroll).
+        if (Math.abs(dx) < Math.abs(dy) + SWIPE_OFFSET) return;
+        // Only act when the flip is on screen.
+        var rect = flip.getBoundingClientRect();
+        if (rect.bottom <= 0 || rect.top >= window.innerHeight) return;
+        var max = flip.offsetHeight - window.innerHeight;
+        var progress = Math.min(1, Math.max(0, -rect.top / max));
+        var current = Math.round(progress * (n - 1));
+        var next = dx < 0 ? current + 1 : current - 1;
+        next = Math.min(n - 1, Math.max(0, next));
+        if (next !== current) goTo(next);
+      },
+      { passive: true },
+    );
+
     // === Keyboard nav: Left/Right + PageUp/PageDown ======================
     window.addEventListener("keydown", function (e) {
       if (isDisabled()) return;
