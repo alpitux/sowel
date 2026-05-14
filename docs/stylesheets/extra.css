@@ -1516,26 +1516,28 @@ html:has(.sowel-flip) .md-header__topic:first-child {
 }
 .sowel-patchwork__desktop {
   display: block;
-  width: 82%;
+  width: 88%;
   max-width: 100%;
-  /* Center the desktop in its column but bias slightly LEFT so the
-   * right-side mobile doesn't crowd the viewport edge. */
-  margin: 0 auto 0 8%;
+  /* Center the desktop, give the laptop more presence behind the phones. */
+  margin: 0 auto;
   transform: rotate(0.4deg);
 }
 .sowel-patchwork__mobile {
   position: absolute;
-  width: clamp(6rem, 12vw, 9.5rem);
+  /* Smaller phones so they hug the laptop corners instead of covering the
+   * desktop content in the middle. */
+  width: clamp(4.5rem, 9vw, 7.5rem);
 }
 .sowel-patchwork__mobile--1 {
-  top: -1rem;
-  left: -2rem;
+  /* Anchor top-left phone outside the laptop, overlapping only its corner. */
+  top: -1.5rem;
+  left: -3rem;
   transform: rotate(-5deg);
 }
 .sowel-patchwork__mobile--2 {
-  bottom: -1rem;
-  /* Pull the second mobile inward instead of past the column edge. */
-  right: 3%;
+  /* Anchor bottom-right phone outside the laptop, overlapping only its corner. */
+  bottom: -1.5rem;
+  right: -2rem;
   transform: rotate(4deg);
 }
 
