@@ -195,7 +195,6 @@ hide:
 <p class="sowel-eyebrow">Sowel thinks of your home in rooms and spaces, not in wires and rules.</p>
 <p class="sowel-paragraph">Five layers describe your house in the same words you'd use yourself. Tap a layer to see what it does.</p>
 </div>
-</div>
 
 <div class="sowel-pillars-frise" markdown="0">
 
