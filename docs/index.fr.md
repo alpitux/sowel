@@ -30,7 +30,7 @@ hide:
 
 <h1 class="sowel-hero__tagline"><span class="nowrap">Ne programmez pas</span> votre maison.<em>Appliquez-lui des recettes.</em></h1>
 
-<p class="sowel-hero__lead">Sowel embarque des recettes éprouvées pour ce dont chaque maison a vraiment besoin : Lumière par détection, Volets au coucher, Chauffage par présence, Recharge solaire. Posez-en une sur une pièce, réglez quelques valeurs, c'est fait.</p>
+<p class="sowel-hero__lead">Sowel embarque des recettes éprouvées pour ce dont chaque maison a vraiment besoin : Lumière par détection, Volets au coucher, Chauffage par présence, Recharge solaire, Arrosage Auto. Posez-en une sur une pièce, réglez quelques valeurs, c'est fait.</p>
 
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Commencer <span class="md-icon md-icon--arrow">→</span></a>
@@ -65,7 +65,7 @@ hide:
     </div>
   </div>
   <div class="sowel-mock__recipe">
-    <b>● Lumière par détection</b> : maintient les lumières à 4% jusqu'à 06:14, puis remonte
+    <b>● Lumière dimmable sur mouvement</b> · 4 % sur détection · plage soir
   </div>
 </div>
 
