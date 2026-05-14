@@ -48,77 +48,70 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
     slider.onCommit((v) => onExecuteOrder("position", v));
 
   if (compact) {
+    // Mock parity: slider (80px) → 3 bordered 24×24 buttons (.shutter-btn) → state chip.
+    const sttClass =
+      "w-[24px] h-[24px] inline-flex items-center justify-center border border-border-light bg-surface text-text-tertiary rounded-[4px] transition-colors duration-150 cursor-pointer hover:bg-shutter-50 hover:text-shutter-500 hover:border-shutter-500 disabled:opacity-50 disabled:cursor-not-allowed";
     return (
       <div
         className="flex items-center gap-2 flex-shrink-0"
         onClick={(e) => e.preventDefault()}
       >
         {hasPositionOrder && position !== null && (
-          <div className="flex items-center gap-1.5">
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={position}
-              onPointerDown={(e) => { e.stopPropagation(); slider.onStart(); }}
-              onChange={(e) => { e.stopPropagation(); slider.onChange(Number(e.target.value)); }}
-              onMouseUp={handlePositionCommit}
-              onTouchEnd={handlePositionCommit}
-              onClick={(e) => e.stopPropagation()}
-              className="w-[60px]"
-            />
-            {position === 100 ? (
-              <span className="text-[11px] font-medium text-success px-1.5 py-0.5 rounded bg-success/10">
-                {t("controls.opened")}
-              </span>
-            ) : position === 0 ? (
-              <span className="text-[11px] font-medium text-text-secondary px-1.5 py-0.5 rounded bg-border-light">
-                {t("controls.closed")}
-              </span>
-            ) : (
-              <span className="text-[11px] text-text-tertiary w-8 text-right tabular-nums">
-                {position}%
-              </span>
-            )}
-          </div>
-        )}
-        {!hasPositionOrder && position !== null && (
-          <span className="text-[13px] text-text-secondary tabular-nums text-right">
-            {position === 0
-              ? t("controls.closed")
-              : position === 100
-                ? t("controls.opened")
-                : `${position}%`}
-          </span>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={position}
+            onPointerDown={(e) => { e.stopPropagation(); slider.onStart(); }}
+            onChange={(e) => { e.stopPropagation(); slider.onChange(Number(e.target.value)); }}
+            onMouseUp={handlePositionCommit}
+            onTouchEnd={handlePositionCommit}
+            onClick={(e) => e.stopPropagation()}
+            className="w-[80px]"
+          />
         )}
         {hasState && (
-          <>
-            <div className="w-px h-5 bg-border" />
+          <div className="inline-flex items-center gap-[2px]">
             <button
               onClick={(e) => handleCommand("OPEN", e)}
               disabled={executing}
-              className="p-1.5 rounded-[5px] transition-colors duration-150 cursor-pointer bg-border-light text-text-tertiary hover:bg-border hover:text-text-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              className={sttClass}
               title={t("controls.open")}
             >
-              <OpenIcon size={14} strokeWidth={1.5} />
+              <OpenIcon size={10} strokeWidth={2} />
             </button>
             <button
               onClick={(e) => handleCommand("STOP", e)}
               disabled={executing}
-              className="p-1.5 rounded-[5px] transition-colors duration-150 cursor-pointer bg-border-light text-text-tertiary hover:bg-border hover:text-text-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              className={sttClass}
               title={t("controls.stop")}
             >
-              <Square size={10} strokeWidth={2} />
+              <Square size={9} strokeWidth={0} fill="currentColor" />
             </button>
             <button
               onClick={(e) => handleCommand("CLOSE", e)}
               disabled={executing}
-              className="p-1.5 rounded-[5px] transition-colors duration-150 cursor-pointer bg-border-light text-text-tertiary hover:bg-border hover:text-text-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+              className={sttClass}
               title={t("controls.close")}
             >
-              <CloseIcon size={14} strokeWidth={1.5} />
+              <CloseIcon size={10} strokeWidth={2} />
             </button>
-          </>
+          </div>
+        )}
+        {position !== null && (
+          position === 100 ? (
+            <span className="text-[11px] font-semibold text-success px-[7px] py-[1px] rounded-full bg-success/10">
+              {t("controls.opened")}
+            </span>
+          ) : position === 0 ? (
+            <span className="text-[11px] font-semibold text-shutter-500 px-[7px] py-[1px] rounded-full bg-shutter-50">
+              {t("controls.closed")}
+            </span>
+          ) : (
+            <span className="text-[11px] text-text-tertiary tabular-nums w-8 text-right">
+              {position}%
+            </span>
+          )
         )}
       </div>
     );
