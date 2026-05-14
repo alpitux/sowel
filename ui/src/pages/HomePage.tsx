@@ -179,7 +179,7 @@ export function HomePage() {
           headerRight={isAdmin ? (
             <button
               onClick={() => setShowEquipmentForm(true)}
-              className="w-[26px] h-[26px] inline-flex items-center justify-center rounded-[4px] border border-primary-mid bg-transparent text-primary hover:bg-surface hover:border-primary transition-colors duration-150"
+              className="w-[26px] h-[26px] inline-flex items-center justify-center rounded-[4px] border border-[var(--p-100)] bg-transparent text-primary hover:bg-surface hover:border-primary transition-colors duration-150"
               title={t("equipments.createEquipment")}
             >
               <Plus size={13} strokeWidth={1.5} />
