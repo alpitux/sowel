@@ -1236,6 +1236,10 @@ html:has(.sowel-flip) .md-header__topic:first-child {
   html:has(.sowel-flip) .md-main__inner { margin-top: 0; }
   html:has(.sowel-flip) .md-content__inner { padding-top: 0; margin-top: 0; }
   html:has(.sowel-flip) .md-content__inner > :first-child { margin-top: 0; }
+  /* The Material footer (prev/next nav + copyright/social) is
+   * irrelevant on the landing — hide it so the flipbook ends clean
+   * once the user scrolls past the last slide. */
+  html:has(.sowel-flip) .md-footer { display: none; }
   /* The floating "edit this page" pencil would overlap the hero. */
   html:has(.sowel-flip) .md-content__button { display: none; }
   /* The .md-typeset article still leaves ~0.5rem of leading above
