@@ -129,8 +129,8 @@ export function Sidebar() {
         ${collapsed ? "w-[68px]" : "w-[260px]"}
       `}
     >
-      {/* Logo area */}
-      <div className="flex items-center h-[60px] px-4 border-b border-border-light">
+      {/* Logo area — height aligned with topbar (mock: 49px) */}
+      <div className="flex items-center h-[49px] px-4 border-b border-border-light">
         <div className="flex items-center min-w-0">
           <SowelLogo size={40} className="flex-shrink-0" />
           {!collapsed && (

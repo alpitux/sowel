@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Sidebar } from "./Sidebar";
@@ -9,6 +9,7 @@ import { useWebSocket } from "../../store/useWebSocket";
 import { useTimezone } from "../../store/useTimezone";
 import { useDevices } from "../../store/useDevices";
 import { useZones } from "../../store/useZones";
+import type { ZoneWithChildren } from "../../types";
 import { useEquipments } from "../../store/useEquipments";
 import { useZoneAggregation } from "../../store/useZoneAggregation";
 import { useAuth } from "../../store/useAuth";
@@ -74,7 +75,7 @@ export function AppLayout() {
         <div className="header-tint flex-shrink-0" style={{ height: "env(safe-area-inset-top, 0px)" }} />
         {/* Top bar — compact on mobile, full on desktop */}
         <header
-          className="flex items-center justify-between min-h-[44px] sm:min-h-[60px] px-4 sm:px-6 border-b border-border header-tint backdrop-blur-sm"
+          className="flex items-center justify-between min-h-[44px] sm:min-h-[49px] px-4 sm:px-6 border-b border-border-light bg-surface"
         >
           <div className="flex items-center gap-4">
             {/* Mobile: logo + home name + current time + sunlight */}
@@ -86,11 +87,9 @@ export function AppLayout() {
               <CurrentTimePill compact />
               <SunlightBanner data={rootAgg} compact />
             </div>
-            {/* Desktop: home name + current time + sunlight banner */}
+            {/* Desktop: breadcrumb + current time + sunlight banner */}
             <div className="hidden lg:flex items-center gap-3">
-              {homeName && (
-                <span className="text-[15px] font-semibold text-text">{homeName}</span>
-              )}
+              <TopbarBreadcrumb homeName={homeName} />
               <CurrentTimePill />
               <SunlightBanner data={rootAgg} />
             </div>
@@ -170,6 +169,95 @@ export function AppLayout() {
       <UpdateOverlay />
     </div>
   );
+}
+
+// Mock parity: text-[.82rem] / n-400 / weight 500 for crumb, n-700 weight 600 for current.
+// On /home/:zoneId shows "Home › ... › CurrentZone" (root zone Maison is treated as implicit).
+// On other top-level routes shows the localized route name as the current crumb.
+function TopbarBreadcrumb({ homeName }: { homeName: string }) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const tree = useZones((s) => s.tree);
+
+  const zoneMatch = location.pathname.match(/^\/home\/([^/]+)/);
+  const path = zoneMatch ? buildZonePath(zoneMatch[1], tree) : null;
+
+  const homeLabel = homeName || t("nav.maison");
+
+  if (path && path.length > 0) {
+    // Skip root zone "Maison" from crumb — it's redundant with home name.
+    const segments = path[0].id === ROOT_ZONE_ID ? path.slice(1) : path;
+    if (segments.length === 0) {
+      return <span className="text-[.82rem] font-semibold text-[var(--n-700)]">{homeLabel}</span>;
+    }
+    return (
+      <div className="text-[.82rem] font-medium text-[var(--n-400)]">
+        <span>{homeLabel}</span>
+        {segments.map((s, i) => (
+          <span key={s.id}>
+            <span className="mx-[.35rem] opacity-35">›</span>
+            {i === segments.length - 1 ? (
+              <b className="font-semibold text-[var(--n-700)]">{s.name}</b>
+            ) : (
+              <span>{s.name}</span>
+            )}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  const routeLabel = getRouteLabel(location.pathname, t);
+  if (routeLabel) {
+    return (
+      <div className="text-[.82rem] font-medium text-[var(--n-400)]">
+        <span>{homeLabel}</span>
+        <span className="mx-[.35rem] opacity-35">›</span>
+        <b className="font-semibold text-[var(--n-700)]">{routeLabel}</b>
+      </div>
+    );
+  }
+
+  return <span className="text-[.82rem] font-semibold text-[var(--n-700)]">{homeLabel}</span>;
+}
+
+function buildZonePath(
+  zoneId: string,
+  tree: ZoneWithChildren[]
+): { id: string; name: string }[] {
+  const out: { id: string; name: string }[] = [];
+  function walk(zones: ZoneWithChildren[], trail: { id: string; name: string }[]): boolean {
+    for (const z of zones) {
+      const next = [...trail, { id: z.id, name: z.name }];
+      if (z.id === zoneId) {
+        out.push(...next);
+        return true;
+      }
+      if (walk(z.children, next)) return true;
+    }
+    return false;
+  }
+  walk(tree, []);
+  return out;
+}
+
+function getRouteLabel(pathname: string, t: (k: string) => string): string | null {
+  if (pathname.startsWith("/dashboard")) return t("nav.dashboard");
+  if (pathname.startsWith("/energy")) return t("nav.energy");
+  if (pathname.startsWith("/modes")) return t("nav.modes");
+  if (pathname.startsWith("/analyse")) return t("nav.analyse");
+  if (pathname.startsWith("/calendar")) return t("nav.calendar");
+  if (pathname.startsWith("/integrations")) return t("nav.integrations");
+  if (pathname.startsWith("/plugins")) return t("nav.plugins");
+  if (pathname.startsWith("/mqtt-publishers")) return t("nav.mqttPublishers");
+  if (pathname.startsWith("/notification-publishers")) return t("nav.notificationPublishers");
+  if (pathname.startsWith("/logs")) return t("nav.logs");
+  if (pathname.startsWith("/backup")) return t("nav.backup");
+  if (pathname.startsWith("/settings")) return t("nav.settings");
+  if (pathname.startsWith("/devices")) return t("nav.devices");
+  if (pathname.startsWith("/equipments")) return t("nav.equipments");
+  if (pathname.startsWith("/zones")) return t("nav.zones");
+  return null;
 }
 
 function MobileNav() {
