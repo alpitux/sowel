@@ -1512,9 +1512,11 @@ html:has(.sowel-flip) .md-header__topic:first-child {
 }
 .sowel-patchwork__desktop {
   display: block;
-  width: 88%;
+  width: 82%;
   max-width: 100%;
-  margin: 0 auto;
+  /* Center the desktop in its column but bias slightly LEFT so the
+   * right-side mobile doesn't crowd the viewport edge. */
+  margin: 0 auto 0 8%;
   border-radius: 10px;
   box-shadow:
     0 28px 60px -22px rgba(26, 79, 110, 0.34),
@@ -1524,7 +1526,13 @@ html:has(.sowel-flip) .md-header__topic:first-child {
 }
 .sowel-patchwork__mobile {
   position: absolute;
-  width: clamp(7rem, 14vw, 11rem);
+  width: clamp(6rem, 12vw, 9.5rem);
+  /* Source PNGs are 390x844 with a 65px PWA-install banner at the
+   * bottom; force a 390x779 frame so the banner is cropped out
+   * automatically (no need to re-shoot). */
+  aspect-ratio: 390 / 779;
+  object-fit: cover;
+  object-position: top;
   border-radius: 14px;
   box-shadow:
     0 22px 40px -14px rgba(26, 79, 110, 0.30),
@@ -1533,13 +1541,14 @@ html:has(.sowel-flip) .md-header__topic:first-child {
   background: #fff;
 }
 .sowel-patchwork__mobile--1 {
-  top: -1.5rem;
-  left: -1rem;
+  top: -1rem;
+  left: -2rem;
   transform: rotate(-5deg);
 }
 .sowel-patchwork__mobile--2 {
-  bottom: -1.5rem;
-  right: -0.5rem;
+  bottom: -1rem;
+  /* Pull the second mobile inward instead of past the column edge. */
+  right: 3%;
   transform: rotate(4deg);
 }
 [data-md-color-scheme="slate"] .sowel-patchwork__mobile { background: #163040; }
