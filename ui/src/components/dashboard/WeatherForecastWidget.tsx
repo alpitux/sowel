@@ -6,6 +6,7 @@ import {
   CONDITION_ICONS,
   CONDITION_COLORS,
 } from "../equipments/weatherForecastUtils";
+import { WidgetCard } from "./WidgetCard";
 
 interface WeatherForecastWidgetProps {
   label: string;
@@ -51,10 +52,7 @@ export function WeatherForecastWidget({ label, equipment }: WeatherForecastWidge
     : "";
 
   return (
-    <div className="bg-surface border border-border rounded-[10px] p-3 flex flex-col h-[160px] sm:h-[240px] overflow-hidden">
-      {/* Zone 1: Titre — same as WidgetCard */}
-      <span className="text-[17px] font-semibold text-text truncate mb-2 text-center">{label}</span>
-
+    <WidgetCard label={label}>
       {/* Zone 2: Content — vertical on mobile, horizontal on desktop */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-4 flex-1 min-h-0">
         {/* Icon — 36px mobile, 72px desktop (wrapped in div for proper hide/show) */}
@@ -104,6 +102,6 @@ export function WeatherForecastWidget({ label, equipment }: WeatherForecastWidge
           </div>
         </div>
       </div>
-    </div>
+    </WidgetCard>
   );
 }

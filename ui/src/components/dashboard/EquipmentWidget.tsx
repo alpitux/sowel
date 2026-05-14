@@ -36,6 +36,7 @@ import {
   WaterValveWidgetIcon,
 } from "./WidgetIcons";
 import { WeatherForecastWidget } from "./WeatherForecastWidget";
+import { WidgetCard } from "./WidgetCard";
 import { CUSTOM_ICON_REGISTRY, shutterLevel } from "./widget-icons";
 
 
@@ -82,19 +83,7 @@ export function EquipmentWidget({ widget, equipment, onExecuteOrder }: Equipment
 }
 
 // ============================================================
-// Shared widget card shell — 4-zone layout
-// ============================================================
-
-function WidgetCard({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-surface border border-border rounded-[10px] p-3 flex flex-col h-[160px] sm:h-[240px] overflow-hidden">
-      {/* Zone 1: Titre */}
-      <span className="text-[17px] font-semibold text-text truncate mb-2 text-center">{label}</span>
-      {children}
-    </div>
-  );
-}
-
+// Shared widget card shell lives in WidgetCard.tsx (spec 098).
 // ============================================================
 // Light equipment widget
 // ============================================================
@@ -480,15 +469,11 @@ function GateEquipmentWidget({
   const IconComp = (iconKey && GATE_ICON_MAP[iconKey]) || GateWidgetIcon;
 
   return (
-    <div
+    <WidgetCard
+      label={label}
       onClick={hasSingleAction ? handleCommand : undefined}
-      className={`bg-surface border border-border rounded-[10px] p-3 flex flex-col h-[160px] sm:h-[240px] overflow-hidden ${
-        hasSingleAction ? "cursor-pointer active:scale-[0.98] transition-transform" : ""
-      }`}
+      className={hasSingleAction ? "cursor-pointer active:scale-[0.98] transition-transform" : ""}
     >
-      {/* Label */}
-      <span className="text-[17px] font-semibold text-text truncate mb-2 text-center">{label}</span>
-
       {/* Icon centered */}
       <div className="flex-1 flex items-center justify-center">
         {executing ? (
@@ -512,7 +497,7 @@ function GateEquipmentWidget({
           {t(`controls.gate.${gateState}`)}
         </span>
       </div>
-    </div>
+    </WidgetCard>
   );
 }
 

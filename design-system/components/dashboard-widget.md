@@ -148,7 +148,7 @@ When the dashboard is in edit mode, each widget gets four small icon controls at
 .widget {
   background: var(--n-0);
   border: 1px solid var(--line-2);
-  border-radius: 10px;
+  border-radius: var(--r-md); /* 8px — aligned with design system in spec 098 */
   padding: 12px;
   display: flex;
   flex-direction: column;
