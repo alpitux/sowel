@@ -423,7 +423,7 @@ export function AnalyseView() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <BarChart3 size={20} strokeWidth={1.5} className="text-primary" />
-          <h1 className="text-[18px] font-semibold text-text">{title}</h1>
+          <h1>{title}</h1>
         </div>
         <div className="flex items-center gap-2">
           {series.length > 0 && (

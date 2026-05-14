@@ -208,7 +208,7 @@ export function ZoneDetailPage() {
       <div className="flex items-start justify-between mb-4 sm:mb-8">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
+            <h1>
               {zone.name}
             </h1>
             {/* Recipe mode pills */}

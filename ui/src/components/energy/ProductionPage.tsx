@@ -34,7 +34,7 @@ export function ProductionPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
         <div className="flex items-center gap-1.5">
           <EnergyMobileNav />
-          <h1 className="text-[18px] font-semibold text-text">{t("energy.production")}</h1>
+          <h1>{t("energy.production")}</h1>
         </div>
         <PeriodSelector />
       </div>

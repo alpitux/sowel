@@ -82,7 +82,7 @@ export function CalendarPage() {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
+        <h1>
           {t("calendar.title")}
         </h1>
         <p className="text-[13px] text-text-secondary mt-0.5">

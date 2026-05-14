@@ -100,6 +100,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Page hero title — every page H1 gets the same look automatically.
+ * 28px on mobile, 42px from sm:. Utility classes on the element can
+ * still override (Tailwind layers ship after this base rule). */
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+@media (min-width: 640px) {
+  h1 {
+    font-size: 42px;
+  }
+}
+
 /* Header gradient tint — primary color fading into surface */
 .header-tint {
   background: linear-gradient(

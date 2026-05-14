@@ -58,7 +58,7 @@ export function IntegrationsPage() {
       <div className="mb-5">
         <div className="flex items-center gap-2.5 mb-1">
           <Plug size={22} strokeWidth={1.5} className="text-text-secondary" />
-          <h1 className="text-[20px] sm:text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
+          <h1>
             {t("integrations.title")}
           </h1>
         </div>
