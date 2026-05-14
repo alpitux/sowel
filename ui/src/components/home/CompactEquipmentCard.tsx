@@ -90,7 +90,7 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
   const iconAnimation = isLightOn ? "animate-glow" : "";
 
   return (
-    <div className="grid grid-cols-[32px_1fr_auto_auto_auto] gap-3 items-center px-3 py-2 min-h-[52px] transition-colors duration-150 hover:bg-border-light/40">
+    <div className="grid grid-cols-[32px_1fr_auto] gap-3 items-center px-3 py-2 min-h-[52px] transition-colors duration-150 hover:bg-border-light/40">
       {/* Slot 1: Icon */}
       <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${iconBg} ${iconText} ${iconAnimation}`}>
         {iconElement}
@@ -107,22 +107,24 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
 
       {/* Slots 3-5: per-type content. Grid auto columns collapse when unused. */}
 
-      {/* Sensor / Button values */}
+      {/* Sensor / Button values — wrapped in a single grid cell to keep the row layout intact */}
       {isSensor && (
-        <SensorValues
-          sensorBindings={
-            equipment.type === "weather"
-              ? sensorBindings
-                  .filter((b) =>
-                    b.key === "temperature" || b.key === "sum_rain_24" || b.key === "wind_strength"
-                  )
-                  .map((b) =>
-                    b.key === "sum_rain_24" ? { ...b, unit: "mm/24h" } : b
-                  )
-              : sensorBindings
-          }
-          batteryBindings={equipment.type === "weather" ? [] : batteryBindings}
-        />
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <SensorValues
+            sensorBindings={
+              equipment.type === "weather"
+                ? sensorBindings
+                    .filter((b) =>
+                      b.key === "temperature" || b.key === "sum_rain_24" || b.key === "wind_strength"
+                    )
+                    .map((b) =>
+                      b.key === "sum_rain_24" ? { ...b, unit: "mm/24h" } : b
+                    )
+                : sensorBindings
+            }
+            batteryBindings={equipment.type === "weather" ? [] : batteryBindings}
+          />
+        </div>
       )}
 
       {/* Weather forecast compact */}
