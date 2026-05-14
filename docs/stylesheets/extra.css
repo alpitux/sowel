@@ -1773,6 +1773,130 @@ html:has(.sowel-flip) .md-header__topic:first-child {
 }
 
 /* === Five-layers pillar grid (5 cards wide on the flip page) === */
+/* ============================================================
+   Page 4 — Frise of 5 pillars (Devices, Equipments, Zones,
+   Modes, Recipes). Each pillar is a <details> element: shows
+   icon + title + lead by default, expands to reveal the full
+   description on click. Replaces the old .sowel-cards--pillars
+   grid (which was paired with a complex nested "home model"
+   diagram now removed).
+   ============================================================ */
+.sowel-pillars-frise {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.85rem;
+  margin: 1.5rem auto 0;
+  max-width: 72rem;
+  align-items: start;
+}
+.sowel-pillar {
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 10px;
+  padding: 0.85rem 0.95rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.sowel-pillar[open] {
+  border-color: var(--sowel-primary, #1a4f6e);
+  box-shadow: 0 6px 18px -10px rgba(26, 79, 110, 0.35);
+}
+/* Reset Material's default admonition styling on <details>/<summary>:
+ * Material adds a pencil ::before icon, padding-left, font-weight, etc.
+ * that we don't want on our pillar cards. */
+.md-typeset details.sowel-pillar {
+  padding: 0.85rem 0.95rem !important;
+  font-size: inherit;
+  display: block;
+}
+.md-typeset details.sowel-pillar > summary {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  display: block;
+  position: relative;
+  padding: 0 1.1rem 0 0 !important;
+  background: none !important;
+  border: none !important;
+  font-weight: 400;
+}
+.md-typeset details.sowel-pillar > summary::before,
+.sowel-pillar > summary::-webkit-details-marker {
+  display: none !important;
+  content: none !important;
+}
+.md-typeset details.sowel-pillar > summary::marker { content: none; }
+.sowel-pillar > summary::after {
+  content: "";
+  position: absolute;
+  top: 0.15rem;
+  right: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  color: var(--md-default-fg-color--light);
+  transition: transform 0.18s ease;
+}
+.sowel-pillar[open] > summary::after {
+  transform: rotate(-135deg);
+  top: 0.3rem;
+}
+.sowel-pillar__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 7px;
+  background: var(--md-primary-fg-color--light);
+  color: var(--md-primary-fg-color);
+  margin-bottom: 0.45rem;
+}
+.sowel-pillar__icon svg { width: 0.95rem; height: 0.95rem; }
+.md-typeset .sowel-pillar__title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+  color: var(--md-default-fg-color);
+}
+.md-typeset .sowel-pillar__lead {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--md-default-fg-color--light);
+  margin: 0;
+}
+.sowel-pillar__body {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--md-default-fg-color--lightest);
+}
+.md-typeset .sowel-pillar__body p {
+  font-size: 0.75rem;
+  line-height: 1.55;
+  margin: 0 0 0.4rem;
+  color: var(--md-default-fg-color);
+}
+.md-typeset .sowel-pillar__more { margin-top: 0.3rem; }
+.md-typeset .sowel-pillar__more a {
+  font-size: 0.75rem;
+  color: var(--md-primary-fg-color);
+  font-weight: 500;
+}
+@media (max-width: 1024px) {
+  .sowel-pillars-frise { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 720px) {
+  .sowel-pillars-frise { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .sowel-pillars-frise { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   Legacy .sowel-cards--pillars rules kept for backwards compat
+   (some other docs pages may still use them).
+   ============================================================ */
 .sowel-cards--pillars {
   grid-template-columns: repeat(5, 1fr) !important;
   gap: 0.85rem;
