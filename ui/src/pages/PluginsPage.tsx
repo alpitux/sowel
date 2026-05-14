@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Package, Loader2, Download, Trash2, Cpu, ArrowUpCircle, RefreshCw } from "lucide-react";
+import { Package, Loader2, Download, Trash2, Cpu, ArrowUpCircle, RefreshCw, AlertTriangle } from "lucide-react";
 import { refreshPluginUpdateCount } from "../components/layout/usePluginUpdates";
 import * as LucideIcons from "lucide-react";
 import {
@@ -12,6 +12,7 @@ import {
   enablePlugin,
   disablePlugin,
   updatePlugin,
+  CommunityPluginConfirmationRequiredError,
 } from "../api";
 import type { PluginInfo, PluginManifest, IntegrationStatus, PackageType } from "../types";
 
@@ -508,29 +509,37 @@ function StoreRow({
   lang,
   onRefresh,
 }: {
-  manifest: PluginManifest & { compatible?: boolean; compatReason?: string };
+  manifest: PluginManifest & { compatible?: boolean; compatReason?: string; isOfficial?: boolean };
   installed: boolean;
   lang: string;
   onRefresh: () => void;
 }) {
   const { t } = useTranslation();
   const [installing, setInstalling] = useState(false);
+  const [confirmCommunity, setConfirmCommunity] = useState<{ owner: string } | null>(null);
   const compatible = manifest.compatible !== false;
+  const isOfficial = manifest.isOfficial !== false;
 
   const IconComponent =
     (LucideIcons as unknown as Record<string, LucideIcons.LucideIcon>)[manifest.icon] ?? Cpu;
 
-  const handleInstall = async () => {
+  const doInstall = async (confirmed: boolean) => {
     setInstalling(true);
     try {
-      await installPlugin(manifest.repo ?? manifest.id);
+      await installPlugin(manifest.repo ?? manifest.id, confirmed);
+      setConfirmCommunity(null);
       onRefresh();
-    } catch {
-      // ignore
+    } catch (err) {
+      if (err instanceof CommunityPluginConfirmationRequiredError) {
+        setConfirmCommunity({ owner: err.owner });
+      }
+      // other errors are surfaced through default fetch error handling
     } finally {
       setInstalling(false);
     }
   };
+
+  const handleInstall = () => doInstall(false);
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 bg-surface border border-border rounded-[10px]">
@@ -548,6 +557,16 @@ function StoreRow({
           {manifest.version && (
             <span className="text-[10px] px-1.5 py-0.5 bg-border-light rounded-[4px] text-text-tertiary font-mono shrink-0">
               {manifest.version}
+            </span>
+          )}
+          {/* Community badge — owner is not in OFFICIAL_OWNERS (spec 089 C1) */}
+          {!isOfficial && (
+            <span
+              className="text-[10px] px-1.5 py-0.5 bg-warning/10 text-warning rounded-[4px] font-medium shrink-0 inline-flex items-center gap-1"
+              title={t("plugins.community.badge.tooltip")}
+            >
+              <AlertTriangle size={10} strokeWidth={2} />
+              {t("plugins.community.badge")}
             </span>
           )}
         </div>
@@ -591,6 +610,44 @@ function StoreRow({
           </span>
         )}
       </div>
+
+      {/* Community plugin confirm modal (spec 089 C1) */}
+      {confirmCommunity && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-surface rounded-[14px] max-w-md w-full p-6 space-y-4 shadow-lg">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center shrink-0">
+                <AlertTriangle size={20} className="text-warning" strokeWidth={2} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-[16px] font-semibold text-text">
+                  {t("plugins.community.modal.title")}
+                </h3>
+                <p className="text-[13px] text-text-secondary mt-1">
+                  {t("plugins.community.modal.body", { owner: confirmCommunity.owner })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setConfirmCommunity(null)}
+                disabled={installing}
+                className="px-4 py-2 text-[13px] font-medium text-text-secondary hover:bg-border-light rounded-[6px] transition-colors disabled:opacity-50"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                onClick={() => doInstall(true)}
+                disabled={installing}
+                className="px-4 py-2 text-[13px] font-medium text-white bg-warning hover:opacity-90 rounded-[6px] transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+              >
+                {installing ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                {t("plugins.community.modal.confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
