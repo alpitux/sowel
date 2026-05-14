@@ -130,17 +130,8 @@ jobs:
           cache-from: type=gha,scope=amd64
           cache-to: type=gha,scope=amd64,mode=max
 
-      - name: Create GitHub Release
-        if: steps.version.outputs.is_release == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create ${{ github.ref_name }} \
-            --title "Sowel ${{ steps.version.outputs.version }}" \
-            --generate-notes
-
   # ── Docker build (arm64, async, non-blocking) ────────────
-  # Runs after the amd64 release is published, then promotes the main
+  # Runs after the amd64 image is published, then promotes the main
   # tags to a multi-arch manifest combining both architectures.
   # Failure here does NOT fail the release — amd64 image stays valid,
   # the main tags just remain amd64-only until the next release.
@@ -199,3 +190,27 @@ jobs:
           if [[ "$IS_RELEASE" == "true" ]]; then
             docker buildx imagetools create --tag ${REPO}:latest ${REPO}:latest ${REPO}:latest-arm64
           fi
+
+  # ── Create GitHub Release (after BOTH archs are pushed) ──
+  # Gated behind docker-arm64 so the Release is not visible until the
+  # multi-arch manifest exists. Otherwise arm64 instances (Pi) would
+  # see "update available" while `docker pull` still fails for them.
+  # arm64 stays continue-on-error, so a broken arm64 build does not
+  # prevent the Release — but in that case the main tag remains
+  # amd64-only and arm64 users see no update (correct behaviour).
+  release:
+    needs: [docker, docker-arm64]
+    if: always() && needs.docker.result == 'success' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ github.ref_name }}
+        run: |
+          gh release create "$V" \
+            --title "Sowel ${V#v}" \
+            --generate-notes
