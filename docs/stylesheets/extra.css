@@ -1752,7 +1752,8 @@ html:has(.sowel-flip) .md-header__topic:first-child {
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.5);
 }
-.sowel-terminal-mock__code {
+/* .md-typeset prefix needed to win over Material's `.md-typeset pre { color: var(--md-code-fg-color) }` (#36464e dark gray). */
+.md-typeset .sowel-terminal-mock__code {
   margin: 0;
   padding: 1rem 1.25rem 1.15rem;
   white-space: pre;
