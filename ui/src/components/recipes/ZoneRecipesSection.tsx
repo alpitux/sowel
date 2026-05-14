@@ -104,15 +104,15 @@ export function ZoneRecipesSection({ zoneId, zoneName }: ZoneRecipesSectionProps
   if (recipes.length === 0 && zoneInstances.length === 0) return null;
 
   return (
-    <div className="rounded-[10px] border border-border bg-surface">
-      <div className="flex items-center gap-1.5 px-3 py-1 bg-accent/8 rounded-t-[10px]">
-        <span className="text-accent">
+    <div>
+      <div className="flex items-center gap-[0.55rem] px-[1.1rem] py-[0.4rem] min-h-[36px] bg-background border-t border-b border-border-light">
+        <span className="text-text-tertiary opacity-70 flex-shrink-0">
           <ChefHat size={14} strokeWidth={1.5} />
         </span>
-        <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-widest">
+        <span className="text-[10.4px] font-semibold text-text-tertiary uppercase tracking-[0.14em]">
           {t("recipes.title")}
         </span>
-        <span className="text-[11px] text-text-tertiary ml-auto tabular-nums">
+        <span className="text-[10.9px] text-text-tertiary opacity-65 ml-auto tabular-nums font-mono">
           {zoneInstances.length}
         </span>
         <div ref={pickerWrapRef} className="relative ml-2">

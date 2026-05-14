@@ -20,22 +20,22 @@ interface EquipmentGroup {
   labelKey: string;
   types: EquipmentType[];
   icon: React.ReactNode;
-  headerBg: string;
-  iconColor: string;
 }
 
+// Per-category cat-heads now use a uniform neutral chrome (design-system .cat-head, spec 100).
+// No more per-group bg tint — the icon glyph alone conveys the category.
 const EQUIPMENT_GROUPS: EquipmentGroup[] = [
-  { labelKey: "equipments.group.lights", types: ["light_onoff", "light_dimmable", "light_color"], icon: <Lightbulb size={14} strokeWidth={1.5} />, headerBg: "bg-active/8", iconColor: "text-active-text" },
-  { labelKey: "equipments.group.shutters", types: ["shutter"], icon: <ShutterClosedIcon size={14} strokeWidth={1.5} />, headerBg: "bg-primary/6", iconColor: "text-primary" },
-  { labelKey: "equipments.group.climate", types: ["thermostat", "heater"], icon: <Thermometer size={14} strokeWidth={1.5} />, headerBg: "bg-error/6", iconColor: "text-error" },
-  { labelKey: "equipments.group.energy", types: ["energy_meter", "main_energy_meter", "energy_production_meter"], icon: <Zap size={14} strokeWidth={1.5} />, headerBg: "bg-accent/8", iconColor: "text-accent" },
-  { labelKey: "equipments.group.sensors", types: ["sensor"], icon: <Gauge size={14} strokeWidth={1.5} />, headerBg: "bg-primary/6", iconColor: "text-primary" },
-  { labelKey: "equipments.group.weather", types: ["weather", "weather_forecast"], icon: <CloudSun size={14} strokeWidth={1.5} />, headerBg: "bg-primary/6", iconColor: "text-primary" },
-  { labelKey: "equipments.group.media", types: ["media_player"], icon: <Tv size={14} strokeWidth={1.5} />, headerBg: "bg-primary/6", iconColor: "text-primary" },
-  { labelKey: "equipments.group.appliances", types: ["appliance"], icon: <WashingMachine size={14} strokeWidth={1.5} />, headerBg: "bg-text-tertiary/6", iconColor: "text-text-secondary" },
-  { labelKey: "equipments.group.water", types: ["water_valve"], icon: <WaterValveIcon size={14} strokeWidth={1.5} />, headerBg: "bg-primary/6", iconColor: "text-primary" },
-  { labelKey: "equipments.group.pool", types: ["pool_pump", "pool_cover", "pool_heat_pump"], icon: <Waves size={14} strokeWidth={1.5} />, headerBg: "bg-primary/6", iconColor: "text-primary" },
-  { labelKey: "equipments.group.other", types: ["switch", "button", "gate"], icon: <ToggleRight size={14} strokeWidth={1.5} />, headerBg: "bg-text-tertiary/6", iconColor: "text-text-secondary" },
+  { labelKey: "equipments.group.lights", types: ["light_onoff", "light_dimmable", "light_color"], icon: <Lightbulb size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.shutters", types: ["shutter"], icon: <ShutterClosedIcon size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.climate", types: ["thermostat", "heater"], icon: <Thermometer size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.energy", types: ["energy_meter", "main_energy_meter", "energy_production_meter"], icon: <Zap size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.sensors", types: ["sensor"], icon: <Gauge size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.weather", types: ["weather", "weather_forecast"], icon: <CloudSun size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.media", types: ["media_player"], icon: <Tv size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.appliances", types: ["appliance"], icon: <WashingMachine size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.water", types: ["water_valve"], icon: <WaterValveIcon size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.pool", types: ["pool_pump", "pool_cover", "pool_heat_pump"], icon: <Waves size={14} strokeWidth={1.5} /> },
+  { labelKey: "equipments.group.other", types: ["switch", "button", "gate"], icon: <ToggleRight size={14} strokeWidth={1.5} /> },
 ];
 
 interface ZoneEquipmentsViewProps {
@@ -64,15 +64,16 @@ export function ZoneEquipmentsView({
   })).filter((g) => g.equipments.length > 0);
 
   return (
-    <div className="space-y-3">
+    <div>
       {grouped.map((group) => (
-        <div key={group.labelKey} className="rounded-[10px] border border-border bg-surface overflow-hidden">
-          <div className={`flex items-center gap-1.5 px-3 py-1 ${group.headerBg}`}>
-            <span className={group.iconColor}>{group.icon}</span>
-            <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-widest">
+        <div key={group.labelKey}>
+          {/* cat-head — strict design-system style: neutral grey, flush, no radius */}
+          <div className="flex items-center gap-[0.55rem] px-[1.1rem] py-[0.4rem] min-h-[36px] bg-background border-t border-b border-border-light">
+            <span className="text-text-tertiary opacity-70 flex-shrink-0">{group.icon}</span>
+            <span className="text-[10.4px] font-semibold text-text-tertiary uppercase tracking-[0.14em]">
               {t(group.labelKey)}
             </span>
-            <span className="text-[11px] text-text-tertiary ml-auto tabular-nums">
+            <span className="text-[10.9px] text-text-tertiary opacity-65 ml-auto tabular-nums font-mono">
               {group.equipments.length}
             </span>
           </div>

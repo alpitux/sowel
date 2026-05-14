@@ -198,10 +198,8 @@ export function HomePage() {
         <div className="space-y-6">
           {zoneId && (
             <Panel title={t("behaviors.title")}>
-              <div className="space-y-3">
-                <ZoneModesSection zoneId={zoneId} />
-                <ZoneRecipesSection zoneId={zoneId} zoneName={currentZone.name} />
-              </div>
+              <ZoneModesSection zoneId={zoneId} />
+              <ZoneRecipesSection zoneId={zoneId} zoneName={currentZone.name} />
             </Panel>
           )}
           {/* TODO spec 101: ActivityPanel slot */}
