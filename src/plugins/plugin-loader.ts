@@ -106,7 +106,7 @@ export class PluginLoader {
    * unload → fetch fresh files → reload, avoiding the "already installed" error and
    * stale in-memory module state.
    */
-  async install(repo: string): Promise<PluginManifest> {
+  async install(repo: string, opts: { confirmed?: boolean } = {}): Promise<PluginManifest> {
     // Peek the plugin id from the repo name (convention: sowel-plugin-<id>) to detect reinstall.
     const repoName = repo.split("/").pop() ?? "";
     const candidateId = repoName.replace(/^sowel-plugin-/, "");
@@ -118,7 +118,7 @@ export class PluginLoader {
       return this.update(candidateId);
     }
 
-    const manifest = await this.packageManager.installFromGitHub(repo);
+    const manifest = await this.packageManager.installFromGitHub(repo, opts);
 
     try {
       await this.loadPlugin(manifest.id);
