@@ -161,6 +161,23 @@ docker compose up -d         # Local docker deployment
 - All message/event handlers must never throw — wrap in try/catch with structured log
 - Missing plugins on disk are **auto-downloaded** on startup (spec 058)
 
+### Plugin supply chain security (spec 089 — MANDATORY for AI agents)
+
+Every entry in `plugins/registry.json` MUST carry `sha256` (64 hex chars) and `owner` (GitHub login). The install flow refuses any entry missing either field and refuses any tarball whose hash does not match.
+
+**Whenever a plugin release is published, the registry MUST be updated.** Workflow:
+
+1. Plugin author publishes a new GitHub release (tag + `sowel-plugin-<id>-<version>.tar.gz` asset).
+2. Run `node scripts/backfill-registry-sha256.mjs` in this repo — the script fetches the latest release asset for every entry and writes the SHA256 in place. Idempotent unless `FORCE=1`.
+3. Commit `plugins/registry.json` with a `chore(registry): bump <plugin> to <version>` message.
+4. Open a PR. Merge propagates the new hash to all Sowel instances within ~1h (CDN cache).
+
+**Do NOT publish a release without updating the registry hash** — installs of the new version will fail with `ChecksumMismatchError` until the registry catches up.
+
+**Official vs community owners**: `OFFICIAL_OWNERS = ["mchacher"]` in `src/packages/registry-types.ts` is the hard-coded whitelist. Plugins from any other owner are flagged community in the UI and require an explicit user confirmation modal at install. The `OFFICIAL_OWNERS` list grows by review (not by PR — a PR adding to it must be reviewed by the Sowel maintainer).
+
+If the registry CI fails on SHA256 mismatch, the fix is always to re-run `backfill-registry-sha256.mjs`, never to remove the field or bypass the check.
+
 ### Event Bus
 
 - Typed `EventEmitter` with TypeScript discriminated union (`EngineEvent`)
