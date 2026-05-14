@@ -171,11 +171,14 @@ export function HomePage() {
         )}
       </div>
 
-      {/* Sections: Equipments (left) + Behaviors (right) — 2-col on desktop, stacked on mobile (spec 100) */}
+      {/* Sections: Equipments (left) + Behaviors (right) — 2-col on desktop, stacked on mobile (spec 100).
+          min-w-0 on each column prevents intrinsic content (long recipe descriptions, etc.) from
+          overriding the 1.5fr/1fr ratio. */}
       <div className="max-w-[1200px] grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
         {/* Left column — Équipements */}
         <Panel
           title={t("equipments.title")}
+          className="min-w-0"
           headerRight={isAdmin ? (
             <button
               onClick={() => setShowEquipmentForm(true)}
@@ -195,7 +198,7 @@ export function HomePage() {
         </Panel>
 
         {/* Right column — Comportements + future Activity feed (spec 101 slot) */}
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           {zoneId && (
             <Panel title={t("behaviors.title")}>
               <ZoneModesSection zoneId={zoneId} />
@@ -283,14 +286,16 @@ function ZoneNotFound() {
 function Panel({
   title,
   headerRight,
+  className = "",
   children,
 }: {
   title: string;
   headerRight?: React.ReactNode;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-surface border border-border-light rounded-lg overflow-hidden">
+    <section className={`bg-surface border border-border-light rounded-lg overflow-hidden ${className}`}>
       {/* Panel head — strict alignment with design-system .panel__head (spec 100) */}
       <div className="flex items-center gap-[0.55rem] px-[1.1rem] py-[0.55rem] min-h-[44px] bg-primary-light border-b border-primary-mid">
         <h2 className="text-[11.5px] font-bold text-primary uppercase tracking-[0.12em]">
