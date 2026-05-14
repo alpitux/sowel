@@ -138,7 +138,7 @@ export function ModeDetailPage() {
 
       {/* Header */}
       <div className="flex items-start justify-between mb-4 sm:mb-8 max-w-[720px]">
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        <div className="hidden sm:flex items-center gap-3 sm:gap-4 min-w-0">
           <div
             className={`w-10 h-10 sm:w-12 sm:h-12 rounded-[8px] sm:rounded-[10px] flex items-center justify-center flex-shrink-0 ${
               mode.active ? "bg-primary/10" : "bg-border-light"
@@ -151,7 +151,7 @@ export function ModeDetailPage() {
             )}
           </div>
           <div className="min-w-0">
-            <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px] truncate">
+            <h1 className="truncate">
               {mode.name}
             </h1>
             {mode.description && (
@@ -481,7 +481,7 @@ function CalendarScheduleSection({
               }`}>
                 {action === "on" ? t("common.on") : t("common.off")}
               </span>
-              <span className="text-[18px] font-semibold text-text tabular-nums font-mono">
+              <span className="text-[28px] sm:text-[42px] font-bold text-text leading-[1.1] tracking-tight tabular-nums font-mono">
                 {slot.time}
               </span>
               <span className="text-[13px] text-text-secondary">

@@ -79,16 +79,14 @@ export function SensorValues({
         </div>
       )}
 
-      {/* Battery indicator — shows lowest level, tooltip lists all */}
-      {batteryBindings.length > 0 && (
+      {/* Battery indicator — only shown when low (< 30%): orange 20-29, red <20 */}
+      {minBattery !== null && minBattery < 30 && (
         <span
           className={`flex items-center gap-0.5 flex-shrink-0 ${getBatteryColor(minBattery)}`}
-          title={batteryBindings.length > 1 ? batteryTooltip : `${t("sensors.battery")} : ${minBattery ?? "?"}%`}
+          title={batteryBindings.length > 1 ? batteryTooltip : `${t("sensors.battery")} : ${minBattery}%`}
         >
           {getBatteryIcon(minBattery, 14, 1.5)}
-          <span className="text-[11px] tabular-nums">
-            {minBattery !== null ? `${minBattery}%` : "?"}
-          </span>
+          <span className="text-[11px] tabular-nums">{minBattery}%</span>
         </span>
       )}
     </>

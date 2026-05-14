@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Sidebar } from "./Sidebar";
@@ -9,10 +9,19 @@ import { useWebSocket } from "../../store/useWebSocket";
 import { useTimezone } from "../../store/useTimezone";
 import { useDevices } from "../../store/useDevices";
 import { useZones } from "../../store/useZones";
+import type { ZoneWithChildren } from "../../types";
 import { useEquipments } from "../../store/useEquipments";
 import { useZoneAggregation } from "../../store/useZoneAggregation";
 import { useAuth } from "../../store/useAuth";
-import { Home, Layers, LayoutDashboard, LogOut, Menu, Settings, User, Zap, X, Calendar, Plug, Send, Bell, BarChart3, ChevronRight, AlertTriangle, RefreshCw, Power } from "lucide-react";
+import { Home, Layers, LayoutDashboard, LogOut, Menu, Settings, User, Zap, X, Calendar, Plug, Send, Bell, BarChart3, ChevronRight, AlertTriangle, RefreshCw, Power, MoreVertical } from "lucide-react";
+
+// Display name → 1-2 uppercase initials for the avatar pill.
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 import { SowelLogo } from "./SowelLogo";
 import { OfflineBanner } from "./OfflineBanner";
 import { HeaderPill } from "./HeaderPill";
@@ -24,6 +33,8 @@ import { InstallPrompt } from "./InstallPrompt";
 import { UpdateOverlay } from "../system/UpdateOverlay";
 import { ROOT_ZONE_ID } from "../../lib/constants";
 import { useEnergy } from "../../store/useEnergy";
+import { useUiState } from "../../store/useUiState";
+import { useModes } from "../../store/useModes";
 import { getSettings } from "../../api";
 
 export function AppLayout() {
@@ -44,6 +55,7 @@ export function AppLayout() {
   const fetchTimezone = useTimezone((s) => s.fetch);
   const issues = useAggregatedIssues();
   const [alarmsOpen, setAlarmsOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Updates pill: combines Sowel core + plugin updates into a single counter.
   const totalUpdates = pluginUpdateCount + (sowelUpdateAvailable ? 1 : 0);
@@ -74,29 +86,26 @@ export function AppLayout() {
         <div className="header-tint flex-shrink-0" style={{ height: "env(safe-area-inset-top, 0px)" }} />
         {/* Top bar — compact on mobile, full on desktop */}
         <header
-          className="flex items-center justify-between min-h-[44px] sm:min-h-[60px] px-4 sm:px-6 border-b border-border header-tint backdrop-blur-sm"
+          className="flex items-center min-h-[56px] sm:min-h-[49px] px-3 sm:px-6 border-b border-border-light bg-surface gap-2"
         >
-          <div className="flex items-center gap-4">
-            {/* Mobile: logo + home name + current time + sunlight */}
-            <div className="flex sm:hidden items-center gap-2">
-              <SowelLogo size={24} />
-              {homeName && (
-                <span className="text-[14px] font-semibold text-text truncate max-w-[140px]">{homeName}</span>
-              )}
-              <CurrentTimePill compact />
-              <SunlightBanner data={rootAgg} compact />
+          {/* Left: mobile burger (on zone pages) + title+sub (mockup parity), desktop breadcrumb */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <MobileTopbarBurger />
+            <div className="sm:hidden flex-1 min-w-0">
+              <MobileTopbarTitle homeName={homeName} />
             </div>
-            {/* Desktop: home name + current time + sunlight banner */}
-            <div className="hidden lg:flex items-center gap-3">
-              {homeName && (
-                <span className="text-[15px] font-semibold text-text">{homeName}</span>
-              )}
-              <CurrentTimePill />
-              <SunlightBanner data={rootAgg} />
+            <div className="hidden lg:flex items-center">
+              <TopbarBreadcrumb homeName={homeName} />
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Right: pills (mock order: time → sun → conn → alarm → updates → avatar). */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Time + sun hidden on mobile per mockup */}
+            <div className="hidden sm:flex items-center gap-2">
+              <CurrentTimePill />
+              <SunlightBanner data={rootAgg} />
+            </div>
             <ConnectionStatus />
             {issues.length > 0 && (
               <HeaderPill
@@ -125,27 +134,33 @@ export function AppLayout() {
                 href="/settings"
               />
             )}
-            {/* User info — desktop only */}
+            {/* User avatar pill — desktop only (matches mock `.topbar__avatar`). */}
             {user && (
-              <div className="hidden sm:flex items-center gap-2 ml-2">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-[6px] text-text-secondary">
-                  <User size={14} strokeWidth={1.5} />
-                  <span className="text-[12px] font-medium">{user.displayName}</span>
-                  {user.role === "admin" && (
-                    <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
-                      {t("auth.admin")}
-                    </span>
-                  )}
+              <div className="hidden sm:flex items-center gap-1.5 ml-1">
+                <div className="flex items-center gap-1.5 pl-1 pr-2.5 py-[3px] rounded-full bg-[var(--n-50)] border border-border-light">
+                  <span className="w-[22px] h-[22px] rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold leading-none">
+                    {getInitials(user.displayName)}
+                  </span>
+                  <span className="text-[12px] font-medium text-text">{user.displayName}</span>
                 </div>
                 <button
                   onClick={() => logout()}
-                  className="p-1.5 rounded-[6px] text-text-tertiary hover:text-text-secondary hover:bg-border-light transition-colors duration-150 cursor-pointer"
+                  className="p-1.5 rounded-full text-text-tertiary hover:text-text-secondary hover:bg-border-light transition-colors duration-150 cursor-pointer"
                   title={t("auth.logout")}
                 >
                   <LogOut size={14} strokeWidth={1.5} />
                 </button>
               </div>
             )}
+            {/* Mobile ⋮ menu — opens drawer (same one bottom nav uses) */}
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="sm:hidden w-10 h-10 flex items-center justify-center rounded-[6px] text-text-secondary hover:bg-border-light/60 transition-colors duration-150"
+              aria-label={t("nav.more", "Plus")}
+              title={t("nav.more", "Plus")}
+            >
+              <MoreVertical size={20} strokeWidth={1.7} />
+            </button>
           </div>
         </header>
 
@@ -157,7 +172,7 @@ export function AppLayout() {
         </main>
 
         {/* Mobile bottom navigation */}
-        <MobileNav />
+        <MobileNav drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
       </div>
 
       {/* PWA install prompt */}
@@ -172,10 +187,195 @@ export function AppLayout() {
   );
 }
 
-function MobileNav() {
+// Mock parity: text-[.82rem] / n-400 / weight 500 for crumb, n-700 weight 600 for current.
+// On /home/:zoneId shows "Home › ... › CurrentZone" (root zone Maison is treated as implicit).
+// On other top-level routes shows the localized route name as the current crumb.
+function TopbarBreadcrumb({ homeName }: { homeName: string }) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const tree = useZones((s) => s.tree);
+
+  const zoneMatch = location.pathname.match(/^\/home\/([^/]+)/);
+  const path = zoneMatch ? buildZonePath(zoneMatch[1], tree) : null;
+
+  const homeLabel = homeName || t("nav.maison");
+
+  if (path && path.length > 0) {
+    // Skip root zone "Maison" from crumb — it's redundant with home name.
+    const segments = path[0].id === ROOT_ZONE_ID ? path.slice(1) : path;
+    if (segments.length === 0) {
+      return <span className="text-[.82rem] font-semibold text-[var(--n-700)]">{homeLabel}</span>;
+    }
+    return (
+      <div className="text-[.82rem] font-medium text-[var(--n-400)]">
+        <span>{homeLabel}</span>
+        {segments.map((s, i) => (
+          <span key={s.id}>
+            <span className="mx-[.35rem] opacity-35">›</span>
+            {i === segments.length - 1 ? (
+              <b className="font-semibold text-[var(--n-700)]">{s.name}</b>
+            ) : (
+              <span>{s.name}</span>
+            )}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  const routeLabel = getRouteLabel(location.pathname, t);
+  if (routeLabel) {
+    return (
+      <div className="text-[.82rem] font-medium text-[var(--n-400)]">
+        <span>{homeLabel}</span>
+        <span className="mx-[.35rem] opacity-35">›</span>
+        <b className="font-semibold text-[var(--n-700)]">{routeLabel}</b>
+      </div>
+    );
+  }
+
+  return <span className="text-[.82rem] font-semibold text-[var(--n-700)]">{homeLabel}</span>;
+}
+
+// Mobile topbar leading slot — burger when contextual nav is available, Sowel logo otherwise.
+// Keeps the title at a consistent x position across all pages.
+function MobileTopbarBurger() {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const tree = useZones((s) => s.tree);
+  const hasProduction = useEnergy((s) => s.hasProduction);
+  const openZoneDrawer = useUiState((s) => s.openZoneDrawer);
+  const openEnergyNav = useUiState((s) => s.openEnergyNav);
+
+  const onZonePage = location.pathname === "/home" || location.pathname.startsWith("/home/");
+  const onEnergyPage = location.pathname.startsWith("/energy");
+
+  let onClick: (() => void) | null = null;
+  let label = "";
+  if (onZonePage && tree.length > 0) {
+    onClick = openZoneDrawer;
+    label = t("zones.openTree", "Open zones");
+  } else if (onEnergyPage && hasProduction) {
+    onClick = openEnergyNav;
+    label = t("nav.energy");
+  }
+
+  if (onClick) {
+    return (
+      <button
+        onClick={onClick}
+        className="sm:hidden w-10 h-10 -ml-2 flex items-center justify-center rounded-[6px] text-text-secondary hover:bg-border-light/60 transition-colors duration-150"
+        aria-label={label}
+      >
+        <Menu size={20} strokeWidth={1.7} />
+      </button>
+    );
+  }
+
+  // No contextual nav → Sowel logo placeholder, taps go to /home for brand-consistent return.
+  return (
+    <NavLink
+      to="/home"
+      className="sm:hidden w-10 h-10 -ml-2 flex items-center justify-center rounded-[6px] hover:bg-border-light/60 transition-colors duration-150"
+      aria-label="Sowel"
+    >
+      <SowelLogo size={24} />
+    </NavLink>
+  );
+}
+
+// Mobile topbar title — home name big, current context small.
+// Title = home name (e.g. "Grange Neuve"), sub = zone path / mode name / route label (e.g. "RDC · Séjour", "Énergie").
+function MobileTopbarTitle({ homeName }: { homeName: string }) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const tree = useZones((s) => s.tree);
+  const modes = useModes((s) => s.modes);
+
+  const homeLabel = homeName || t("nav.maison");
+  let sub: string | null = null;
+
+  const onHomeRoute = location.pathname === "/home" || location.pathname.startsWith("/home/");
+  const zoneMatch = location.pathname.match(/^\/home\/([^/]+)/);
+  if (zoneMatch) {
+    const path = buildZonePath(zoneMatch[1], tree);
+    if (path.length > 0) {
+      const segments = path[0].id === ROOT_ZONE_ID ? path.slice(1) : path;
+      sub = segments.length > 0
+        ? segments.map((s) => s.name).join(" · ")
+        : t("nav.maison");
+    }
+  } else if (onHomeRoute) {
+    // /home without a zoneId (transient before redirect, or single-zone setup)
+    sub = t("nav.maison");
+  } else {
+    const modeMatch = location.pathname.match(/^\/modes\/([^/]+)/);
+    if (modeMatch) {
+      const mode = modes.find((m) => m.id === modeMatch[1]);
+      if (mode) sub = `${t("nav.modes")} · ${mode.name}`;
+    } else {
+      sub = getRouteLabel(location.pathname, t);
+    }
+  }
+
+  return (
+    <div className="min-w-0">
+      <div className="text-[16px] font-bold text-text leading-[1.15] tracking-[-0.015em] truncate">{homeLabel}</div>
+      {sub && (
+        <div className="text-[11px] text-text-tertiary font-medium leading-[1.3] truncate">{sub}</div>
+      )}
+    </div>
+  );
+}
+
+function buildZonePath(
+  zoneId: string,
+  tree: ZoneWithChildren[]
+): { id: string; name: string }[] {
+  const out: { id: string; name: string }[] = [];
+  function walk(zones: ZoneWithChildren[], trail: { id: string; name: string }[]): boolean {
+    for (const z of zones) {
+      const next = [...trail, { id: z.id, name: z.name }];
+      if (z.id === zoneId) {
+        out.push(...next);
+        return true;
+      }
+      if (walk(z.children, next)) return true;
+    }
+    return false;
+  }
+  walk(tree, []);
+  return out;
+}
+
+function getRouteLabel(pathname: string, t: (k: string) => string): string | null {
+  if (pathname.startsWith("/dashboard")) return t("nav.dashboard");
+  if (pathname.startsWith("/energy")) {
+    const energy = t("nav.energy");
+    if (pathname.startsWith("/energy/live")) return `${energy} · ${t("nav.energy.live")}`;
+    if (pathname.startsWith("/energy/consumption")) return `${energy} · ${t("nav.energy.consumption")}`;
+    if (pathname.startsWith("/energy/production")) return `${energy} · ${t("nav.energy.production")}`;
+    return energy;
+  }
+  if (pathname.startsWith("/modes")) return t("nav.modes");
+  if (pathname.startsWith("/analyse")) return t("nav.analyse");
+  if (pathname.startsWith("/calendar")) return t("nav.calendar");
+  if (pathname.startsWith("/integrations")) return t("nav.integrations");
+  if (pathname.startsWith("/plugins")) return t("nav.plugins");
+  if (pathname.startsWith("/mqtt-publishers")) return t("nav.mqttPublishers");
+  if (pathname.startsWith("/notification-publishers")) return t("nav.notificationPublishers");
+  if (pathname.startsWith("/logs")) return t("nav.logs");
+  if (pathname.startsWith("/backup")) return t("nav.backup");
+  if (pathname.startsWith("/settings")) return t("nav.settings");
+  if (pathname.startsWith("/devices")) return t("nav.devices");
+  if (pathname.startsWith("/equipments")) return t("nav.equipments");
+  if (pathname.startsWith("/zones")) return t("nav.zones");
+  return null;
+}
+
+function MobileNav({ drawerOpen, setDrawerOpen }: { drawerOpen: boolean; setDrawerOpen: (v: boolean) => void }) {
   const { t } = useTranslation();
   const energyAvailable = useEnergy((s) => s.available);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <>

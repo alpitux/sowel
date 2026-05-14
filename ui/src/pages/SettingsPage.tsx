@@ -65,7 +65,7 @@ export function SettingsPage() {
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2 sm:gap-2.5">
           <Settings size={22} strokeWidth={1.5} className="text-text-secondary" />
-          <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
+          <h1>
             {t("settings.title")}
           </h1>
         </div>

@@ -723,12 +723,6 @@ export async function setModeImpact(
   });
 }
 
-export async function applyModeToZone(modeId: string, zoneId: string): Promise<{ ok: boolean }> {
-  return fetchJSON<{ ok: boolean }>(`${API_BASE}/modes/${modeId}/apply-to-zone/${zoneId}`, {
-    method: "POST",
-  });
-}
-
 export async function removeModeImpact(modeId: string, zoneId: string): Promise<void> {
   return fetchJSON<void>(`${API_BASE}/modes/${modeId}/impacts/${zoneId}`, {
     method: "DELETE",

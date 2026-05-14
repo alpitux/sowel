@@ -100,6 +100,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Page hero title — every page H1 gets the same look automatically.
+ * 28px on mobile, 42px from sm:. Utility classes on the element can
+ * still override (Tailwind layers ship after this base rule). */
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+@media (min-width: 640px) {
+  h1 {
+    font-size: 42px;
+  }
+}
+
 /* Header gradient tint — primary color fading into surface */
 .header-tint {
   background: linear-gradient(
@@ -152,49 +168,63 @@ input[type="range"]:focus {
   outline: none;
 }
 
-/* Track */
-input[type="range"]::-webkit-slider-runnable-track {
-  height: 4px;
+/* Sowel slider — mock parity (.eq__slider).
+ * Track 5px, fill via CSS variable --fill-pct (% string set inline),
+ * fill color via --fill-color (defaults to primary). Thumb is a 12px
+ * white circle with 2px colored border. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
   border-radius: 9999px;
-  background: var(--color-border);
+  background: linear-gradient(
+    to right,
+    var(--fill-color, var(--color-primary)) 0%,
+    var(--fill-color, var(--color-primary)) var(--fill-pct, 0%),
+    var(--n-100) var(--fill-pct, 0%),
+    var(--n-100) 100%
+  );
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 9999px;
+  background: transparent;
 }
 
 input[type="range"]::-moz-range-track {
-  height: 4px;
+  height: 5px;
   border-radius: 9999px;
-  background: var(--color-border);
+  background: transparent;
   border: none;
 }
 
-/* Thumb — default = primary (blue) */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: var(--color-primary);
-  border: 2px solid var(--color-surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  margin-top: -6px; /* center on track: (track_h - thumb_h) / 2 */
+  background: var(--n-0);
+  border: 2px solid var(--fill-color, var(--color-primary));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+  margin-top: -3.5px; /* (track_h - thumb_h) / 2 */
 }
 
 input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: var(--color-primary);
-  border: 2px solid var(--color-surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  background: var(--n-0);
+  border: 2px solid var(--fill-color, var(--color-primary));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
-/* Active variant (yellow) — for lights */
-input[type="range"].slider-active::-webkit-slider-thumb {
-  background: var(--color-active);
-}
-
-input[type="range"].slider-active::-moz-range-thumb {
-  background: var(--color-active);
+/* Legacy class aliases — variant colors are now passed via the
+ * --fill-color CSS variable (set inline). These are kept so existing
+ * `slider-active` callers keep working with no JS change required. */
+input[type="range"].slider-active {
+  --fill-color: var(--color-active);
 }
 
 /* Slim variant — smaller thumb + thinner track for dashboard widgets */

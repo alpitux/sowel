@@ -28,6 +28,8 @@ interface StatusItem {
   key: string;
   icon: React.ReactNode;
   label: string;
+  /** Mobile-only label override. When undefined, uses `label` on all viewports. Empty string = icon-only on mobile. */
+  mobileLabel?: string;
   variant: PillVariant;
   /** Override for the icon color in the default variant. Ignored for non-default variants. */
   iconTint?: string;
@@ -94,6 +96,9 @@ export function ZoneAggregationPills({
       key: "motion",
       icon: <PersonStanding size={14} strokeWidth={1.5} />,
       label: `${label}${suffix}`,
+      // Mobile: when motion is active, drop the "Mouvement" word but keep the duration.
+      // The icon color signals motion; the word is redundant. Calm stays verbatim.
+      mobileLabel: data.motion ? (duration ?? "") : `${label}${suffix}`,
       variant: data.motion ? "active" : "calm",
     });
   }
@@ -260,15 +265,25 @@ function StripPill({ item, zoneId, historyEnabled }: StripPillProps) {
   const v = variantClasses(item.variant);
   const iconClass = v.icon || item.iconTint || "text-text-tertiary";
   const valueClass = v.value || item.valueTint || "text-text";
+  const hasMobileOverride = item.mobileLabel !== undefined;
 
   return (
     <div
       className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[13px] font-medium tabular-nums whitespace-nowrap ${v.pill}`}
     >
       <span className={`flex-shrink-0 ${iconClass}`}>{item.icon}</span>
-      <span className={valueClass}>{item.label}</span>
+      {hasMobileOverride ? (
+        <>
+          {item.mobileLabel && <span className={`sm:hidden ${valueClass}`}>{item.mobileLabel}</span>}
+          <span className={`hidden sm:inline ${valueClass}`}>{item.label}</span>
+        </>
+      ) : (
+        <span className={valueClass}>{item.label}</span>
+      )}
       {historyEnabled && zoneId && item.sparklineCategory && (
-        <ZoneSparkline zoneId={zoneId} category={item.sparklineCategory} />
+        <span className="hidden sm:inline-flex">
+          <ZoneSparkline zoneId={zoneId} category={item.sparklineCategory} />
+        </span>
       )}
     </div>
   );
