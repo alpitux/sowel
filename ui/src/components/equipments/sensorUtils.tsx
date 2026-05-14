@@ -270,7 +270,7 @@ export function getBatteryIcon(level: number | null, size = 14, strokeWidth = 1.
 /** Get the color class for a battery level. */
 export function getBatteryColor(level: number | null): string {
   if (level === null) return "text-text-tertiary";
-  if (level <= 20) return "text-error";
-  if (level <= 40) return "text-warning";
+  if (level < 20) return "text-error";
+  if (level < 30) return "text-warning";
   return "text-text-tertiary";
 }

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Layers, ToggleLeft, ToggleRight, Settings, Trash2, X, Pencil, Check, ChevronUp, ChevronDown, Play, Plus } from "lucide-react";
+import { Layers, ToggleLeft, ToggleRight, Settings, Trash2, X, Pencil, Check, ChevronUp, ChevronDown, Plus } from "lucide-react";
 import { useModes } from "../../store/useModes";
 import { useEquipments } from "../../store/useEquipments";
 import { useRecipes } from "../../store/useRecipes";
-import { setModeImpact, removeModeImpact, applyModeToZone } from "../../api";
+import { setModeImpact, removeModeImpact } from "../../api";
 import type { ModeWithDetails, ZoneModeImpactAction, EquipmentWithDetails, OrderBindingWithDetails } from "../../types";
 import { recipeName } from "../../lib/recipe-i18n";
 
@@ -71,7 +71,7 @@ export function ZoneModesSection({ zoneId }: ZoneModesSectionProps) {
     <div>
       <div className="flex items-center gap-[0.55rem] px-[1.1rem] py-[0.4rem] min-h-[36px] bg-[var(--n-25)] border-t border-b border-border-light">
         <span className="text-text-tertiary opacity-70 flex-shrink-0">
-          <ToggleRight size={14} strokeWidth={1.5} />
+          <Layers size={14} strokeWidth={1.5} />
         </span>
         <span className="text-[10.4px] font-semibold text-text-tertiary uppercase tracking-[0.14em]">
           {t("modes.title")}
@@ -153,25 +153,13 @@ function ModeRow({
 }) {
   const { t } = useTranslation();
   const [editing, setEditing] = useState(initialEditing);
-  const [applying, setApplying] = useState(false);
 
   const impact = mode.impacts.find((imp) => imp.zoneId === zoneId);
   const actionCount = impact?.actions.length ?? 0;
-  const hasImpacts = actionCount > 0;
 
   const handleClose = () => {
     setEditing(false);
     if (onCancelAdd) onCancelAdd();
-  };
-
-  const handleApply = async () => {
-    if (applying || !hasImpacts) return;
-    setApplying(true);
-    try {
-      await applyModeToZone(mode.id, zoneId);
-    } finally {
-      setApplying(false);
-    }
   };
 
   return (
@@ -223,23 +211,13 @@ function ModeRow({
           </div>
         </div>
 
-        {/* Right: apply/badge then settings gear (far right) */}
+        {/* Right: active badge then settings gear (far right) */}
         <div className="flex items-center gap-1">
-          {mode.active ? (
+          {mode.active && (
             <span className="text-[10.4px] font-bold uppercase tracking-[0.1em] text-[var(--green-700)] bg-[color-mix(in_srgb,var(--green-500)_12%,transparent)] px-2 py-0.5 rounded-full">
               {t("modes.activeBadge", { defaultValue: "Actif" })}
             </span>
-          ) : hasImpacts ? (
-            <button
-              onClick={handleApply}
-              disabled={applying}
-              className="flex items-center gap-1 px-2.5 py-1 text-[11.5px] font-semibold text-primary bg-transparent border border-border-light rounded-[4px] hover:bg-primary-light hover:border-primary transition-colors duration-150 disabled:opacity-50"
-              title={t("modes.applyLocalHint")}
-            >
-              <Play size={10} strokeWidth={2} />
-              {t("modes.apply")}
-            </button>
-          ) : null}
+          )}
           <button
             onClick={() => editing ? handleClose() : setEditing(true)}
             className="p-1.5 rounded-[4px] text-text-tertiary hover:text-text hover:bg-border-light/60 transition-colors duration-150"
