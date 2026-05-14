@@ -1324,6 +1324,12 @@ html:has(.sowel-flip) .md-header__topic:first-child {
   max-width: 78rem;
   margin: 0 auto;
 }
+/* Page 2 specifically gets a wider visual column so the laptop + phones
+ * read at a legible size. */
+.sowel-section--devices.sowel-section--split {
+  grid-template-columns: 0.9fr 1.3fr;
+  max-width: 84rem;
+}
 @media (max-width: 880px) {
   .sowel-section--split { grid-template-columns: 1fr; gap: 2rem; }
 }
@@ -1516,28 +1522,35 @@ html:has(.sowel-flip) .md-header__topic:first-child {
 }
 .sowel-patchwork__desktop {
   display: block;
-  width: 88%;
+  /* Laptop fills the column so the UI reads big. The screenshot is framed
+   * tight (1680x900) — the Comportements column stops two thirds of the
+   * way across, leaving an empty band on the right where phone 2 can sit
+   * without covering UI. */
+  width: 100%;
   max-width: 100%;
-  /* Center the desktop, give the laptop more presence behind the phones. */
-  margin: 0 auto;
+  margin: 0;
   transform: rotate(0.4deg);
 }
 .sowel-patchwork__mobile {
   position: absolute;
-  /* Smaller phones so they hug the laptop corners instead of covering the
-   * desktop content in the middle. */
-  width: clamp(4.5rem, 9vw, 7.5rem);
+  /* Larger phones — they're the secondary subject of the composition. */
+  width: clamp(6rem, 12vw, 10rem);
 }
 .sowel-patchwork__mobile--1 {
-  /* Anchor top-left phone outside the laptop, overlapping only its corner. */
-  top: -1.5rem;
-  left: -3rem;
+  /* Top-left phone hangs mostly outside the laptop's left edge; only its
+   * right side touches the sidebar area of the desktop UI, leaving the
+   * main content (Équipements + Comportements) fully visible. */
+  top: 4%;
+  left: -5.5rem;
   transform: rotate(-5deg);
 }
 .sowel-patchwork__mobile--2 {
-  /* Anchor bottom-right phone outside the laptop, overlapping only its corner. */
-  bottom: -1.5rem;
-  right: -2rem;
+  /* Bottom-right phone sits ON the empty white band the desktop UI leaves
+   * after the Comportements column ends (around x=78% of the screenshot).
+   * The screenshot is captured at 1900px wide on purpose, so this band is
+   * a real empty zone where the phone covers no UI. */
+  bottom: 6%;
+  right: 6%;
   transform: rotate(4deg);
 }
 
