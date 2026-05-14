@@ -89,9 +89,22 @@ hide:
 
 </div>
 <div class="sowel-section__visual sowel-patchwork">
-  <img class="sowel-patchwork__desktop" src="assets/landing/sejour-desktop.png" alt="Sowel desktop view of a Living Room zone showing lights, shutters and sensors" />
-  <img class="sowel-patchwork__mobile sowel-patchwork__mobile--1" src="assets/landing/dashboard-mobile.png" alt="Sowel dashboard on mobile" />
-  <img class="sowel-patchwork__mobile sowel-patchwork__mobile--2" src="assets/landing/energy-mobile.png" alt="Sowel energy live view on mobile" />
+  <div class="sowel-laptop sowel-patchwork__desktop">
+    <div class="sowel-laptop__screen">
+      <img src="/assets/landing/sejour-desktop.png" alt="Sowel desktop view of a Living Room zone showing lights, shutters and sensors" />
+    </div>
+    <div class="sowel-laptop__base"></div>
+  </div>
+  <div class="sowel-phone sowel-patchwork__mobile sowel-patchwork__mobile--1">
+    <div class="sowel-phone__screen">
+      <img src="/assets/landing/dashboard-mobile.png" alt="Sowel dashboard on mobile" />
+    </div>
+  </div>
+  <div class="sowel-phone sowel-patchwork__mobile sowel-patchwork__mobile--2">
+    <div class="sowel-phone__screen">
+      <img src="/assets/landing/energy-mobile.png" alt="Sowel energy live view on mobile" />
+    </div>
+  </div>
 </div>
 </div>
 </div>
