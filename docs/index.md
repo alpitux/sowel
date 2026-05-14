@@ -105,7 +105,7 @@ hide:
           <svg width="20" height="9" viewBox="0 0 20 9" fill="none"><rect x="0.5" y="0.5" width="17" height="8" rx="2" stroke="currentColor"/><rect x="18.4" y="3" width="1" height="3" rx="0.4" fill="currentColor"/><rect x="2" y="2" width="11" height="5" rx="1" fill="currentColor"/></svg>
         </span>
       </div>
-      <img src="/assets/landing/dashboard-mobile.png" alt="Sowel dashboard on mobile" />
+      <img src="/assets/landing/energy-mobile.png" alt="Sowel energy live view on mobile" />
     </div>
   </div>
   <div class="sowel-phone sowel-patchwork__mobile sowel-patchwork__mobile--2">
@@ -118,7 +118,7 @@ hide:
           <svg width="20" height="9" viewBox="0 0 20 9" fill="none"><rect x="0.5" y="0.5" width="17" height="8" rx="2" stroke="currentColor"/><rect x="18.4" y="3" width="1" height="3" rx="0.4" fill="currentColor"/><rect x="2" y="2" width="11" height="5" rx="1" fill="currentColor"/></svg>
         </span>
       </div>
-      <img src="/assets/landing/energy-mobile.png" alt="Sowel energy live view on mobile" />
+      <img src="/assets/landing/dashboard-mobile.png" alt="Sowel dashboard on mobile" />
     </div>
   </div>
 </div>
