@@ -78,7 +78,7 @@ hide:
 <!-- Page 2 — Your home at your fingertips                        -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
-<div class="sowel-section sowel-section--split">
+<div class="sowel-section sowel-section--split sowel-section--devices">
 <div class="sowel-section__copy">
 
 <p class="sowel-eyebrow">Your home at your fingertips.</p>
