@@ -638,11 +638,11 @@ function RecipeInstanceRow({
 
   return (
     <div className={instance.enabled ? "" : "opacity-50"}>
-      <div className="px-4 py-2.5">
+      <div className="px-[1.1rem] py-[0.55rem] min-h-[52px] flex flex-col justify-center border-t border-border-light">
         {/* Row 1: icon + name + toggle */}
-        <div className="flex items-center gap-3">
-          <div className={`w-7 h-7 rounded-[6px] flex items-center justify-center flex-shrink-0 ${instance.enabled ? "bg-accent/10" : "bg-border-light"}`}>
-            <ChefHat size={14} strokeWidth={1.5} className={instance.enabled ? "text-accent" : "text-text-tertiary"} />
+        <div className="flex items-center gap-[0.85rem]">
+          <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${instance.enabled ? "bg-accent/10" : "bg-background"}`}>
+            <ChefHat size={15} strokeWidth={1.5} className={instance.enabled ? "text-accent" : "text-text-tertiary"} />
           </div>
           <button
             onClick={handleStartEdit}
@@ -691,8 +691,8 @@ function RecipeInstanceRow({
             />
           </button>
         </div>
-        {/* Row 2: action buttons — desktop only */}
-        <div className="hidden sm:flex items-center gap-1 mt-1.5 ml-10">
+        {/* Row 2: action buttons — desktop only (aligned under name, past 32px icon + 0.85rem gap) */}
+        <div className="hidden sm:flex items-center gap-1 mt-1.5 ml-[2.85rem]">
           <button
             onClick={handleShowLog}
             className="p-1.5 rounded-[4px] text-text-tertiary hover:text-text hover:bg-border-light/60 transition-colors duration-150"
