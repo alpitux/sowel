@@ -100,7 +100,7 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
       <Link
         to={`/equipments/${equipment.id}`}
         state={zoneName ? { fromZone: zoneName } : undefined}
-        className="min-w-0 text-[13px] font-medium text-text truncate hover:text-primary transition-colors"
+        className="min-w-0 text-[14px] font-medium text-text truncate hover:text-primary transition-colors"
       >
         {equipment.name}
       </Link>

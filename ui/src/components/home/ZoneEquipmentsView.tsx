@@ -68,7 +68,7 @@ export function ZoneEquipmentsView({
       {grouped.map((group) => (
         <div key={group.labelKey}>
           {/* cat-head — strict design-system style: neutral grey, flush, no radius */}
-          <div className="flex items-center gap-[0.55rem] px-[1.1rem] py-[0.4rem] min-h-[36px] bg-background border-t border-b border-border-light">
+          <div className="flex items-center gap-[0.55rem] px-[1.1rem] py-[0.4rem] min-h-[36px] bg-[var(--n-25)] border-t border-b border-border-light">
             <span className="text-text-tertiary opacity-70 flex-shrink-0">{group.icon}</span>
             <span className="text-[10.4px] font-semibold text-text-tertiary uppercase tracking-[0.14em]">
               {t(group.labelKey)}
