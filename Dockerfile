@@ -16,6 +16,9 @@ FROM node:20-slim AS ui-build
 WORKDIR /app/ui
 COPY ui/package.json ui/package-lock.json ./
 RUN npm ci
+# Design system tokens are imported from ui/src/index.css via ../../design-system/
+# (spec 094). The folder lives outside ui/ so copy it explicitly.
+COPY design-system/ /app/design-system/
 COPY ui/ ./
 RUN npm run build
 
