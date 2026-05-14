@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ToggleLeft, ToggleRight, Settings, Trash2, X, Pencil, Check, ChevronUp, ChevronDown, Play, Plus } from "lucide-react";
+import { Layers, ToggleLeft, ToggleRight, Settings, Trash2, X, Pencil, Check, ChevronUp, ChevronDown, Play, Plus } from "lucide-react";
 import { useModes } from "../../store/useModes";
 import { useEquipments } from "../../store/useEquipments";
 import { useRecipes } from "../../store/useRecipes";
@@ -176,51 +176,78 @@ function ModeRow({
 
   return (
     <div>
-      <div className="flex items-center gap-3 px-4 py-2.5">
+      <div
+        className={`grid grid-cols-[32px_1fr_auto] gap-[0.85rem] items-center px-[1.1rem] py-[0.55rem] min-h-[52px] border-t border-border-light transition-colors duration-120 cursor-pointer ${
+          mode.active
+            ? "bg-[color-mix(in_srgb,var(--green-500)_4%,var(--color-surface))] border-l-[3px] border-l-success pl-[calc(1.1rem-3px)]"
+            : "hover:bg-[var(--n-25)]"
+        }`}
+      >
+        {/* Icon with status dot */}
         <div
-          className={`w-7 h-7 rounded-[6px] flex items-center justify-center flex-shrink-0 ${
-            mode.active ? "bg-primary/15" : "bg-border-light"
+          className={`relative w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${
+            mode.active
+              ? "bg-[var(--green-50)] text-[var(--green-700)]"
+              : "bg-background text-text-tertiary"
           }`}
         >
-          {mode.active ? (
-            <ToggleRight size={14} strokeWidth={1.5} className="text-primary" />
-          ) : (
-            <ToggleLeft size={14} strokeWidth={1.5} className="text-text-tertiary" />
-          )}
+          <Layers size={15} strokeWidth={1.6} />
+          <span
+            className={`absolute -top-[3px] -right-[3px] w-[10px] h-[10px] rounded-full border-2 border-surface ${
+              mode.active
+                ? "bg-success shadow-[0_0_0_3px_color-mix(in_srgb,var(--green-500)_22%,transparent)]"
+                : "bg-border-light"
+            }`}
+            aria-hidden="true"
+          />
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-medium text-text truncate">
+
+        {/* Main */}
+        <div className="min-w-0">
+          <div
+            className={`text-[14px] leading-[1.25] truncate ${
+              mode.active
+                ? "font-bold text-[var(--green-700)]"
+                : "font-medium text-text"
+            }`}
+          >
             {mode.name}
           </div>
-          <div className="text-[11px] text-text-tertiary truncate">
-            {actionCount > 0 ? (
-              t("modes.actionCount", { count: actionCount })
-            ) : (
-              t("modes.noImpacts")
-            )}
+          <div className="text-[11px] text-text-tertiary leading-[1.25] truncate mt-px">
+            {actionCount > 0
+              ? t("modes.actionCount", { count: actionCount })
+              : t("modes.noImpacts")}
             {mode.active && (
-              <span className="ml-1.5 text-primary">· {t("modes.globallyActive")}</span>
+              <span className="ml-1.5">· {t("modes.globallyActive")}</span>
             )}
           </div>
         </div>
-        <button
-          onClick={() => editing ? handleClose() : setEditing(true)}
-          className="p-1.5 rounded-[4px] text-text-tertiary hover:text-text hover:bg-border-light/60 transition-colors duration-150"
-          title={t("modes.configure")}
-        >
-          {editing ? <X size={14} strokeWidth={1.5} /> : <Settings size={14} strokeWidth={1.5} />}
-        </button>
-        {hasImpacts && (
+
+        {/* Right: settings + apply/badge */}
+        <div className="flex items-center gap-1">
           <button
-            onClick={handleApply}
-            disabled={applying}
-            className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-[6px] transition-colors duration-150 bg-border-light text-text-secondary hover:bg-border hover:text-text disabled:opacity-50"
-            title={t("modes.applyLocalHint")}
+            onClick={() => editing ? handleClose() : setEditing(true)}
+            className="p-1.5 rounded-[4px] text-text-tertiary hover:text-text hover:bg-border-light/60 transition-colors duration-150"
+            title={t("modes.configure")}
           >
-            <Play size={10} strokeWidth={2} />
-            {t("modes.apply")}
+            {editing ? <X size={14} strokeWidth={1.5} /> : <Settings size={14} strokeWidth={1.5} />}
           </button>
-        )}
+          {mode.active ? (
+            <span className="text-[10.4px] font-bold uppercase tracking-[0.1em] text-[var(--green-700)] bg-[color-mix(in_srgb,var(--green-500)_12%,transparent)] px-2 py-0.5 rounded-full">
+              {t("modes.activeBadge", { defaultValue: "Actif" })}
+            </span>
+          ) : hasImpacts ? (
+            <button
+              onClick={handleApply}
+              disabled={applying}
+              className="flex items-center gap-1 px-2.5 py-1 text-[11.5px] font-semibold text-primary bg-transparent border border-border-light rounded-[4px] hover:bg-primary-light hover:border-primary transition-colors duration-150 disabled:opacity-50"
+              title={t("modes.applyLocalHint")}
+            >
+              <Play size={10} strokeWidth={2} />
+              {t("modes.apply")}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {/* Inline config panel */}

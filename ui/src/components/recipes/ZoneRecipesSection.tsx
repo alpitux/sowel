@@ -634,70 +634,7 @@ function RecipeInstanceRow({
     return true;
   };
 
-  // Build a human-readable summary of params
-  const paramsSummary = useMemo(() => {
-    if (!recipe) return "";
-    const parts: string[] = [];
-    const renderedGroups = new Set<string>();
-
-    for (const slot of recipe.slots) {
-      if (slot.id === "zone") continue;
-
-      // Grouped slots: render the group once as "GroupLabel: val1 (val2, val3)"
-      if (slot.group) {
-        if (renderedGroups.has(slot.group)) continue;
-        renderedGroups.add(slot.group);
-
-        const groupSlots = recipe.slots.filter((s) => s.group === slot.group);
-
-        // Skip the group if its first slot is empty (incomplete group)
-        const firstVal = instance.params[groupSlots[0]?.id];
-        if (firstVal === undefined || firstVal === null || firstVal === "") continue;
-
-        const groupValues = groupSlots
-          .map((s) => {
-            const v = instance.params[s.id];
-            if (v === undefined || v === null || v === "") return null;
-            if (s.type === "equipment") {
-              const eq = equipments.find((e) => e.id === v);
-              return eq?.name ?? String(v);
-            }
-            return String(v);
-          })
-          .filter(Boolean) as string[];
-
-        if (groupValues.length === 0) continue;
-
-        const groupLabel = recipeGroupLabel(recipe, slot.group, lang);
-        if (groupValues.length === 1) {
-          parts.push(`${groupLabel}: ${groupValues[0]}`);
-        } else {
-          parts.push(`${groupLabel}: ${groupValues[0]} (${groupValues.slice(1).join(", ")})`);
-        }
-        continue;
-      }
-
-      // Ungrouped slots: render individually
-      const val = instance.params[slot.id];
-      if (val === undefined || val === null || val === "" || val === "false") continue;
-      if (slot.type === "equipment" && Array.isArray(val)) {
-        const names = val
-          .map((id: string) => equipments.find((e) => e.id === id)?.name ?? id)
-          .join(", ");
-        parts.push(names);
-      } else if (slot.type === "equipment") {
-        const eq = equipments.find((e) => e.id === val);
-        parts.push(eq?.name ?? String(val));
-      } else if (slot.type === "boolean") {
-        if (val === "true" || val === true) {
-          parts.push(recipeSlotName(recipe, slot, lang));
-        }
-      } else {
-        parts.push(`${recipeSlotName(recipe, slot, lang)}: ${String(val)}`);
-      }
-    }
-    return parts.join(" · ");
-  }, [instance.params, recipe, equipments, lang]);
+  // (paramsSummary removed per spec 100 — recipe row keeps name + actions only, no description line)
 
   return (
     <div className={instance.enabled ? "" : "opacity-50"}>
@@ -712,14 +649,9 @@ function RecipeInstanceRow({
             className="flex-1 min-w-0 text-left hover:opacity-70 transition-opacity duration-150"
             title="Edit"
           >
-            <div className="text-[13px] font-medium text-text truncate">
+            <div className="text-[14px] font-medium text-text truncate">
               {displayName}
             </div>
-            {paramsSummary && (
-              <div className="text-[11px] text-text-tertiary truncate">
-                {paramsSummary}
-              </div>
-            )}
           </button>
           {!!instance.state?.timerExpiresAt && instance.enabled && (
             <CountdownTimer expiresAt={instance.state.timerExpiresAt as string} />
