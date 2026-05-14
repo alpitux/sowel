@@ -24,10 +24,10 @@ export function CurrentTimePill({ compact = false }: { compact?: boolean }) {
 
   if (!loaded) return null;
 
-  const size = compact ? 12 : 15;
-  const textSize = compact ? "text-[11px]" : "text-[13px]";
-  const padding = compact ? "" : "px-3 py-1.5 rounded-[8px] bg-primary/10";
-  const textColor = compact ? "text-primary" : "text-primary";
+  const size = compact ? 12 : 13;
+  const textSize = compact ? "text-[11px]" : "text-[12px]";
+  const padding = compact ? "" : "px-2.5 py-1 rounded-full bg-[var(--n-50)] border border-border-light";
+  const textColor = compact ? "text-primary" : "text-text-secondary";
 
   return (
     <div

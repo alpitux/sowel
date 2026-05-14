@@ -14,6 +14,14 @@ import { useEquipments } from "../../store/useEquipments";
 import { useZoneAggregation } from "../../store/useZoneAggregation";
 import { useAuth } from "../../store/useAuth";
 import { Home, Layers, LayoutDashboard, LogOut, Menu, Settings, User, Zap, X, Calendar, Plug, Send, Bell, BarChart3, ChevronRight, AlertTriangle, RefreshCw, Power } from "lucide-react";
+
+// Display name → 1-2 uppercase initials for the avatar pill.
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 import { SowelLogo } from "./SowelLogo";
 import { OfflineBanner } from "./OfflineBanner";
 import { HeaderPill } from "./HeaderPill";
@@ -77,25 +85,29 @@ export function AppLayout() {
         <header
           className="flex items-center justify-between min-h-[44px] sm:min-h-[49px] px-4 sm:px-6 border-b border-border-light bg-surface"
         >
-          <div className="flex items-center gap-4">
-            {/* Mobile: logo + home name + current time + sunlight */}
+          {/* Left: mobile logo+name, desktop breadcrumb only */}
+          <div className="flex items-center min-w-0">
             <div className="flex sm:hidden items-center gap-2">
               <SowelLogo size={24} />
               {homeName && (
                 <span className="text-[14px] font-semibold text-text truncate max-w-[140px]">{homeName}</span>
               )}
-              <CurrentTimePill compact />
-              <SunlightBanner data={rootAgg} compact />
             </div>
-            {/* Desktop: breadcrumb + current time + sunlight banner */}
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden lg:flex items-center">
               <TopbarBreadcrumb homeName={homeName} />
-              <CurrentTimePill />
-              <SunlightBanner data={rootAgg} />
             </div>
           </div>
 
+          {/* Right: all pills (mock order: time → sun → conn → alarm → updates → avatar). */}
           <div className="flex items-center gap-2">
+            <div className="flex sm:hidden items-center gap-2">
+              <CurrentTimePill compact />
+              <SunlightBanner data={rootAgg} compact />
+            </div>
+            <div className="hidden sm:flex items-center gap-2">
+              <CurrentTimePill />
+              <SunlightBanner data={rootAgg} />
+            </div>
             <ConnectionStatus />
             {issues.length > 0 && (
               <HeaderPill
@@ -124,21 +136,18 @@ export function AppLayout() {
                 href="/settings"
               />
             )}
-            {/* User info — desktop only */}
+            {/* User avatar pill — matches mock `.topbar__avatar` (n-50 bg + line border + 22px primary circle with initials + name). */}
             {user && (
-              <div className="hidden sm:flex items-center gap-2 ml-2">
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-[6px] text-text-secondary">
-                  <User size={14} strokeWidth={1.5} />
-                  <span className="text-[12px] font-medium">{user.displayName}</span>
-                  {user.role === "admin" && (
-                    <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
-                      {t("auth.admin")}
-                    </span>
-                  )}
+              <div className="hidden sm:flex items-center gap-1.5 ml-1">
+                <div className="flex items-center gap-1.5 pl-1 pr-2.5 py-[3px] rounded-full bg-[var(--n-50)] border border-border-light">
+                  <span className="w-[22px] h-[22px] rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold leading-none">
+                    {getInitials(user.displayName)}
+                  </span>
+                  <span className="text-[12px] font-medium text-text">{user.displayName}</span>
                 </div>
                 <button
                   onClick={() => logout()}
-                  className="p-1.5 rounded-[6px] text-text-tertiary hover:text-text-secondary hover:bg-border-light transition-colors duration-150 cursor-pointer"
+                  className="p-1.5 rounded-full text-text-tertiary hover:text-text-secondary hover:bg-border-light transition-colors duration-150 cursor-pointer"
                   title={t("auth.logout")}
                 >
                   <LogOut size={14} strokeWidth={1.5} />
