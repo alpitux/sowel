@@ -195,7 +195,6 @@ hide:
 <p class="sowel-eyebrow">Sowel voit votre maison en pièces et en espaces, pas en câbles et en règles.</p>
 <p class="sowel-paragraph">Cinq couches décrivent votre maison avec les mots que vous utiliseriez vous-même. Touchez une couche pour voir ce qu'elle fait.</p>
 </div>
-</div>
 
 <div class="sowel-pillars-frise" markdown="0">
 
