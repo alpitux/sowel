@@ -171,7 +171,7 @@ export function HomePage() {
       {/* Sections: Equipments (left) + Behaviors (right) — 2-col on desktop, stacked on mobile (spec 100).
           min-w-0 on each column prevents intrinsic content (long recipe descriptions, etc.) from
           overriding the 1.5fr/1fr ratio. */}
-      <div className="max-w-[1200px] grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
+      <div className="max-w-[1200px] grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] items-start gap-6">
         {/* Left column — Équipements */}
         <Panel
           title={t("equipments.title")}
