@@ -90,7 +90,7 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
   const iconAnimation = isLightOn ? "animate-glow" : "";
 
   return (
-    <div className="grid grid-cols-[32px_1fr_auto] gap-3 items-center px-3 py-2 min-h-[52px] transition-colors duration-150 hover:bg-border-light/40">
+    <div className="grid grid-cols-[32px_1fr_auto] gap-[0.85rem] items-center px-[1.1rem] py-[0.55rem] min-h-[52px] transition-colors duration-150 hover:bg-border-light/40">
       {/* Slot 1: Icon */}
       <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${iconBg} ${iconText} ${iconAnimation}`}>
         {iconElement}
