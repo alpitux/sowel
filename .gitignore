@@ -27,3 +27,6 @@ ui/tsconfig.tsbuildinfo
 
 # Local-only icon design scratchpad (not shipped)
 assets/
+# …but the MkDocs site assets do ship.
+!docs/assets/
+!docs/assets/**
