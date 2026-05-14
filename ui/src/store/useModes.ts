@@ -4,7 +4,6 @@ import {
   getModes,
   activateMode as apiActivate,
   deactivateMode as apiDeactivate,
-  applyModeToZone as apiApplyToZone,
   createMode as apiCreate,
   updateMode as apiUpdate,
   deleteMode as apiDelete,
@@ -20,7 +19,6 @@ interface ModesState {
   deleteMode: (id: string) => Promise<void>;
   activateMode: (id: string) => Promise<void>;
   deactivateMode: (id: string) => Promise<void>;
-  applyModeToZone: (modeId: string, zoneId: string) => Promise<void>;
   handleModeEvent: () => void;
   handleModeActivated: (modeId: string) => void;
   handleModeDeactivated: (modeId: string) => void;
@@ -66,10 +64,6 @@ export const useModes = create<ModesState>((set, get) => ({
 
   deactivateMode: async (id) => {
     await apiDeactivate(id);
-  },
-
-  applyModeToZone: async (modeId, zoneId) => {
-    await apiApplyToZone(modeId, zoneId);
   },
 
   handleModeEvent: () => {

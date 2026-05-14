@@ -15,6 +15,7 @@ import { useZones } from "../store/useZones";
 import { useEquipments } from "../store/useEquipments";
 import { useAuth } from "../store/useAuth";
 import { useZoneAggregation } from "../store/useZoneAggregation";
+import { useUiState } from "../store/useUiState";
 import { executeZoneOrder, getHistoryStatus } from "../api";
 import { ZoneEquipmentsView } from "../components/home/ZoneEquipmentsView";
 import { ZoneAggregationPills } from "../components/home/ZoneAggregationPills";
@@ -95,7 +96,9 @@ export function HomePage() {
     }
   }, [zoneId]);
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerOpen = useUiState((s) => s.zoneDrawerOpen);
+  const openDrawer = useUiState((s) => s.openZoneDrawer);
+  const closeDrawer = useUiState((s) => s.closeZoneDrawer);
 
   const loading = zonesLoading || equipmentsLoading;
 
@@ -122,40 +125,39 @@ export function HomePage() {
 
   return (
     <div className="p-4 sm:p-6">
-      {/* Mobile zone drawer */}
+      {/* Mobile zone drawer (drawer state shared with AppLayout topbar burger via useUiState) */}
       {drawerOpen && (
         <MobileZoneDrawer
           tree={tree}
           currentZoneId={zoneId}
-          onSelect={(id) => { navigate(`/home/${id}`); setDrawerOpen(false); }}
-          onClose={() => setDrawerOpen(false)}
+          onSelect={(id) => { navigate(`/home/${id}`); closeDrawer(); }}
+          onClose={closeDrawer}
         />
       )}
 
-      {/* Zone header + status bar */}
-      <div className="max-w-[1200px] mb-5">
+      {/* Zone header — desktop only: burger (tablet portrait) + h1 + lead.
+          On mobile, title + burger are in the topbar. */}
+      <div className="hidden sm:block max-w-[1200px] mb-3">
         <div className="flex items-center gap-1.5">
-          {/* Mobile burger button */}
           {tree.length > 0 && (
             <button
-              onClick={() => setDrawerOpen(true)}
+              onClick={openDrawer}
               className="md:hidden p-1 -ml-1 rounded-[6px] text-text-secondary hover:bg-border-light transition-colors"
+              aria-label={t("zones.openTree", "Open zones")}
             >
               <Menu size={18} strokeWidth={1.5} />
             </button>
           )}
-          <h1>
-            {currentZone.name}
-          </h1>
+          <h1>{currentZone.name}</h1>
         </div>
-        {/* Hero lead — description or computed summary, matches mock .hero__lead (spec 100) */}
         <ZoneHeroLead zone={currentZone} aggData={aggData} />
+      </div>
+
+      {/* Strip pills + zone commands — visible on both mobile and desktop */}
+      <div className="max-w-[1200px] mb-5">
         {zoneId && aggregationData[zoneId] && (
-          <div className="mt-3">
-            <ZoneAggregationPills data={aggregationData[zoneId]} zoneId={zoneId} historyEnabled={historyEnabled} />
-          </div>
+          <ZoneAggregationPills data={aggregationData[zoneId]} zoneId={zoneId} historyEnabled={historyEnabled} />
         )}
-        {/* Zone command buttons */}
         {aggData && (aggData.lightsTotal > 0 || aggData.shuttersTotal > 0) && (
           <div className="mt-3">
             <ZoneCommands

@@ -66,11 +66,11 @@ export function ModesPage() {
     <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <div>
+        <div className="hidden sm:block">
           <h1>
             {t("modes.title")}
           </h1>
-          <p className="text-[13px] text-text-secondary mt-0.5 hidden sm:block">
+          <p className="text-[13px] text-text-secondary mt-0.5">
             {t("modes.subtitle")}
           </p>
         </div>

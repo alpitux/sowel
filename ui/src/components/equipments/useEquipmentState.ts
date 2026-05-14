@@ -159,14 +159,17 @@ export function computeElapsed(iso: string | null): number {
   return Math.max(0, Math.floor((Date.now() - new Date(ts).getTime()) / 1000));
 }
 
-/** Format elapsed seconds as compact string (45s, 2m30s, 1h05). */
+/** Format elapsed seconds as compact string (45s, 2m30s, 1h05, 3j). */
 export function formatElapsed(s: number): string {
   if (s < 60) return `${s}s`;
   if (s < 3600)
     return `${Math.floor(s / 60)}m${String(s % 60).padStart(2, "0")}s`;
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  return `${h}h${String(m).padStart(2, "0")}`;
+  if (s < 86400) {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return `${h}h${String(m).padStart(2, "0")}`;
+  }
+  return `${Math.floor(s / 86400)}j`;
 }
 
 /** Format a data value for inline display. */

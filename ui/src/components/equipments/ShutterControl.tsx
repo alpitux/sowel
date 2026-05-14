@@ -48,7 +48,7 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
     slider.onCommit((v) => onExecuteOrder("position", v));
 
   if (compact) {
-    // Mock parity: slider (80px) → 3 bordered 24×24 buttons (.shutter-btn) → state chip.
+    // Layout: slider (80px) → state pill → 3 bordered 24×24 buttons (.shutter-btn).
     const sttClass =
       "w-[24px] h-[24px] inline-flex items-center justify-center border border-border-light bg-surface text-text-tertiary rounded-[4px] transition-colors duration-150 cursor-pointer hover:bg-shutter-50 hover:text-shutter-500 hover:border-shutter-500 disabled:opacity-50 disabled:cursor-not-allowed";
     return (
@@ -67,12 +67,29 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
             onMouseUp={handlePositionCommit}
             onTouchEnd={handlePositionCommit}
             onClick={(e) => e.stopPropagation()}
-            className="w-[80px]"
+            className="hidden sm:block w-[80px]"
             style={{ "--fill-pct": `${position}%`, "--fill-color": "var(--shutter-500)" } as React.CSSProperties}
           />
         )}
+        {position !== null && (
+          position === 100 ? (
+            <span className="text-[11px] font-semibold text-success px-[7px] py-[1px] rounded-full bg-success/10">
+              {t("controls.opened")}
+            </span>
+          ) : position === 0 ? (
+            <span className="text-[11px] font-semibold text-shutter-500 px-[7px] py-[1px] rounded-full bg-shutter-50">
+              {t("controls.closed")}
+            </span>
+          ) : (
+            <span className="text-[11px] text-text-tertiary tabular-nums w-8 text-right">
+              {position}%
+            </span>
+          )
+        )}
         {hasState && (
-          <div className="inline-flex items-center gap-[2px]">
+          <>
+            <div className="w-px h-5 bg-border" />
+            <div className="inline-flex items-center gap-[2px]">
             <button
               onClick={(e) => handleCommand("OPEN", e)}
               disabled={executing}
@@ -97,22 +114,8 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
             >
               <CloseIcon size={10} strokeWidth={2} />
             </button>
-          </div>
-        )}
-        {position !== null && (
-          position === 100 ? (
-            <span className="text-[11px] font-semibold text-success px-[7px] py-[1px] rounded-full bg-success/10">
-              {t("controls.opened")}
-            </span>
-          ) : position === 0 ? (
-            <span className="text-[11px] font-semibold text-shutter-500 px-[7px] py-[1px] rounded-full bg-shutter-50">
-              {t("controls.closed")}
-            </span>
-          ) : (
-            <span className="text-[11px] text-text-tertiary tabular-nums w-8 text-right">
-              {position}%
-            </span>
-          )
+            </div>
+          </>
         )}
       </div>
     );

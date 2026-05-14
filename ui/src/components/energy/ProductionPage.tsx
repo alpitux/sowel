@@ -30,12 +30,9 @@ export function ProductionPage() {
 
   return (
     <div className="p-4 sm:p-6">
-      {/* Header */}
+      <EnergyMobileNav />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
-        <div className="flex items-center gap-1.5">
-          <EnergyMobileNav />
-          <h1>{t("energy.production")}</h1>
-        </div>
+        <h1 className="hidden sm:block">{t("energy.production")}</h1>
         <PeriodSelector />
       </div>
 

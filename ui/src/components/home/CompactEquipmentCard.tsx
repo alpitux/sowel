@@ -282,6 +282,8 @@ function CompactEnergyValues({ equipment }: { equipment: EquipmentWithDetails })
   const demandW = typeof demandBinding?.value === "number" ? demandBinding.value : null;
 
   const dayWh = typeof energyDay?.value === "number" ? energyDay.value : null;
+  const isProduction = equipment.type === "energy_production_meter";
+  const valueColor = isProduction ? "text-success" : "text-accent";
 
   return (
     <div className="flex items-center gap-3 flex-shrink-0">
@@ -292,7 +294,7 @@ function CompactEnergyValues({ equipment }: { equipment: EquipmentWithDetails })
         </span>
       )}
       {dayWh !== null && (
-        <span className="text-[13px] text-accent tabular-nums font-mono font-semibold">
+        <span className={`text-[13px] ${valueColor} tabular-nums font-mono font-semibold`}>
           {dayWh >= 1000 ? (dayWh / 1000).toFixed(2) : Math.round(dayWh)}
           <span className="text-[11px] font-normal text-text-tertiary ml-0.5">
             {dayWh >= 1000 ? "kWh" : "Wh"} {t("energy.today").toLowerCase()}
