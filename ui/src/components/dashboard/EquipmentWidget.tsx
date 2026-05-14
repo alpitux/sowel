@@ -370,7 +370,7 @@ function ThermostatEquipmentWidget({
         <div className="flex flex-col items-start gap-2 pl-2">
           {insideTemp !== null ? (
             <div className="flex items-baseline gap-0.5">
-              <span className="text-[28px] sm:text-[42px] font-bold text-text leading-[1.1] tracking-tight tabular-nums leading-none font-mono">
+              <span className="text-[18px] font-semibold text-text tabular-nums leading-none font-mono">
                 {insideTemp.toFixed(1)}
               </span>
               <span className="text-[12px] font-medium text-text-tertiary">°C</span>
@@ -652,6 +652,9 @@ function EnergyMeterEquipmentWidget({
   const demandBinding = equipment.dataBindings.find((b) => b.alias === "demand_5min");
   const demandW = typeof demandBinding?.value === "number" ? demandBinding.value : null;
 
+  const isProduction = equipment.type === "energy_production_meter";
+  const primaryColor = isProduction ? "text-success" : "text-text";
+
   const formatWh = (wh: unknown): string => {
     if (typeof wh !== "number") return "\u2014";
     if (wh >= 1000) return (wh / 1000).toFixed(1);
@@ -670,9 +673,9 @@ function EnergyMeterEquipmentWidget({
         <div />
         <EnergyMeterIcon />
         <div className="flex flex-col items-start gap-1.5 pl-2">
-          {/* Today's consumption — primary value */}
+          {/* Today's consumption — primary value (green for production meters) */}
           <div className="flex items-baseline gap-0.5">
-            <span className="text-[20px] font-semibold text-text tabular-nums leading-none font-mono">
+            <span className={`text-[20px] font-semibold ${primaryColor} tabular-nums leading-none font-mono`}>
               {formatWh(energyDay?.value)}
             </span>
             <span className="text-[11px] font-medium text-text-tertiary">

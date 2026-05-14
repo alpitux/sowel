@@ -79,7 +79,7 @@ export function LightControl({ equipment, onExecuteOrder, compact }: LightContro
               onMouseUp={handleBrightnessCommit}
               onTouchEnd={handleBrightnessCommit}
               onClick={(e) => e.stopPropagation()}
-              className="w-[80px] slider-active"
+              className="w-[48px] sm:w-[80px] slider-active"
               style={{ "--fill-pct": `${(brightness / 254) * 100}%` } as React.CSSProperties}
             />
             <span className="text-[11px] text-text-tertiary w-7 text-right tabular-nums">
