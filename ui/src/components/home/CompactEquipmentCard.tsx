@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type { EquipmentWithDetails } from "../../types";
+import type { EquipmentType, EquipmentWithDetails } from "../../types";
 import { useEquipmentState, formatValue } from "../equipments/useEquipmentState";
 import { SensorValues } from "../equipments/SensorValues";
 import { LightControl } from "../equipments/LightControl";
@@ -18,6 +18,34 @@ interface CompactEquipmentCardProps {
   onExecuteOrder: (equipmentId: string, alias: string, value: unknown) => Promise<void>;
   zoneName?: string;
 }
+
+// Per-type icon tint mapping (spec 099 — eq-row category tints).
+// Light-on state is handled as an override at render time.
+type Tint = { bg: string; text: string };
+
+const TYPE_TINTS: Record<EquipmentType, Tint> = {
+  light_onoff:             { bg: "bg-light-50",     text: "text-light-500" },
+  light_dimmable:          { bg: "bg-light-50",     text: "text-light-500" },
+  light_color:             { bg: "bg-light-50",     text: "text-light-500" },
+  shutter:                 { bg: "bg-shutter-50",   text: "text-shutter-500" },
+  pool_cover:              { bg: "bg-shutter-50",   text: "text-shutter-500" },
+  sensor:                  { bg: "bg-sensor-50",    text: "text-sensor-500" },
+  button:                  { bg: "bg-sensor-50",    text: "text-sensor-500" },
+  switch:                  { bg: "bg-sensor-50",    text: "text-sensor-500" },
+  media_player:            { bg: "bg-media-50",     text: "text-media-500" },
+  thermostat:              { bg: "bg-primary-light",text: "text-primary" },
+  water_valve:             { bg: "bg-primary-light",text: "text-primary" },
+  weather:                 { bg: "bg-primary-light",text: "text-primary" },
+  weather_forecast:        { bg: "bg-primary-light",text: "text-primary" },
+  pool_pump:               { bg: "bg-primary-light",text: "text-primary" },
+  gate:                    { bg: "bg-success/10",   text: "text-success" },
+  energy_production_meter: { bg: "bg-success/10",   text: "text-success" },
+  heater:                  { bg: "bg-error/10",     text: "text-error" },
+  pool_heat_pump:          { bg: "bg-error/10",     text: "text-error" },
+  energy_meter:            { bg: "bg-accent-light", text: "text-accent" },
+  main_energy_meter:       { bg: "bg-accent-light", text: "text-accent" },
+  appliance:               { bg: "bg-border-light", text: "text-text-secondary" },
+};
 
 export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: CompactEquipmentCardProps) {
   const { t } = useTranslation();
@@ -38,7 +66,6 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
     sensorBindings,
     batteryBindings,
     iconElement,
-    iconColor,
   } = useEquipmentState(equipment);
 
   const isWaterValve = equipment.type === "water_valve";
@@ -47,37 +74,38 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
   const isPoolHeatPump = equipment.type === "pool_heat_pump";
 
   // Find primary data value for generic equipments
-  const isKnownType = isLight || isSensor || isShutter || isThermostat || isHeater || isGate || isEnergyMeter || isWeatherForecast || isMediaPlayer || isAppliance || isWaterValve || isPoolPump || isPoolCover || isPoolHeatPump;
+  const isKnownType =
+    isLight || isSensor || isShutter || isThermostat || isHeater || isGate ||
+    isEnergyMeter || isWeatherForecast || isMediaPlayer || isAppliance ||
+    isWaterValve || isPoolPump || isPoolCover || isPoolHeatPump;
   const primaryBinding = !isKnownType
     ? equipment.dataBindings[0] ?? null
     : null;
 
+  // Icon tinting — light-on overrides to amber + glow, everything else uses TYPE_TINTS.
+  const isLightOn = isLight && isOn;
+  const baseTint = TYPE_TINTS[equipment.type] ?? { bg: "bg-border-light", text: "text-text-tertiary" };
+  const iconBg = isLightOn ? "bg-accent" : baseTint.bg;
+  const iconText = isLightOn ? "text-white" : baseTint.text;
+  const iconAnimation = isLightOn ? "animate-glow" : "";
+
   return (
-    <div
-      className={`
-        flex items-center gap-2.5 px-3 py-2
-        transition-colors duration-150
-        hover:bg-border-light/40
-      `}
-    >
-      {/* Icon */}
-      <div
-        className={`
-          flex-shrink-0 w-7 h-7 rounded-[5px] flex items-center justify-center
-          ${iconColor}
-        `}
-      >
+    <div className="grid grid-cols-[32px_1fr_auto_auto_auto] gap-3 items-center px-3 py-2 min-h-[52px] transition-colors duration-150 hover:bg-border-light/40">
+      {/* Slot 1: Icon */}
+      <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${iconBg} ${iconText} ${iconAnimation}`}>
         {iconElement}
       </div>
 
-      {/* Name — links to detail */}
+      {/* Slot 2: Name */}
       <Link
         to={`/equipments/${equipment.id}`}
         state={zoneName ? { fromZone: zoneName } : undefined}
-        className="flex-1 min-w-0 text-[13px] font-medium text-text truncate hover:text-primary transition-colors"
+        className="min-w-0 text-[13px] font-medium text-text truncate hover:text-primary transition-colors"
       >
         {equipment.name}
       </Link>
+
+      {/* Slots 3-5: per-type content. Grid auto columns collapse when unused. */}
 
       {/* Sensor / Button values */}
       {isSensor && (
