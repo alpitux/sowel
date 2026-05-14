@@ -7,7 +7,7 @@ import {
   statSync,
   unlinkSync,
 } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, extname, sep } from "node:path";
 import archiver from "archiver";
 import AdmZip from "adm-zip";
 import type Database from "better-sqlite3";
@@ -19,6 +19,52 @@ export interface BackupManagerDeps {
   influxClient: InfluxClient;
   logger: Logger;
   dataDir: string; // path to data/ directory
+  /** Cap on cumulative uncompressed bytes during restore (spec 089 C2). Default 1 GB. */
+  maxRestoreBytes?: number;
+}
+
+// ── Spec 089 C2: backup restore hardening ─────────────────────────────
+// Extensions allowed in `data/` entries of a restore archive. Anything
+// else (executables, native modules, scripts) is rejected.
+const ALLOWED_RESTORE_EXTENSIONS = new Set([
+  ".json",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".svg",
+  ".webp",
+  ".db",
+  ".db-shm",
+  ".db-wal",
+  ".jwt-secret",
+  ".influx-token",
+  ".log",
+  ".txt",
+]);
+
+const DEFAULT_MAX_RESTORE_BYTES = 1024 * 1024 * 1024; // 1 GB
+
+/** Thrown when cumulative uncompressed entries exceed the configured cap. */
+export class BackupSizeCapExceededError extends Error {
+  readonly bytes: number;
+  readonly cap: number;
+  constructor(bytes: number, cap: number) {
+    super(`Backup payload exceeds size cap (${bytes} bytes > ${cap} bytes)`);
+    this.name = "BackupSizeCapExceededError";
+    this.bytes = bytes;
+    this.cap = cap;
+  }
+}
+
+/**
+ * ZIP entry detection: symlinks carry the Unix mode S_IFLNK (0o120000)
+ * in the upper 16 bits of the entry's external attributes. AdmZip exposes
+ * this on entry.attr.
+ */
+function isSymlinkEntry(entry: AdmZip.IZipEntry): boolean {
+  const attr = (entry as unknown as { attr?: number }).attr ?? 0;
+  const unixMode = (attr >>> 16) & 0xffff;
+  return (unixMode & 0o170000) === 0o120000;
 }
 
 // Tables to export, in dependency order (parents first)
@@ -108,12 +154,14 @@ export class BackupManager {
   private influxClient: InfluxClient;
   private logger: Logger;
   private dataDir: string;
+  private maxRestoreBytes: number;
 
   constructor(deps: BackupManagerDeps) {
     this.db = deps.db;
     this.influxClient = deps.influxClient;
     this.logger = deps.logger.child({ module: "backup-manager" });
     this.dataDir = deps.dataDir;
+    this.maxRestoreBytes = deps.maxRestoreBytes ?? DEFAULT_MAX_RESTORE_BYTES;
   }
 
   // ============================================================
@@ -421,16 +469,63 @@ export class BackupManager {
     }
 
     // 4. Restore data files (extract all data/* entries from ZIP)
+    //    Spec 089 C2: hardened against path traversal, symlink injection,
+    //    arbitrary extensions, and zip bombs.
     let filesRestored = 0;
+    let restoreBytes = 0;
+    const dataDirAbs = resolve(this.dataDir);
     for (const entry of zip.getEntries()) {
-      if (!entry.entryName.startsWith("data/") || entry.isDirectory) continue;
+      if (entry.isDirectory) continue;
+      if (!entry.entryName.startsWith("data/")) continue;
+
+      // Refuse symlink entries outright.
+      if (isSymlinkEntry(entry)) {
+        this.logger.warn(
+          { entry: entry.entryName },
+          "Backup restore: symlink entry refused (spec 089 C2)",
+        );
+        continue;
+      }
+
       const filename = entry.entryName.slice("data/".length);
       if (!filename || DATA_FILES_EXCLUDE.has(filename)) continue;
 
+      // Path confinement: resolve + verify the result stays under dataDir.
+      // Defeats `data/../../etc/passwd` and absolute-name games.
+      const filePath = resolve(this.dataDir, filename);
+      if (filePath !== dataDirAbs && !filePath.startsWith(dataDirAbs + sep)) {
+        this.logger.warn(
+          { entry: entry.entryName, resolved: filePath },
+          "Backup restore: path traversal refused (spec 089 C2)",
+        );
+        continue;
+      }
+
+      // Extension whitelist: reject .sh, .so, .node, etc.
+      const ext = extname(filename).toLowerCase();
+      if (ext && !ALLOWED_RESTORE_EXTENSIONS.has(ext)) {
+        this.logger.warn(
+          { entry: entry.entryName, ext },
+          "Backup restore: extension not allowed (spec 089 C2)",
+        );
+        continue;
+      }
+
+      // Read the uncompressed buffer and enforce cumulative cap.
+      // Cap exceeded is fatal — we cannot continue without risking disk fill.
+      const data = entry.getData();
+      restoreBytes += data.length;
+      if (restoreBytes > this.maxRestoreBytes) {
+        this.logger.error(
+          { bytes: restoreBytes, cap: this.maxRestoreBytes },
+          "Backup restore: cumulative size cap exceeded (spec 089 C2)",
+        );
+        throw new BackupSizeCapExceededError(restoreBytes, this.maxRestoreBytes);
+      }
+
       try {
-        const filePath = resolve(this.dataDir, filename);
         mkdirSync(dirname(filePath), { recursive: true });
-        writeFileSync(filePath, entry.getData());
+        writeFileSync(filePath, data);
         filesRestored++;
         this.logger.debug({ filename }, "Data file restored");
       } catch (err) {
