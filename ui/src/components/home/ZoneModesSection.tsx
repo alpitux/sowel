@@ -82,13 +82,13 @@ export function ZoneModesSection({ zoneId }: ZoneModesSectionProps) {
             : configuredModes.length}
         </span>
         {unconfiguredModes.length > 0 && !addingMode && (
-          <div className="relative" ref={selectorRef}>
+          <div className="relative ml-2" ref={selectorRef}>
             <button
               onClick={() => setShowModeSelector(!showModeSelector)}
-              className="p-0.5 rounded-[4px] text-text-tertiary hover:text-primary hover:bg-primary/10 transition-colors duration-150"
+              className="w-[22px] h-[22px] inline-flex items-center justify-center rounded-[4px] border border-border-light text-text-tertiary hover:text-primary hover:bg-primary-light hover:border-primary-mid transition-colors duration-150"
               title={t("modes.addMode", "Add mode")}
             >
-              <Plus size={14} strokeWidth={1.5} />
+              <Plus size={11} strokeWidth={2} />
             </button>
             {showModeSelector && (
               <div className="absolute right-0 top-full mt-1 z-20 min-w-[160px] bg-surface border border-border rounded-[6px] shadow-lg py-1">

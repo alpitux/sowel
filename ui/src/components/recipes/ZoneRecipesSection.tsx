@@ -118,10 +118,10 @@ export function ZoneRecipesSection({ zoneId, zoneName }: ZoneRecipesSectionProps
         <div ref={pickerWrapRef} className="relative ml-2">
           <button
             onClick={() => setShowPicker((v) => !v)}
-            className="p-1 rounded-[4px] text-text-tertiary hover:text-primary hover:bg-primary/5 transition-colors duration-150"
+            className="w-[22px] h-[22px] inline-flex items-center justify-center rounded-[4px] border border-border-light text-text-tertiary hover:text-primary hover:bg-primary-light hover:border-primary-mid transition-colors duration-150"
             title={t("recipes.addRecipe")}
           >
-            <Plus size={14} strokeWidth={1.5} />
+            <Plus size={11} strokeWidth={2} />
           </button>
           {showPicker && (
             <RecipePickerPopover
@@ -271,7 +271,7 @@ function RecipePickerPopover({
   return (
     <>
       {/* Desktop side-popover: opens to the right of the "+" button */}
-      <div className="hidden sm:block absolute left-full top-0 ml-1 z-20 w-[320px] max-h-[360px] overflow-y-auto bg-surface border border-border rounded-[8px] shadow-lg p-1">
+      <div className="hidden sm:block absolute right-0 top-full mt-1 z-20 w-[320px] max-h-[360px] overflow-y-auto bg-surface border border-border rounded-[8px] shadow-lg p-1">
         {list}
       </div>
 

@@ -349,7 +349,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className={`bg-surface border border-border-light rounded-lg overflow-hidden ${className}`}>
+    <section className={`bg-surface border border-border-light rounded-lg ${className}`}>
       {/* Panel head — strict alignment with design-system .panel__head (spec 100) */}
       <div className="flex items-center gap-[0.55rem] px-[1.1rem] py-[0.55rem] min-h-[44px] bg-primary-light border-b border-primary-mid">
         <h2 className="text-[11.5px] font-bold text-primary uppercase tracking-[0.12em]">
