@@ -43,10 +43,10 @@
   --font-size-data-lg: 28px;
   --font-size-data-md: 20px;
 
-  /* Border radius — aligned with design-system tokens (--r-md = 8px) */
+  /* Border radius — aligned with design-system tokens */
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 14px;
+  --radius-lg: 12px;
 
   /* Shadows — resolved from design-system tokens (auto-darken in dark mode) */
   --shadow-sm: var(--sh-1);
