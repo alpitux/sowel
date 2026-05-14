@@ -223,15 +223,8 @@ function ModeRow({
           </div>
         </div>
 
-        {/* Right: settings + apply/badge */}
+        {/* Right: apply/badge then settings gear (far right) */}
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => editing ? handleClose() : setEditing(true)}
-            className="p-1.5 rounded-[4px] text-text-tertiary hover:text-text hover:bg-border-light/60 transition-colors duration-150"
-            title={t("modes.configure")}
-          >
-            {editing ? <X size={14} strokeWidth={1.5} /> : <Settings size={14} strokeWidth={1.5} />}
-          </button>
           {mode.active ? (
             <span className="text-[10.4px] font-bold uppercase tracking-[0.1em] text-[var(--green-700)] bg-[color-mix(in_srgb,var(--green-500)_12%,transparent)] px-2 py-0.5 rounded-full">
               {t("modes.activeBadge", { defaultValue: "Actif" })}
@@ -247,6 +240,13 @@ function ModeRow({
               {t("modes.apply")}
             </button>
           ) : null}
+          <button
+            onClick={() => editing ? handleClose() : setEditing(true)}
+            className="p-1.5 rounded-[4px] text-text-tertiary hover:text-text hover:bg-border-light/60 transition-colors duration-150"
+            title={t("modes.configure")}
+          >
+            {editing ? <X size={14} strokeWidth={1.5} /> : <Settings size={14} strokeWidth={1.5} />}
+          </button>
         </div>
       </div>
 
