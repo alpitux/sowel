@@ -1716,7 +1716,7 @@ html:has(.sowel-flip) .md-header__topic:first-child {
   margin: 0 auto 1.4rem;
   max-width: 56rem;
   background: #1F2A33;
-  color: #D6E0E6;
+  color: #F4F6F8;
   border-radius: 12px;
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 0.92rem;
@@ -1758,7 +1758,7 @@ html:has(.sowel-flip) .md-header__topic:first-child {
   white-space: pre;
   overflow-x: auto;
   scrollbar-width: none;
-  color: #D6E0E6;
+  color: #F4F6F8;
 }
 .sowel-terminal-mock__code::-webkit-scrollbar { display: none; }
 .sowel-terminal-mock__code .prompt { color: var(--sowel-mock-amber); font-weight: 700; }
