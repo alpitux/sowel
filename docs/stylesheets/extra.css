@@ -1369,7 +1369,7 @@ html:has(.sowel-flip) .md-header__topic:first-child {
 /* === YAML "spaghetti" mock — an IDE-flavoured code block === */
 .sowel-yaml-mock {
   background: #1F2A33;
-  color: #C5CFD6;
+  color: #F4F6F8;
   border-radius: 12px;
   padding: 0;
   font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -1405,13 +1405,14 @@ html:has(.sowel-flip) .md-header__topic:first-child {
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.5);
 }
-.sowel-yaml-mock__code {
+/* .md-typeset prefix needed to win over Material's `.md-typeset pre { color: var(--md-code-fg-color) }` (#36464e dark gray). */
+.md-typeset .sowel-yaml-mock__code {
   margin: 0;
   padding: 0.85rem 1rem 1rem;
   white-space: pre;
   overflow-x: auto;
   scrollbar-width: none;
-  color: #C5CFD6;
+  color: #F4F6F8;
 }
 .sowel-yaml-mock__code::-webkit-scrollbar { display: none; }
 .sowel-yaml-mock__code .k { color: #7FB3D5; }
