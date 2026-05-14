@@ -35,6 +35,7 @@ hide:
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Get started <span class="md-icon md-icon--arrow">→</span></a>
   <a class="md-button" href="user/">Read the user guide</a>
+  <a class="md-button" href="technical/">Read the developer guide</a>
 </p>
 
 </div>
@@ -201,40 +202,40 @@ hide:
 <ol class="sowel-layers__list">
 <li><button type="button" class="sowel-layer-pick" data-target="1" aria-selected="true"><span class="sowel-layer-pick__num">1</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Devices</span><span class="sowel-layer-pick__lead">What's on your network.</span></span></button></li>
 <li><button type="button" class="sowel-layer-pick" data-target="2" aria-selected="false"><span class="sowel-layer-pick__num">2</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Equipments</span><span class="sowel-layer-pick__lead">What's in your room.</span></span></button></li>
-<li><button type="button" class="sowel-layer-pick" data-target="3" aria-selected="false"><span class="sowel-layer-pick__num">3</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Zones</span><span class="sowel-layer-pick__lead">Your home's topology.</span></span></button></li>
-<li><button type="button" class="sowel-layer-pick" data-target="4" aria-selected="false"><span class="sowel-layer-pick__num">4</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Modes</span><span class="sowel-layer-pick__lead">Your home's rhythms.</span></span></button></li>
-<li><button type="button" class="sowel-layer-pick" data-target="5" aria-selected="false"><span class="sowel-layer-pick__num">5</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Recipes</span><span class="sowel-layer-pick__lead">Your home's reflexes.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="3" aria-selected="false"><span class="sowel-layer-pick__num">3</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Zones</span><span class="sowel-layer-pick__lead">Your rooms and floors.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="4" aria-selected="false"><span class="sowel-layer-pick__num">4</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Modes</span><span class="sowel-layer-pick__lead">The mood of the moment.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="5" aria-selected="false"><span class="sowel-layer-pick__num">5</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Recipes</span><span class="sowel-layer-pick__lead">What runs on its own.</span></span></button></li>
 </ol>
 
 <div class="sowel-layers__detail">
 
 <div class="sowel-layer-detail is-active" data-id="1">
 <h3>Devices</h3>
-<p>Auto-discovered, normalized into one shared vocabulary regardless of brand or protocol.</p>
+<p>Plug in an integration (Zigbee, Shelly, ...) and Sowel handles any home automation device: bulbs, motion sensors, switches. One data model, regardless of brand or protocol.</p>
 <p class="sowel-layer-detail__more"><a href="user/devices/">Read more →</a></p>
 </div>
 
 <div class="sowel-layer-detail" data-id="2">
 <h3>Equipments</h3>
-<p>Lights, shutters, thermostats, meters. All standardized, with predictable controls and one handle per thing.</p>
+<p>One IKEA Zigbee dimmer becomes the "Kitchen Spots". You stop thinking about hardware, you think about usage.</p>
 <p class="sowel-layer-detail__more"><a href="user/equipments/">Read more →</a></p>
 </div>
 
 <div class="sowel-layer-detail" data-id="3">
 <h3>Zones</h3>
-<p>Group equipments by room or floor. Sowel rolls up their data automatically (averages, OR-of-all, max).</p>
+<p>The Living Room, the Ground Floor, the whole house. Group them the way you'd describe them; Sowel rolls up the data (average temperature, lights on, motion detected).</p>
 <p class="sowel-layer-detail__more"><a href="user/zones/">Read more →</a></p>
 </div>
 
 <div class="sowel-layer-detail" data-id="4">
 <h3>Modes</h3>
-<p>Day, Evening, Night. One tap (or a schedule) flips every zone over: brightness, heating, recipes.</p>
+<p>Morning: shutters up, heating at 20. Evening: dim lights, alarm armed. A tap, a schedule, a calendar: the house follows.</p>
 <p class="sowel-layer-detail__more"><a href="user/modes/">Read more →</a></p>
 </div>
 
 <div class="sowel-layer-detail" data-id="5">
 <h3>Recipes</h3>
-<p>Drop a tested pattern on a zone, set a few values, it runs. No flows, no scripting.</p>
+<p>Apply a recipe to a room and everything just works.</p>
 <p class="sowel-layer-detail__more"><a href="user/recipes/">Read more →</a></p>
 </div>
 

@@ -35,6 +35,7 @@ hide:
 <p class="sowel-hero__ctas">
   <a class="md-button md-button--primary" href="user/getting-started/">Commencer <span class="md-icon md-icon--arrow">→</span></a>
   <a class="md-button" href="user/">Lire le guide utilisateur</a>
+  <a class="md-button" href="technical/">Lire le guide développeur</a>
 </p>
 
 </div>
@@ -201,40 +202,40 @@ hide:
 <ol class="sowel-layers__list">
 <li><button type="button" class="sowel-layer-pick" data-target="1" aria-selected="true"><span class="sowel-layer-pick__num">1</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Devices</span><span class="sowel-layer-pick__lead">Ce qui est sur votre réseau.</span></span></button></li>
 <li><button type="button" class="sowel-layer-pick" data-target="2" aria-selected="false"><span class="sowel-layer-pick__num">2</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Équipements</span><span class="sowel-layer-pick__lead">Ce qui est dans votre pièce.</span></span></button></li>
-<li><button type="button" class="sowel-layer-pick" data-target="3" aria-selected="false"><span class="sowel-layer-pick__num">3</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Zones</span><span class="sowel-layer-pick__lead">La topologie de votre maison.</span></span></button></li>
-<li><button type="button" class="sowel-layer-pick" data-target="4" aria-selected="false"><span class="sowel-layer-pick__num">4</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Modes</span><span class="sowel-layer-pick__lead">Les rythmes de votre maison.</span></span></button></li>
-<li><button type="button" class="sowel-layer-pick" data-target="5" aria-selected="false"><span class="sowel-layer-pick__num">5</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Recettes</span><span class="sowel-layer-pick__lead">Les réflexes de votre maison.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="3" aria-selected="false"><span class="sowel-layer-pick__num">3</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Zones</span><span class="sowel-layer-pick__lead">Vos pièces et vos étages.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="4" aria-selected="false"><span class="sowel-layer-pick__num">4</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Modes</span><span class="sowel-layer-pick__lead">L'humeur du moment.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="5" aria-selected="false"><span class="sowel-layer-pick__num">5</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Recettes</span><span class="sowel-layer-pick__lead">Ce qui tourne tout seul.</span></span></button></li>
 </ol>
 
 <div class="sowel-layers__detail">
 
 <div class="sowel-layer-detail is-active" data-id="1">
 <h3>Devices</h3>
-<p>Auto-découverts, normalisés dans un seul vocabulaire commun quel que soit la marque ou le protocole.</p>
+<p>Branchez une intégration (Zigbee, Shelly, ...) et Sowel gère n'importe quel appareil domotique : ampoules, détecteurs de mouvement, interrupteurs. Un modèle de données unique, quelle que soit la marque ou le protocole.</p>
 <p class="sowel-layer-detail__more"><a href="user/devices/">En savoir plus →</a></p>
 </div>
 
 <div class="sowel-layer-detail" data-id="2">
 <h3>Équipements</h3>
-<p>Lumières, volets, thermostats, compteurs. Tous standardisés, contrôles prévisibles, une seule poignée par chose.</p>
+<p>1 variateur IKEA Zigbee devient les "Spots Cuisine". Vous ne pensez plus au matériel, mais aux usages.</p>
 <p class="sowel-layer-detail__more"><a href="user/equipments/">En savoir plus →</a></p>
 </div>
 
 <div class="sowel-layer-detail" data-id="3">
 <h3>Zones</h3>
-<p>Regroupez par pièce ou par étage. Sowel consolide les données automatiquement (moyennes, OU, maximum).</p>
+<p>Le Salon, le RDC, la maison entière. Vous regroupez comme dans la vraie vie ; Sowel agrège tout (température moyenne, lumières allumées, mouvement détecté).</p>
 <p class="sowel-layer-detail__more"><a href="user/zones/">En savoir plus →</a></p>
 </div>
 
 <div class="sowel-layer-detail" data-id="4">
 <h3>Modes</h3>
-<p>Jour, Soir, Nuit. Un geste (ou un planning) fait basculer toute la maison : luminosité, chauffage, recettes.</p>
+<p>Le matin : volets ouverts, chauffage à 20. Le soir : ambiance tamisée, alarme prête. Un geste, un planning, un calendrier : la maison s'aligne.</p>
 <p class="sowel-layer-detail__more"><a href="user/modes/">En savoir plus →</a></p>
 </div>
 
 <div class="sowel-layer-detail" data-id="5">
 <h3>Recettes</h3>
-<p>Posez un schéma éprouvé sur une zone, réglez quelques valeurs, ça tourne. Pas de flows, pas de script.</p>
+<p>Vous appliquez une recette à une pièce, tout fonctionne de façon optimale.</p>
 <p class="sowel-layer-detail__more"><a href="user/recipes/">En savoir plus →</a></p>
 </div>
 
