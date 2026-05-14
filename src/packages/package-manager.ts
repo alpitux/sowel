@@ -1,17 +1,35 @@
-import { resolve } from "node:path";
-import { existsSync, readFileSync, mkdirSync, rmSync, createWriteStream } from "node:fs";
+import { resolve, relative } from "node:path";
+import {
+  existsSync,
+  readFileSync,
+  mkdirSync,
+  rmSync,
+  createWriteStream,
+  lstatSync,
+  readdirSync,
+} from "node:fs";
 import { rename } from "node:fs/promises";
 import { pipeline } from "node:stream/promises";
 import { execFile as execFileCb } from "node:child_process";
 import { promisify } from "node:util";
+import { createHash } from "node:crypto";
 import type Database from "better-sqlite3";
 import type { Logger } from "../core/logger.js";
 import type { PluginManifest, InstalledPackage, PackageType } from "../shared/types.js";
+import {
+  type RegistryEntry,
+  ChecksumMismatchError,
+  CommunityPluginConfirmationRequiredError,
+  RegistryEntryInvalidError,
+  SymlinkInTarballError,
+  isOfficial,
+} from "./registry-types.js";
 
 const execFile = promisify(execFileCb);
 
 const REGISTRY_URL = "https://raw.githubusercontent.com/mchacher/sowel/main/plugins/registry.json";
 const REGISTRY_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const SHA256_HEX = /^[a-f0-9]{64}$/i;
 
 interface PackageRow {
   id: string;
@@ -22,17 +40,10 @@ interface PackageRow {
   type: string;
 }
 
-interface RegistryEntry {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  author: string;
-  repo: string;
-  version?: string;
-  type?: string;
-  tags: string[];
-  sowelVersion?: string; // e.g. ">=1.1.0"
+/** Options passed to install() and installFromGitHub(). */
+export interface InstallOptions {
+  /** Explicit confirmation that a community plugin can be installed (spec 089 C1). */
+  confirmed?: boolean;
 }
 
 /** Simple semver ">=" check: returns true if current >= required. */
@@ -143,8 +154,14 @@ export class PackageManager {
 
   /**
    * Get available packages from registry (not yet installed).
+   * Each entry is enriched with `compatible` + `isOfficial` (spec 089 C1)
+   * so the UI can render a community badge.
    */
-  getStore(): (PluginManifest & { compatible: boolean; compatReason?: string })[] {
+  getStore(): (PluginManifest & {
+    compatible: boolean;
+    compatReason?: string;
+    isOfficial: boolean;
+  })[] {
     const entries = this.getRegistryEntries();
     const installedIds = new Set((this.stmts.getAll.all() as PackageRow[]).map((r) => r.id));
 
@@ -163,6 +180,7 @@ export class PackageManager {
           type: (e.type as PackageType) ?? "integration",
           sowelVersion: e.sowelVersion,
           compatible,
+          isOfficial: isOfficial(e),
           ...(!compatible ? { compatReason: `Requires Sowel >= ${e.sowelVersion}` } : {}),
         };
       });
@@ -174,15 +192,31 @@ export class PackageManager {
   }
 
   /**
-   * Install from GitHub — download pre-built tarball, extract, register in DB.
-   * Returns the manifest. Does NOT load the package (caller handles that).
+   * Install from GitHub — download pre-built tarball, verify SHA256 against
+   * registry entry, enforce community-plugin confirmation, extract, register
+   * in DB. Returns the manifest. Does NOT load the package (caller handles
+   * that). See spec 089.
    */
-  async installFromGitHub(repo: string): Promise<PluginManifest> {
+  async installFromGitHub(repo: string, opts: InstallOptions = {}): Promise<PluginManifest> {
     this.logger.info({ repo }, "Installing package from GitHub");
+
+    // Spec 089 C1: resolve registry entry up front. An install of a repo
+    // absent from the registry is refused outright.
+    const entry = this.getRegistryEntries().find((e) => e.repo === repo);
+    if (!entry) {
+      throw new Error(`Package not found in registry: ${repo}`);
+    }
+    if (!entry.sha256 || !SHA256_HEX.test(entry.sha256)) {
+      throw new RegistryEntryInvalidError(entry.id, "sha256");
+    }
+    if (!isOfficial(entry) && !opts.confirmed) {
+      const owner = entry.owner ?? entry.repo.split("/")[0] ?? "unknown";
+      throw new CommunityPluginConfirmationRequiredError(entry.id, owner);
+    }
 
     const tmpDir = resolve(this.pluginsDir, ".tmp");
     try {
-      const extractDir = await this.downloadPrebuiltAsset(repo, tmpDir);
+      const extractDir = await this.downloadPrebuiltAsset(repo, tmpDir, entry);
 
       // Read and validate manifest
       const manifestPath = resolve(extractDir, "manifest.json");
@@ -234,11 +268,21 @@ export class PackageManager {
   /**
    * Download files for a package that exists in DB but is missing on disk.
    * Used after backup restore — downloads tarball without modifying DB.
+   * SHA256 is still verified; user already accepted the plugin at first
+   * install so no community-confirm prompt is re-issued here.
    */
   async downloadMissing(repo: string): Promise<void> {
+    const entry = this.getRegistryEntries().find((e) => e.repo === repo);
+    if (!entry) {
+      throw new Error(`Package not found in registry: ${repo}`);
+    }
+    if (!entry.sha256 || !SHA256_HEX.test(entry.sha256)) {
+      throw new RegistryEntryInvalidError(entry.id, "sha256");
+    }
+
     const tmpDir = resolve(this.pluginsDir, ".tmp");
     try {
-      const extractDir = await this.downloadPrebuiltAsset(repo, tmpDir);
+      const extractDir = await this.downloadPrebuiltAsset(repo, tmpDir, entry);
 
       const manifestPath = resolve(extractDir, "manifest.json");
       if (!existsSync(manifestPath)) {
@@ -284,9 +328,19 @@ export class PackageManager {
 
     this.logger.info({ packageId, from: row.version, repo }, "Updating package");
 
+    // Spec 089 C1: re-resolve registry entry for the SHA256 (may have changed
+    // since last install if the registry advances).
+    const entry = this.getRegistryEntries().find((e) => e.repo === repo);
+    if (!entry) {
+      throw new Error(`Package not found in registry: ${repo}`);
+    }
+    if (!entry.sha256 || !SHA256_HEX.test(entry.sha256)) {
+      throw new RegistryEntryInvalidError(entry.id, "sha256");
+    }
+
     const tmpDir = resolve(this.pluginsDir, ".tmp");
     try {
-      const extractDir = await this.downloadPrebuiltAsset(repo, tmpDir);
+      const extractDir = await this.downloadPrebuiltAsset(repo, tmpDir, entry);
 
       const manifestPath = resolve(extractDir, "manifest.json");
       if (!existsSync(manifestPath)) {
@@ -457,7 +511,11 @@ export class PackageManager {
   // Internal helpers
   // ============================================================
 
-  private async downloadPrebuiltAsset(repo: string, tmpDir: string): Promise<string> {
+  private async downloadPrebuiltAsset(
+    repo: string,
+    tmpDir: string,
+    entry: RegistryEntry,
+  ): Promise<string> {
     const apiUrl = `https://api.github.com/repos/${repo}/releases/latest`;
     const releaseRes = await fetch(apiUrl, {
       headers: { Accept: "application/vnd.github+json" },
@@ -497,11 +555,41 @@ export class PackageManager {
     const fileStream = createWriteStream(tarballPath);
     await pipeline(tarballRes.body as unknown as NodeJS.ReadableStream, fileStream);
 
+    // ── SHA256 integrity check (spec 089 C1) ──────────────────
+    const expected = entry.sha256!.toLowerCase();
+    const actual = createHash("sha256").update(readFileSync(tarballPath)).digest("hex");
+    if (actual !== expected) {
+      try {
+        rmSync(tarballPath);
+      } catch {
+        /* ignore */
+      }
+      this.logger.warn(
+        { pluginId: entry.id, expected: expected.slice(0, 12), actual: actual.slice(0, 12) },
+        "Plugin tarball SHA256 mismatch — refusing install",
+      );
+      throw new ChecksumMismatchError(entry.id, expected, actual);
+    }
+    this.logger.debug(
+      { pluginId: entry.id, sha256: actual.slice(0, 12) },
+      "Tarball SHA256 verified",
+    );
+
     const extractDir = resolve(tmpDir, "extract");
     mkdirSync(extractDir, { recursive: true });
 
+    // ── Tar extraction hardening (spec 089 C1) ────────────────
+    // --no-absolute-names: refuse entries with absolute paths
+    // --no-same-owner: do not preserve archive uid/gid (Linux only flag)
+    // --no-same-permissions: do not preserve archive mode bits
+    // BSD tar (macOS) does not support --no-absolute-names; fall back to
+    // no flags on macOS and rely on the symlink post-scan.
+    const tarFlags =
+      process.platform === "linux"
+        ? ["--no-absolute-names", "--no-same-owner", "--no-same-permissions"]
+        : [];
     try {
-      await execFile("tar", ["-xzf", tarballPath, "-C", extractDir]);
+      await execFile("tar", ["-xzf", tarballPath, "-C", extractDir, ...tarFlags]);
     } catch (err) {
       throw new Error(
         `Failed to extract tarball: ${err instanceof Error ? err.message : String(err)}`,
@@ -509,7 +597,30 @@ export class PackageManager {
       );
     }
 
+    // ── Symlink post-extraction scan (spec 089 C1) ────────────
+    this.assertNoSymlinks(extractDir, entry.id);
+
     return extractDir;
+  }
+
+  /** Walk a directory recursively; throw SymlinkInTarballError if any entry is a symlink. */
+  private assertNoSymlinks(dir: string, pluginId: string): void {
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const e of entries) {
+      const full = resolve(dir, e.name);
+      const stat = lstatSync(full);
+      if (stat.isSymbolicLink()) {
+        try {
+          rmSync(dir, { recursive: true, force: true });
+        } catch {
+          /* ignore */
+        }
+        throw new SymlinkInTarballError(pluginId, relative(dir, full));
+      }
+      if (e.isDirectory()) {
+        this.assertNoSymlinks(full, pluginId);
+      }
+    }
   }
 
   private rowToPackage(row: PackageRow): InstalledPackage {

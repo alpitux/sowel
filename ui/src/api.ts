@@ -604,11 +604,49 @@ export async function refreshPluginStore(): Promise<{ count: number; source: "re
   );
 }
 
-export async function installPlugin(repo: string): Promise<PluginManifest> {
-  return fetchJSON<PluginManifest>(`${API_BASE}/plugins/install`, {
+/** Thrown by installPlugin when the server requires explicit confirmation for a community plugin (spec 089). */
+export class CommunityPluginConfirmationRequiredError extends Error {
+  readonly owner: string;
+  constructor(owner: string) {
+    super("CommunityPluginConfirmationRequired");
+    this.name = "CommunityPluginConfirmationRequiredError";
+    this.owner = owner;
+  }
+}
+
+/**
+ * Install a plugin. `confirmed` must be `true` for community plugins
+ * (those whose registry `owner` is not in the OFFICIAL_OWNERS list). The
+ * server returns 409 `CommunityPluginConfirmationRequired` when this is
+ * needed — this function throws `CommunityPluginConfirmationRequiredError`
+ * in that case so the caller can surface a confirm dialog and retry with
+ * `confirmed: true`. See spec 089.
+ */
+export async function installPlugin(repo: string, confirmed = false): Promise<PluginManifest> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (_accessToken) headers["Authorization"] = `Bearer ${_accessToken}`;
+  const response = await fetch(`${API_BASE}/plugins/install`, {
     method: "POST",
-    body: JSON.stringify({ repo }),
+    headers,
+    body: JSON.stringify({ repo, confirmed }),
   });
+  if (response.status === 409) {
+    const body = await response.json().catch(() => ({}));
+    if ((body as { error?: string }).error === "CommunityPluginConfirmationRequired") {
+      throw new CommunityPluginConfirmationRequiredError(
+        (body as { owner?: string }).owner ?? "unknown",
+      );
+    }
+  }
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(
+      (body as { error?: string; message?: string }).message ??
+        (body as { error?: string }).error ??
+        `HTTP ${response.status}: ${response.statusText}`,
+    );
+  }
+  return (await response.json()) as PluginManifest;
 }
 
 export async function uninstallPlugin(id: string): Promise<{ success: boolean }> {

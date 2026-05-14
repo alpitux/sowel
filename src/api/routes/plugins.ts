@@ -91,45 +91,69 @@ export function registerPluginRoutes(app: FastifyInstance, deps: PluginsDeps): v
   });
 
   // POST /api/v1/plugins/install — install from GitHub
-  app.post<{ Body: { repo: string } }>("/api/v1/plugins/install", async (request, reply) => {
-    if (!request.auth || request.auth.role !== "admin") {
-      return reply.code(403).send({ error: "Admin access required" });
-    }
+  // Body: { repo: string, confirmed?: boolean }
+  // Returns 409 CommunityPluginConfirmationRequired when owner is not in
+  // OFFICIAL_OWNERS and `confirmed` is not true (spec 089 C1).
+  app.post<{ Body: { repo: string; confirmed?: boolean } }>(
+    "/api/v1/plugins/install",
+    async (request, reply) => {
+      if (!request.auth || request.auth.role !== "admin") {
+        return reply.code(403).send({ error: "Admin access required" });
+      }
 
-    const { repo } = request.body ?? {};
-    if (!repo || typeof repo !== "string") {
-      return reply.code(400).send({ error: "Missing 'repo' field (e.g. owner/repo)" });
-    }
+      const { repo, confirmed } = request.body ?? {};
+      if (!repo || typeof repo !== "string") {
+        return reply.code(400).send({ error: "Missing 'repo' field (e.g. owner/repo)" });
+      }
 
-    try {
-      // Peek at the registry to determine package type + compatibility
-      const entry = packageManager.getStore().find((m) => m.repo === repo);
-      const registryType = entry?.type ?? "integration";
+      try {
+        // Peek at the registry to determine package type + compatibility
+        const entry = packageManager.getStore().find((m) => m.repo === repo);
+        const registryType = entry?.type ?? "integration";
 
-      if (entry && !entry.compatible) {
-        return reply.code(400).send({
-          error:
-            entry.compatReason ??
-            `Incompatible with current Sowel version (${packageManager.getCurrentVersion()})`,
+        if (entry && !entry.compatible) {
+          return reply.code(400).send({
+            error:
+              entry.compatReason ??
+              `Incompatible with current Sowel version (${packageManager.getCurrentVersion()})`,
+          });
+        }
+
+        if (registryType === "recipe") {
+          await recipeLoader.install(repo, { confirmed });
+          logger.info({ repo, type: "recipe" }, "Recipe installed via API");
+          return { success: true };
+        } else {
+          const manifest = await pluginLoader.install(repo, { confirmed });
+          logger.info({ pluginId: manifest.id, repo }, "Plugin installed via API");
+          return { success: true, manifest };
+        }
+      } catch (err) {
+        // Spec 089 C1: community plugin requires explicit confirmation.
+        if (err instanceof Error && err.name === "CommunityPluginConfirmationRequiredError") {
+          const owner = (err as Error & { owner?: string }).owner;
+          logger.info({ repo, owner }, "Community plugin install requires confirmation");
+          return reply.code(409).send({
+            error: "CommunityPluginConfirmationRequired",
+            owner,
+            message: err.message,
+          });
+        }
+        // Spec 089 C1: tarball SHA256 mismatch.
+        if (err instanceof Error && err.name === "ChecksumMismatchError") {
+          logger.warn({ repo, err }, "Plugin tarball SHA256 mismatch — install refused");
+          return reply.code(400).send({
+            error: "ChecksumMismatch",
+            message: err.message,
+          });
+        }
+        logger.error({ err, repo }, "Failed to install package");
+        return reply.code(500).send({
+          error: err instanceof Error ? err.message : "Install failed",
         });
       }
-
-      if (registryType === "recipe") {
-        await recipeLoader.install(repo);
-        logger.info({ repo, type: "recipe" }, "Recipe installed via API");
-        return { success: true };
-      } else {
-        const manifest = await pluginLoader.install(repo);
-        logger.info({ pluginId: manifest.id, repo }, "Plugin installed via API");
-        return { success: true, manifest };
-      }
-    } catch (err) {
-      logger.error({ err, repo }, "Failed to install package");
-      return reply.code(500).send({
-        error: err instanceof Error ? err.message : "Install failed",
-      });
-    }
-  });
+    },
+  );
 
   // POST /api/v1/plugins/:id/uninstall
   app.post<{ Params: { id: string } }>("/api/v1/plugins/:id/uninstall", async (request, reply) => {

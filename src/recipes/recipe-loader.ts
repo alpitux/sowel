@@ -25,8 +25,8 @@ export class RecipeLoader {
   /**
    * Install a recipe from GitHub — download, register, and load immediately.
    */
-  async install(repo: string): Promise<void> {
-    const manifest = await this.packageManager.installFromGitHub(repo);
+  async install(repo: string, opts: { confirmed?: boolean } = {}): Promise<void> {
+    const manifest = await this.packageManager.installFromGitHub(repo, opts);
     if (manifest.type !== "recipe") {
       throw new Error(`Package "${manifest.id}" is not a recipe (type: ${manifest.type})`);
     }
