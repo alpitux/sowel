@@ -88,8 +88,10 @@ describe("PackageManager — spec 089 C1 attack regression guards", () => {
   let pkgSrcDir: string;
   let tarballPath: string;
   let realSha256: string;
+  let originalCwd: string;
 
   beforeEach(async () => {
+    originalCwd = process.cwd();
     tmpDir = mkdtempSync(resolve(tmpdir(), "sowel-pkg-test-"));
     pluginsDir = resolve(tmpDir, "plugins");
     mkdirSync(pluginsDir, { recursive: true });
@@ -121,6 +123,14 @@ describe("PackageManager — spec 089 C1 attack regression guards", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     db.close();
+    // Restore cwd BEFORE rmSync — otherwise the process is left with a
+    // deleted directory as cwd, and any later process.cwd() call (e.g.
+    // from the pino logger's worker thread) crashes with ENOENT/uv_cwd.
+    try {
+      process.chdir(originalCwd);
+    } catch {
+      /* best effort */
+    }
     rmSync(tmpDir, { recursive: true, force: true });
   });
 

@@ -3,7 +3,8 @@ import Database from "better-sqlite3";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { tmpdir } from "node:os";
-import { BackupManager } from "./backup-manager.js";
+import AdmZip from "adm-zip";
+import { BackupManager, BackupSizeCapExceededError } from "./backup-manager.js";
 import { createLogger } from "../core/logger.js";
 import type { InfluxClient } from "../core/influx-client.js";
 
@@ -166,7 +167,6 @@ describe("BackupManager", () => {
     it("can restore a backup that was just exported", async () => {
       // Seed some data
       db.prepare(`INSERT INTO settings (key, value) VALUES ('test', 'before-restore')`).run();
-
       // Export
       await manager.exportToFile("snapshot.zip");
 
@@ -186,6 +186,162 @@ describe("BackupManager", () => {
         value: string;
       };
       expect(restored.value).toBe("before-restore");
+    });
+  });
+
+  // ────────────────────────────────────────────────────────────────
+  // SECURITY: regression guards for spec 089 C2 — restore confinement.
+  // Each test crafts a malicious ZIP that, on `main` before the fix,
+  // would write outside dataDir or extract banned files. Post-fix, the
+  // entry is skipped/rejected and no file lands outside dataDir.
+  // ────────────────────────────────────────────────────────────────
+  describe("restoreFromBuffer — spec 089 C2 attack regression guards", () => {
+    /** Build a minimal valid backup ZIP and add an arbitrary entry. */
+    function buildMaliciousZip(maliciousEntry: {
+      name: string;
+      data: Buffer;
+      attr?: number;
+    }): Buffer {
+      const zip = new AdmZip();
+      // Minimal payload — tables empty, restore won't write to SQLite but
+      // we still need a parseable sowel-backup.json.
+      const payload = {
+        version: 2,
+        exportedAt: new Date().toISOString(),
+        tables: Object.fromEntries(
+          // empty list for every BACKUP_TABLES key — keeps validate() happy
+          [
+            "settings",
+            "zones",
+            "devices",
+            "device_data",
+            "device_orders",
+            "equipments",
+            "data_bindings",
+            "order_bindings",
+            "users",
+            "api_tokens",
+            "refresh_tokens",
+            "recipe_instances",
+            "recipe_state",
+            "modes",
+            "zone_mode_impacts",
+            "calendar_profiles",
+            "calendar_slots",
+            "button_action_bindings",
+            "mqtt_brokers",
+            "mqtt_publishers",
+            "mqtt_publisher_mappings",
+            "chart_configs",
+            "notification_publishers",
+            "notification_publisher_mappings",
+            "dashboard_widgets",
+            "plugins",
+          ].map((k) => [k, []]),
+        ),
+      };
+      zip.addFile("sowel-backup.json", Buffer.from(JSON.stringify(payload)));
+      zip.addFile(maliciousEntry.name, maliciousEntry.data);
+      if (maliciousEntry.attr !== undefined) {
+        const e = zip.getEntry(maliciousEntry.name);
+        if (e) (e as unknown as { attr: number }).attr = maliciousEntry.attr;
+      }
+      return zip.toBuffer();
+    }
+
+    // C2.1 — path traversal via "data/../../" prefix
+    it("refuses ZIP entry that escapes dataDir via ..", async () => {
+      // Targeting an absolute path outside dataDir. Pre-fix this writes
+      // there; post-fix the entry is skipped and no file lands there.
+      const externalTarget = resolve(tmpDir, "..", "sowel-pwned-xyz");
+      // Build relative path that resolves to externalTarget from dataDir.
+      // dataDir = tmpDir → "../sowel-pwned-xyz" escapes it.
+      const buf = buildMaliciousZip({
+        name: "data/../sowel-pwned-xyz",
+        data: Buffer.from("pwned"),
+      });
+
+      await manager.restoreFromBuffer(buf);
+
+      // SECURITY: regression guard for spec 089 C2 (path traversal)
+      expect(existsSync(externalTarget)).toBe(false);
+    });
+
+    // C2.2 — symlink entry refused
+    it("refuses ZIP entry that is a symlink", async () => {
+      // Build entry with Unix mode S_IFLNK (0o120000) in upper 16 bits.
+      const symlinkAttr = (0o120000 << 16) >>> 0;
+      const buf = buildMaliciousZip({
+        name: "data/evil-link",
+        data: Buffer.from("/etc/passwd"),
+        attr: symlinkAttr,
+      });
+
+      await manager.restoreFromBuffer(buf);
+
+      // SECURITY: regression guard for spec 089 C2 (symlink injection)
+      expect(existsSync(resolve(tmpDir, "evil-link"))).toBe(false);
+    });
+
+    // C2.3 — banned extension (.so) refused
+    it("refuses ZIP entry with a banned extension (.so)", async () => {
+      const buf = buildMaliciousZip({
+        name: "data/payload.so",
+        data: Buffer.from("\x7fELF malicious"),
+      });
+
+      await manager.restoreFromBuffer(buf);
+
+      // SECURITY: regression guard for spec 089 C2 (extension whitelist)
+      expect(existsSync(resolve(tmpDir, "payload.so"))).toBe(false);
+    });
+
+    // C2.4 — banned extension (.node) refused
+    it("refuses ZIP entry with a banned extension (.node)", async () => {
+      const buf = buildMaliciousZip({
+        name: "data/payload.node",
+        data: Buffer.from("native module"),
+      });
+
+      await manager.restoreFromBuffer(buf);
+
+      // SECURITY: regression guard for spec 089 C2 (extension whitelist)
+      expect(existsSync(resolve(tmpDir, "payload.node"))).toBe(false);
+    });
+
+    // C2.5 — cumulative size cap exceeded throws
+    it("throws BackupSizeCapExceededError when cumulative size exceeds the cap", async () => {
+      // Instantiate a manager with a tiny cap so we can exercise the path
+      // without actually writing 1 GB.
+      const cappedManager = new BackupManager({
+        db,
+        influxClient: stubInflux,
+        logger,
+        dataDir: tmpDir,
+        maxRestoreBytes: 1024, // 1 KB cap
+      });
+      const buf = buildMaliciousZip({
+        name: "data/big.txt",
+        data: Buffer.alloc(2048, 0x41), // 2 KB > cap
+      });
+
+      // SECURITY: regression guard for spec 089 C2 (zip bomb cap)
+      await expect(cappedManager.restoreFromBuffer(buf)).rejects.toBeInstanceOf(
+        BackupSizeCapExceededError,
+      );
+    });
+
+    // C2.6 — legitimate entry with allowed extension restores normally
+    it("restores a legitimate .json entry under dataDir (regression)", async () => {
+      const buf = buildMaliciousZip({
+        name: "data/legit.json",
+        data: Buffer.from('{"ok": true}'),
+      });
+
+      await manager.restoreFromBuffer(buf);
+
+      expect(existsSync(resolve(tmpDir, "legit.json"))).toBe(true);
+      expect(readFileSync(resolve(tmpDir, "legit.json"), "utf-8")).toBe('{"ok": true}');
     });
   });
 });
