@@ -96,9 +96,9 @@ export function ZoneAggregationPills({
       key: "motion",
       icon: <PersonStanding size={14} strokeWidth={1.5} />,
       label: `${label}${suffix}`,
-      // Mobile: icon-only when motion is active (the icon's color is the signal).
-      // Keep "Calme · 39 min" when calm (calm is informative on its own).
-      mobileLabel: data.motion ? "" : `${label}${suffix}`,
+      // Mobile: when motion is active, drop the "Mouvement" word but keep the duration.
+      // The icon color signals motion; the word is redundant. Calm stays verbatim.
+      mobileLabel: data.motion ? (duration ?? "") : `${label}${suffix}`,
       variant: data.motion ? "active" : "calm",
     });
   }
