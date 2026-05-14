@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Loader2,
   Home,
-  ChevronDown,
   ChevronRight,
   Plus,
   Menu,
@@ -175,13 +174,12 @@ export function HomePage() {
       {/* Sections: Equipments (left) + Behaviors (right) — 2-col on desktop, stacked on mobile (spec 100) */}
       <div className="max-w-[1200px] grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
         {/* Left column — Équipements */}
-        <CollapsibleSection
+        <Panel
           title={t("equipments.title")}
-          storageKey="section-equipments"
           headerRight={isAdmin ? (
             <button
               onClick={() => setShowEquipmentForm(true)}
-              className="p-0.5 rounded text-text-tertiary hover:text-primary hover:bg-primary/5 transition-colors duration-150"
+              className="p-0.5 rounded text-primary/70 hover:text-primary hover:bg-primary/10 transition-colors duration-150"
               title={t("equipments.createEquipment")}
             >
               <Plus size={16} strokeWidth={1.5} />
@@ -194,17 +192,17 @@ export function HomePage() {
             onExecuteOrder={executeOrder}
             onAdd={isAdmin ? () => setShowEquipmentForm(true) : undefined}
           />
-        </CollapsibleSection>
+        </Panel>
 
         {/* Right column — Comportements + future Activity feed (spec 101 slot) */}
         <div className="space-y-6">
           {zoneId && (
-            <CollapsibleSection title={t("behaviors.title")} storageKey="section-behaviors">
+            <Panel title={t("behaviors.title")}>
               <div className="space-y-3">
                 <ZoneModesSection zoneId={zoneId} />
                 <ZoneRecipesSection zoneId={zoneId} zoneName={currentZone.name} />
               </div>
-            </CollapsibleSection>
+            </Panel>
           )}
           {/* TODO spec 101: ActivityPanel slot */}
         </div>
@@ -284,49 +282,25 @@ function ZoneNotFound() {
   );
 }
 
-function CollapsibleSection({
+function Panel({
   title,
-  storageKey,
   headerRight,
   children,
 }: {
   title: string;
-  storageKey: string;
   headerRight?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(() => {
-    try { return localStorage.getItem(storageKey) === "collapsed"; } catch { return false; }
-  });
-
-  const toggle = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try { localStorage.setItem(storageKey, next ? "collapsed" : "expanded"); } catch { /* ignore */ }
-      return next;
-    });
-  }, [storageKey]);
-
   return (
     <section className="bg-surface border border-border-light rounded-lg overflow-hidden">
-      {/* Panel head — primary-tinted bar, matches design-system .panel__head (spec 100) */}
-      <div className="flex items-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-primary-light border-b border-primary-mid/20">
-        <button
-          onClick={toggle}
-          className="flex items-center gap-1.5 group cursor-pointer flex-1 min-w-0"
-        >
-          <ChevronDown
-            size={14}
-            strokeWidth={2}
-            className={`text-primary/70 transition-transform duration-200 ${collapsed ? "-rotate-90" : ""}`}
-          />
-          <h2 className="text-[12px] font-semibold text-primary uppercase tracking-widest">
-            {title}
-          </h2>
-        </button>
-        {headerRight && <div className="flex-shrink-0">{headerRight}</div>}
+      {/* Panel head — strict alignment with design-system .panel__head (spec 100) */}
+      <div className="flex items-center gap-[0.55rem] px-[1.1rem] py-[0.55rem] min-h-[44px] bg-primary-light border-b border-primary-mid">
+        <h2 className="text-[11.5px] font-bold text-primary uppercase tracking-[0.12em]">
+          {title}
+        </h2>
+        {headerRight && <div className="ml-auto flex-shrink-0">{headerRight}</div>}
       </div>
-      {!collapsed && children}
+      {children}
     </section>
   );
 }
