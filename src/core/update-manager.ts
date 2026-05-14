@@ -19,6 +19,67 @@ function shellQuote(s: string): string {
   return `'${s.replace(/'/g, "'\\''")}'`;
 }
 
+/**
+ * Build the multi-step shell script that the sowel-updater helper container
+ * runs to perform a self-update. Exported for unit testing.
+ *
+ * The script (with `set -e`):
+ *  1. Pull the target image by version tag, retag locally as :latest.
+ *  2. Normalize the compose file's `image:` line to :latest (idempotent).
+ *     If a rewrite happens, the original is saved to docker-compose.yml.bak
+ *     unless that file already exists (don't clobber an existing backup).
+ *  3. Force-recreate the sowel container — guarantees the new local
+ *     :latest image is used even when compose detects no diff.
+ *  4. Verify the running container's image ID matches the pulled target
+ *     image ID. On mismatch: log FAILED + exit 1 so the user actually
+ *     sees that the self-update did not take effect.
+ *  5. Prune old image tags.
+ *
+ * See spec 104 for rationale.
+ */
+export function buildHelperScript(opts: {
+  image: string;
+  latestTag: string;
+  serviceName: string;
+  targetVersion: string;
+  pruneCmd: string;
+}): string {
+  const { image, latestTag, serviceName, targetVersion, pruneCmd } = opts;
+  return [
+    "set -e",
+    "sleep 5",
+    `echo "[sowel-updater] pulling ${image}..."`,
+    `docker pull ${image}`,
+    `docker tag ${image} ${latestTag}`,
+    "COMPOSE_FILE=docker-compose.yml",
+    'if [ -f "$COMPOSE_FILE" ]; then',
+    // Only rewrite if the line exists and isn't already :latest.
+    `  if grep -qE '^[[:space:]]*image:[[:space:]]*ghcr\\.io/mchacher/sowel:[^[:space:]]+' "$COMPOSE_FILE"; then`,
+    `    if ! grep -qE '^[[:space:]]*image:[[:space:]]*ghcr\\.io/mchacher/sowel:latest[[:space:]]*$' "$COMPOSE_FILE"; then`,
+    `      [ -f "$COMPOSE_FILE.bak" ] || cp "$COMPOSE_FILE" "$COMPOSE_FILE.bak"`,
+    `      sed -i.tmp -E 's|^([[:space:]]*image:[[:space:]]*)ghcr\\.io/mchacher/sowel:[^[:space:]]+|\\1ghcr.io/mchacher/sowel:latest|' "$COMPOSE_FILE"`,
+    `      rm -f "$COMPOSE_FILE.tmp"`,
+    `      echo "[sowel-updater] compose image normalized to :latest (backup at $COMPOSE_FILE.bak)"`,
+    "    fi",
+    "  fi",
+    "fi",
+    `echo "[sowel-updater] recreating ${serviceName}..."`,
+    `docker compose up -d --force-recreate ${serviceName}`,
+    `echo "[sowel-updater] verifying running image..."`,
+    // Resolve target image ID then compare to the running container's image ID.
+    `TARGET_ID=$(docker image inspect ${image} --format '{{.Id}}')`,
+    `RUNNING_CONTAINER=$(docker compose ps -q ${serviceName})`,
+    `RUNNING_ID=$(docker inspect "$RUNNING_CONTAINER" --format '{{.Image}}')`,
+    `if [ "$TARGET_ID" != "$RUNNING_ID" ]; then`,
+    `  echo "[sowel-updater] FAILED — running image $RUNNING_ID does not match target $TARGET_ID"`,
+    "  exit 1",
+    "fi",
+    `echo "[sowel-updater] pruning old Sowel images..."`,
+    pruneCmd,
+    `echo "[sowel-updater] done — Sowel updated to v${targetVersion}"`,
+  ].join("\n");
+}
+
 export interface ComposeContext {
   workingDir: string; // host path of the compose project
   projectName: string;
@@ -266,10 +327,21 @@ export class UpdateManager {
       .join(" ");
     const pruneCmd = `docker images --format '{{.Repository}}:{{.Tag}}' | grep '^ghcr.io/mchacher/sowel:' | grep -v ${keepArgs} | xargs -r docker rmi -f || true`;
 
+    // Spec 104: defensive self-update. Three changes vs. the previous flow:
+    //   1. Normalize compose's `image:` line to :latest (idempotent, with .bak)
+    //   2. --force-recreate to guarantee the swap even if compose sees no diff
+    //   3. Verify the running container's image ID matches the pulled target,
+    //      fail loudly on mismatch instead of logging a false "done".
     const cmd = [
       "sh",
       "-c",
-      `sleep 5 && echo "[sowel-updater] pulling ${image}..." && docker pull ${image} && docker tag ${image} ${latestTag} && echo "[sowel-updater] recreating ${ctx.serviceName}..." && docker compose up -d ${ctx.serviceName} && echo "[sowel-updater] pruning old Sowel images..." && ${pruneCmd} && echo "[sowel-updater] done — Sowel updated to v${targetVersion}"`,
+      buildHelperScript({
+        image,
+        latestTag,
+        serviceName: ctx.serviceName,
+        targetVersion,
+        pruneCmd,
+      }),
     ];
 
     await this.runHelperContainer({

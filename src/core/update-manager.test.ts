@@ -1,5 +1,9 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { UpdateManager } from "./update-manager.js";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { resolve as resolvePath } from "node:path";
+import { tmpdir } from "node:os";
+import { execFileSync } from "node:child_process";
+import { UpdateManager, buildHelperScript } from "./update-manager.js";
 import { EventBus } from "./event-bus.js";
 import { createLogger } from "./logger.js";
 import type { BackupManager } from "../backup/backup-manager.js";
@@ -218,6 +222,147 @@ describe("UpdateManager", () => {
 
       // Updating flag stays true
       expect(manager.isUpdating()).toBe(true);
+    });
+  });
+});
+
+// ────────────────────────────────────────────────────────────────
+// Spec 104 — Self-update resilience: buildHelperScript()
+// ────────────────────────────────────────────────────────────────
+describe("buildHelperScript (spec 104)", () => {
+  const stdOpts = {
+    image: "ghcr.io/mchacher/sowel:1.7.0",
+    latestTag: "ghcr.io/mchacher/sowel:latest",
+    serviceName: "sowel",
+    targetVersion: "1.7.0",
+    pruneCmd: 'echo "prune"',
+  };
+
+  it("includes pull + retag + force-recreate + verify in order", () => {
+    const script = buildHelperScript(stdOpts);
+    const pullIdx = script.indexOf("docker pull ghcr.io/mchacher/sowel:1.7.0");
+    const tagIdx = script.indexOf(
+      "docker tag ghcr.io/mchacher/sowel:1.7.0 ghcr.io/mchacher/sowel:latest",
+    );
+    const recreateIdx = script.indexOf("docker compose up -d --force-recreate sowel");
+    const verifyIdx = script.indexOf("TARGET_ID=");
+    const failedIdx = script.indexOf("FAILED");
+    const doneIdx = script.indexOf("done — Sowel updated to v1.7.0");
+
+    expect(pullIdx).toBeGreaterThanOrEqual(0);
+    expect(pullIdx).toBeLessThan(tagIdx);
+    expect(tagIdx).toBeLessThan(recreateIdx);
+    expect(recreateIdx).toBeLessThan(verifyIdx);
+    expect(verifyIdx).toBeLessThan(doneIdx);
+    expect(failedIdx).toBeGreaterThanOrEqual(0);
+    expect(failedIdx).toBeLessThan(doneIdx);
+  });
+
+  it("uses set -e so any step failure aborts the script", () => {
+    expect(buildHelperScript(stdOpts)).toMatch(/^set -e/m);
+  });
+
+  it("only normalizes compose when an image: line exists", () => {
+    const script = buildHelperScript(stdOpts);
+    expect(script).toContain('if [ -f "$COMPOSE_FILE" ]');
+    expect(script).toContain("image:[[:space:]]*ghcr");
+  });
+
+  it("avoids overwriting an existing docker-compose.yml.bak", () => {
+    const script = buildHelperScript(stdOpts);
+    expect(script).toContain('[ -f "$COMPOSE_FILE.bak" ] || cp "$COMPOSE_FILE"');
+  });
+
+  // ── Integration: execute the sed against real compose files ──
+  // Confirms the regex actually does what we claim (anchored to the
+  // sowel service's image line, idempotent, handles whitespace).
+  describe("compose normalization sed (integration)", () => {
+    let tmpDir: string;
+
+    beforeEach(() => {
+      tmpDir = mkdtempSync(resolvePath(tmpdir(), "sowel-spec-104-"));
+    });
+
+    afterEach(() => {
+      rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    function runScript(composeContent: string): {
+      composeAfter: string;
+      bakExists: boolean;
+      bakContent: string | null;
+    } {
+      // Write the input compose and run just the normalization snippet of
+      // buildHelperScript() in the tmp directory. Sandbox the rest by
+      // overriding the docker/sleep commands with no-ops.
+      const composePath = resolvePath(tmpDir, "docker-compose.yml");
+      writeFileSync(composePath, composeContent);
+
+      const script = buildHelperScript(stdOpts);
+      // Extract only the normalization block (between the docker tag
+      // line and the recreate line) so we don't need a docker daemon.
+      const startMarker = "COMPOSE_FILE=docker-compose.yml";
+      const endMarker = `echo "[sowel-updater] recreating`;
+      const startIdx = script.indexOf(startMarker);
+      const endIdx = script.indexOf(endMarker);
+      expect(startIdx).toBeGreaterThanOrEqual(0);
+      expect(endIdx).toBeGreaterThan(startIdx);
+      const snippet = "set -e\n" + script.slice(startIdx, endIdx);
+
+      execFileSync("sh", ["-c", snippet], { cwd: tmpDir });
+      const bakPath = resolvePath(tmpDir, "docker-compose.yml.bak");
+      return {
+        composeAfter: readFileSync(composePath, "utf-8"),
+        bakExists: existsSync(bakPath),
+        bakContent: existsSync(bakPath) ? readFileSync(bakPath, "utf-8") : null,
+      };
+    }
+
+    it("rewrites a pinned image line to :latest and creates .bak", () => {
+      const before = `services:
+  sowel:
+    image: ghcr.io/mchacher/sowel:1.6.1
+    container_name: sowel
+  influxdb:
+    image: influxdb:2.7
+`;
+      const result = runScript(before);
+      expect(result.composeAfter).toContain("image: ghcr.io/mchacher/sowel:latest");
+      expect(result.composeAfter).not.toContain("1.6.1");
+      // Other services (influxdb) untouched
+      expect(result.composeAfter).toContain("image: influxdb:2.7");
+      expect(result.bakExists).toBe(true);
+      expect(result.bakContent).toContain("1.6.1");
+    });
+
+    it("is a no-op when compose already uses :latest", () => {
+      const before = `services:
+  sowel:
+    image: ghcr.io/mchacher/sowel:latest
+`;
+      const result = runScript(before);
+      expect(result.composeAfter).toBe(before);
+      expect(result.bakExists).toBe(false);
+    });
+
+    it("does not overwrite an existing .bak", () => {
+      writeFileSync(resolvePath(tmpDir, "docker-compose.yml.bak"), "PRE-EXISTING BAK");
+      const before = `services:
+  sowel:
+    image: ghcr.io/mchacher/sowel:1.5.0
+`;
+      const result = runScript(before);
+      expect(result.composeAfter).toContain(":latest");
+      expect(result.bakContent).toBe("PRE-EXISTING BAK");
+    });
+
+    it("handles indentation variations (2 vs 4 spaces)", () => {
+      const before = `services:
+    sowel:
+        image: ghcr.io/mchacher/sowel:1.6.0
+`;
+      const result = runScript(before);
+      expect(result.composeAfter).toContain("image: ghcr.io/mchacher/sowel:latest");
     });
   });
 });
