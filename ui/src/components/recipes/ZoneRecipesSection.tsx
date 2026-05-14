@@ -638,12 +638,13 @@ function RecipeInstanceRow({
 
   return (
     <div className={instance.enabled ? "" : "opacity-50"}>
-      <div className="px-[1.1rem] py-[0.55rem] min-h-[52px] flex flex-col justify-center border-t border-border-light">
-        {/* Row 1: icon + name + toggle */}
-        <div className="flex items-center gap-[0.85rem]">
-          <div className={`w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 ${instance.enabled ? "bg-accent/10" : "bg-background"}`}>
-            <ChefHat size={15} strokeWidth={1.5} className={instance.enabled ? "text-accent" : "text-text-tertiary"} />
-          </div>
+      <div className="grid grid-cols-[32px_1fr_auto] gap-x-[0.85rem] gap-y-0 items-center px-[1.1rem] py-[0.35rem] min-h-[52px] border-t border-border-light">
+        {/* Icon — spans both rows (mock .recipe__icon { grid-row: 1 / span 2 }) */}
+        <div className={`row-span-2 self-center w-8 h-8 rounded-md flex items-center justify-center ${instance.enabled ? "bg-accent/10" : "bg-background"}`}>
+          <ChefHat size={15} strokeWidth={1.5} className={instance.enabled ? "text-accent" : "text-text-tertiary"} />
+        </div>
+        {/* Row 1 col 2: name + inline pills */}
+        <div className="col-start-2 row-start-1 flex items-center gap-2 min-w-0">
           <button
             onClick={handleStartEdit}
             className="flex-1 min-w-0 text-left hover:opacity-70 transition-opacity duration-150"
@@ -676,44 +677,45 @@ function RecipeInstanceRow({
               sendAction={sendAction}
             />
           ))}
-          <button
-            onClick={handleToggleEnabled}
-            disabled={toggling}
-            className="relative w-8 h-[18px] rounded-full transition-colors duration-200 disabled:opacity-50 flex-shrink-0 cursor-pointer disabled:cursor-default"
-            style={{ backgroundColor: instance.enabled ? "var(--color-primary)" : "var(--color-border)" }}
-            title={instance.enabled ? t("recipes.disable") : t("recipes.enable")}
-            role="switch"
-            aria-checked={instance.enabled}
-          >
-            <span
-              className="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full shadow-sm transition-transform duration-200"
-              style={{ transform: instance.enabled ? "translateX(14px)" : "translateX(0)" }}
-            />
-          </button>
         </div>
-        {/* Row 2: action buttons — desktop only (aligned under name, past 32px icon + 0.85rem gap) */}
-        <div className="hidden sm:flex items-center gap-1 mt-1.5 ml-[2.85rem]">
+        {/* Row 1 col 3: toggle */}
+        <button
+          onClick={handleToggleEnabled}
+          disabled={toggling}
+          className="col-start-3 row-start-1 relative w-8 h-[18px] rounded-full transition-colors duration-200 disabled:opacity-50 cursor-pointer disabled:cursor-default justify-self-end"
+          style={{ backgroundColor: instance.enabled ? "var(--color-primary)" : "var(--color-border)" }}
+          title={instance.enabled ? t("recipes.disable") : t("recipes.enable")}
+          role="switch"
+          aria-checked={instance.enabled}
+        >
+          <span
+            className="absolute top-[2px] left-[2px] w-[14px] h-[14px] bg-white rounded-full shadow-sm transition-transform duration-200"
+            style={{ transform: instance.enabled ? "translateX(14px)" : "translateX(0)" }}
+          />
+        </button>
+        {/* Row 2: compact action buttons (col 2-3 span, mock .recipe__action: 22x20, svg 12px) */}
+        <div className="col-start-2 col-span-2 row-start-2 hidden sm:flex items-center gap-[2px]">
           <button
             onClick={handleShowLog}
-            className="p-1.5 rounded-[4px] text-text-tertiary hover:text-text hover:bg-border-light/60 transition-colors duration-150"
+            className="w-[22px] h-[20px] inline-flex items-center justify-center rounded-[4px] text-text-tertiary hover:text-text hover:bg-border-light/60 transition-colors duration-150"
             title={t("recipes.viewLog")}
           >
-            <ScrollText size={14} strokeWidth={1.5} />
+            <ScrollText size={12} strokeWidth={1.5} />
           </button>
           <button
             onClick={() => setShowDuplicate(true)}
-            className="p-1.5 rounded-[4px] text-text-tertiary hover:text-primary hover:bg-primary/5 transition-colors duration-150"
+            className="w-[22px] h-[20px] inline-flex items-center justify-center rounded-[4px] text-text-tertiary hover:text-primary hover:bg-primary/5 transition-colors duration-150"
             title={t("recipes.duplicate")}
           >
-            <Copy size={14} strokeWidth={1.5} />
+            <Copy size={12} strokeWidth={1.5} />
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="p-1.5 rounded-[4px] text-text-tertiary hover:text-error hover:bg-error/5 transition-colors duration-150 disabled:opacity-50"
+            className="w-[22px] h-[20px] inline-flex items-center justify-center rounded-[4px] text-text-tertiary hover:text-error hover:bg-error/5 transition-colors duration-150 disabled:opacity-50"
             title={t("common.delete")}
           >
-            <Trash2 size={14} strokeWidth={1.5} />
+            <Trash2 size={12} strokeWidth={1.5} />
           </button>
         </div>
       </div>
