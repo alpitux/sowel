@@ -351,5 +351,3 @@ hide:
 </div>
 </div>
 </div>
-
-<p class="sowel-foot">Sowel est distribué sous licence <a href="https://github.com/mchacher/sowel/blob/main/LICENSE">AGPL-3.0</a> · <a href="https://github.com/mchacher/sowel">GitHub</a></p>
