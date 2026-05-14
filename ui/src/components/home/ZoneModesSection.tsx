@@ -74,7 +74,7 @@ export function ZoneModesSection({ zoneId }: ZoneModesSectionProps) {
         <span className="text-success">
           <ToggleRight size={14} strokeWidth={1.5} />
         </span>
-        <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+        <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-widest">
           {t("modes.title")}
         </span>
         <span className="text-[11px] text-text-tertiary ml-auto tabular-nums">
@@ -297,7 +297,7 @@ function ImpactEditor({
         {/* Actions section */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+            <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-widest">
               {t("modes.impacts")}
             </span>
             {!showAddAction && (

@@ -109,7 +109,7 @@ export function ZoneRecipesSection({ zoneId, zoneName }: ZoneRecipesSectionProps
         <span className="text-accent">
           <ChefHat size={14} strokeWidth={1.5} />
         </span>
-        <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+        <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-widest">
           {t("recipes.title")}
         </span>
         <span className="text-[11px] text-text-tertiary ml-auto tabular-nums">
@@ -815,7 +815,7 @@ function RecipeInstanceRow({
                       return (
                         <div key={groupKey} className="mb-2.5 pl-2 border-l-2 border-accent/40">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] uppercase tracking-wider text-accent">{recipeGroupLabel(recipe, groupKey, lang)}</span>
+                            <span className="text-[11px] uppercase tracking-widest text-accent">{recipeGroupLabel(recipe, groupKey, lang)}</span>
                             {!isGroupRequired(groupKey, recipe.slots) && <button
                               type="button"
                               onClick={() => {
@@ -924,7 +924,7 @@ function RecipeInstanceRow({
                           </label>
                         ) : (
                         <>
-                        <label className={`block text-[11px] uppercase tracking-wider mb-1 ${isSlotChanged(slot.id) ? "text-success" : "text-text-tertiary"}`}>
+                        <label className={`block text-[11px] uppercase tracking-widest mb-1 ${isSlotChanged(slot.id) ? "text-success" : "text-text-tertiary"}`}>
                           {recipeSlotName(recipe, slot, lang)}{slot.required && <span className="text-error ml-0.5">*</span>}
                         </label>
                         {slot.type === "equipment" && slot.list ? (
@@ -1252,7 +1252,7 @@ function DuplicateRecipeModal({
 
           {/* Target zone picker */}
           <div>
-            <label className="block text-[11px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[11px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("recipes.targetZone")}
             </label>
             <select
@@ -1272,7 +1272,7 @@ function DuplicateRecipeModal({
             const compatible = getCompatibleEquipments(slot.id);
             return (
               <div key={slot.id}>
-                <label className="block text-[11px] text-text-tertiary uppercase tracking-wider mb-1">
+                <label className="block text-[11px] text-text-tertiary uppercase tracking-widest mb-1">
                   {recipeSlotName(recipe, slot, lang)}
                 </label>
                 {compatible.length === 0 ? (
@@ -1821,7 +1821,7 @@ function AddRecipeForm({
                     return (
                       <div key={groupKey} className="mb-2.5 pl-2 border-l-2 border-accent/40">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[11px] uppercase tracking-wider text-accent">{recipeGroupLabel(selectedRecipe, groupKey, lang)}</span>
+                          <span className="text-[11px] uppercase tracking-widest text-accent">{recipeGroupLabel(selectedRecipe, groupKey, lang)}</span>
                           {!isGroupRequired(groupKey, selectedRecipe.slots) && <button
                             type="button"
                             onClick={() => {
@@ -1936,7 +1936,7 @@ function AddRecipeForm({
                         </label>
                       ) : (
                       <>
-                      <label className="block text-[11px] text-text-tertiary uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] text-text-tertiary uppercase tracking-widest mb-1">
                         {recipeSlotName(selectedRecipe, slot, lang)}{slot.required && <span className="text-error ml-0.5">*</span>}
                       </label>
                       {slot.type === "equipment" && slot.list ? (

@@ -29,16 +29,16 @@ export function DeviceDataTable({ data }: DeviceDataTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-wider">
+            <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-widest">
               {t("devices.col.key")}
             </th>
-            <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-wider">
+            <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-widest">
               {t("devices.col.category")}
             </th>
-            <th className="text-right py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-wider">
+            <th className="text-right py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-widest">
               {t("devices.col.value")}
             </th>
-            <th className="text-right py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-wider">
+            <th className="text-right py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-widest">
               {t("devices.col.updated")}
             </th>
           </tr>

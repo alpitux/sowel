@@ -82,7 +82,7 @@ export function CalendarPage() {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-[24px] font-semibold text-text leading-[32px]">
+        <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
           {t("calendar.title")}
         </h1>
         <p className="text-[13px] text-text-secondary mt-0.5">
@@ -328,7 +328,7 @@ function SlotForm({
     <div className="bg-border-light/20 border border-border-light rounded-[6px] p-3 space-y-3">
       {/* Days */}
       <div>
-        <label className="block text-[11px] text-text-tertiary uppercase tracking-wider mb-1.5">
+        <label className="block text-[11px] text-text-tertiary uppercase tracking-widest mb-1.5">
           {t("calendar.days")}
         </label>
         <div className="flex gap-1">
@@ -350,7 +350,7 @@ function SlotForm({
 
       {/* Time */}
       <div>
-        <label className="block text-[11px] text-text-tertiary uppercase tracking-wider mb-1.5">
+        <label className="block text-[11px] text-text-tertiary uppercase tracking-widest mb-1.5">
           {t("calendar.time")}
         </label>
         <input
@@ -363,7 +363,7 @@ function SlotForm({
 
       {/* Modes — tri-state: click cycles null → ON → OFF → null */}
       <div>
-        <label className="block text-[11px] text-text-tertiary uppercase tracking-wider mb-1.5">
+        <label className="block text-[11px] text-text-tertiary uppercase tracking-widest mb-1.5">
           {t("modes.title")}
         </label>
         <div className="flex flex-wrap gap-1.5">

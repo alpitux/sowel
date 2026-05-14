@@ -65,7 +65,7 @@ export function SettingsPage() {
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2 sm:gap-2.5">
           <Settings size={22} strokeWidth={1.5} className="text-text-secondary" />
-          <h1 className="text-[20px] sm:text-[22px] font-semibold text-text leading-[28px]">
+          <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
             {t("settings.title")}
           </h1>
         </div>
@@ -247,7 +247,7 @@ function HomeSettingsSection() {
       <p className="text-[12px] text-text-tertiary mb-4">{t("settings.homeDescription")}</p>
       <div className="space-y-3">
         <div>
-          <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+          <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
             {t("settings.homeName")}
           </label>
           <input
@@ -260,7 +260,7 @@ function HomeSettingsSection() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.latitude")}
             </label>
             <input
@@ -273,7 +273,7 @@ function HomeSettingsSection() {
             />
           </div>
           <div>
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.longitude")}
             </label>
             <input
@@ -288,7 +288,7 @@ function HomeSettingsSection() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.sunriseOffset")}
             </label>
             <input
@@ -300,7 +300,7 @@ function HomeSettingsSection() {
             <p className="text-[11px] text-text-tertiary mt-1">{t("settings.sunriseOffsetHelp")}</p>
           </div>
           <div>
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.sunsetOffset")}
             </label>
             <input
@@ -314,7 +314,7 @@ function HomeSettingsSection() {
         </div>
         {tzLoaded && (
           <div className="pt-3 border-t border-border-light">
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.timezone")}
             </label>
             <div className="flex items-center gap-2">
@@ -375,20 +375,20 @@ function ProfileSection({
       <div className="space-y-3">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("auth.username")}
             </label>
             <p className="text-[14px] text-text-secondary">{user?.username}</p>
           </div>
           <div>
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.role")}
             </label>
             <p className="text-[14px] text-text-secondary capitalize">{user?.role}</p>
           </div>
         </div>
         <div>
-          <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+          <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
             {t("auth.displayName")}
           </label>
           <input
@@ -441,7 +441,7 @@ function PreferencesSection({
       <h2 className="text-[14px] font-semibold text-text mb-4">{t("settings.preferences")}</h2>
       <div className="space-y-4">
         <div>
-          <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1.5">
+          <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1.5">
             {t("settings.language")}
           </label>
           <div className="flex gap-2">
@@ -461,7 +461,7 @@ function PreferencesSection({
           </div>
         </div>
         <div>
-          <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1.5">
+          <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1.5">
             {t("settings.theme")}
           </label>
           <div className="flex gap-2">
@@ -556,7 +556,7 @@ function ChangePasswordSection() {
       {open && (
         <div className="mt-4 space-y-3">
           <div className="relative">
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.currentPassword")}
             </label>
             <input
@@ -574,7 +574,7 @@ function ChangePasswordSection() {
             </button>
           </div>
           <div className="relative">
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.newPassword")}
             </label>
             <input
@@ -592,7 +592,7 @@ function ChangePasswordSection() {
             </button>
           </div>
           <div>
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
               {t("settings.confirmNewPassword")}
             </label>
             <input
@@ -1013,7 +1013,7 @@ function UserManagementSection({ currentUserId }: { currentUserId: string }) {
         <div className="mb-4 p-4 bg-background rounded-[8px] border border-border space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+              <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
                 {t("auth.username")}
               </label>
               <input
@@ -1024,7 +1024,7 @@ function UserManagementSection({ currentUserId }: { currentUserId: string }) {
               />
             </div>
             <div>
-              <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+              <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
                 {t("auth.displayName")}
               </label>
               <input
@@ -1035,7 +1035,7 @@ function UserManagementSection({ currentUserId }: { currentUserId: string }) {
               />
             </div>
             <div>
-              <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+              <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
                 {t("auth.password")}
               </label>
               <input
@@ -1046,7 +1046,7 @@ function UserManagementSection({ currentUserId }: { currentUserId: string }) {
               />
             </div>
             <div>
-              <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+              <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
                 {t("settings.role")}
               </label>
               <select

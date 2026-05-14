@@ -69,7 +69,7 @@ export function ZoneForm({ initial, parentZones, defaultParentId, onSubmit, onCl
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-widest mb-1.5">
               {t("zones.form.name")}
             </label>
             <input
@@ -85,7 +85,7 @@ export function ZoneForm({ initial, parentZones, defaultParentId, onSubmit, onCl
 
           {/* Parent zone */}
           <div>
-            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-widest mb-1.5">
               {t("zones.form.parent")}
             </label>
             <select
@@ -104,7 +104,7 @@ export function ZoneForm({ initial, parentZones, defaultParentId, onSubmit, onCl
 
           {/* Description */}
           <div>
-            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-widest mb-1.5">
               {t("zones.form.description")}
               <span className="text-text-tertiary font-normal normal-case tracking-normal ml-1">({t("common.optional")})</span>
             </label>

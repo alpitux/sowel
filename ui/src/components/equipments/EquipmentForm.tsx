@@ -140,7 +140,7 @@ export function EquipmentForm({ title, initial, defaultZoneId, zones, onSubmit, 
               <>
                 {/* Type */}
                 <div>
-                  <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">
+                  <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-widest mb-1.5">
                     {t("equipments.form.type")}
                   </label>
                   <select
@@ -160,7 +160,7 @@ export function EquipmentForm({ title, initial, defaultZoneId, zones, onSubmit, 
 
                 {/* Name */}
                 <div>
-                  <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">
+                  <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-widest mb-1.5">
                     {t("equipments.form.name")}
                   </label>
                   <input
@@ -177,7 +177,7 @@ export function EquipmentForm({ title, initial, defaultZoneId, zones, onSubmit, 
 
                 {/* Zone */}
                 <div>
-                  <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">
+                  <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-widest mb-1.5">
                     {t("equipments.form.zone")}
                   </label>
                   <select

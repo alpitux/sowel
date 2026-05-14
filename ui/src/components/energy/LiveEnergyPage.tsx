@@ -307,7 +307,7 @@ function LiveDiagram({
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[36%] h-[36%] flex flex-col items-center justify-center gap-1 px-3 py-2 bg-surface border border-border rounded-[14px] z-10"
           style={{ color: HP_COLOR }}
         >
-          <div className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-text-tertiary">
+          <div className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
             {t("energy.live.label.consumption")}
           </div>
           <svg className="w-11 h-11 sm:w-14 sm:h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -343,7 +343,7 @@ function LiveDiagram({
           }`}
           style={{ color: gridColor }}
         >
-          <div className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-text-tertiary">
+          <div className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
             {t("energy.live.label.grid")}
           </div>
           <svg className="w-9 h-9 sm:w-10 sm:h-10" viewBox="-60 -60 605 605" fill="currentColor">
@@ -374,7 +374,7 @@ function LiveDiagram({
           }`}
           style={{ color: AUTO_COLOR }}
         >
-          <div className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-text-tertiary">
+          <div className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
             {t("energy.live.label.production")}
           </div>
           <svg className="w-9 h-9 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
