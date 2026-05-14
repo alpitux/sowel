@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Thermometer,
@@ -16,6 +16,8 @@ import { WaterValveIcon } from "../icons/WaterValveIcon";
 import { ZoneSparkline } from "../history/ZoneSparkline";
 import type { ZoneAggregatedData } from "../../types";
 
+type PillVariant = "default" | "active" | "calm" | "alert";
+
 interface ZoneAggregationPillsProps {
   data: ZoneAggregatedData;
   zoneId?: string;
@@ -26,170 +28,248 @@ interface StatusItem {
   key: string;
   icon: React.ReactNode;
   label: string;
-  color: string;
-  alert?: boolean;
-  /** If set, show a sparkline for this category. */
+  variant: PillVariant;
+  /** Override for the icon color in the default variant. Ignored for non-default variants. */
+  iconTint?: string;
+  /** Override for the value/label color in the default variant. Ignored for non-default variants. */
+  valueTint?: string;
+  /** If set, show a sparkline for this category (sensor pills only). */
   sparklineCategory?: string;
 }
 
-export function ZoneAggregationPills({ data, zoneId, historyEnabled }: ZoneAggregationPillsProps) {
+export function ZoneAggregationPills({
+  data,
+  zoneId,
+  historyEnabled,
+}: ZoneAggregationPillsProps) {
   const { t } = useTranslation();
-  const items: StatusItem[] = [];
   const duration = useRelativeTime(data.motionSince, t);
 
-  // Temperature
+  // ── Cluster 1: Sensors (passive measurement) ────────────────
+  const sensorPills: StatusItem[] = [];
+
   if (data.temperature !== null) {
-    items.push({
+    sensorPills.push({
       key: "temp",
       icon: <Thermometer size={14} strokeWidth={1.5} />,
       label: `${data.temperature}°C`,
-      color: "text-primary",
+      variant: "default",
+      iconTint: "text-primary",
+      valueTint: "text-text",
       sparklineCategory: "temperature",
     });
   }
 
-  // Humidity
   if (data.humidity !== null) {
-    items.push({
+    sensorPills.push({
       key: "hum",
       icon: <Droplets size={14} strokeWidth={1.5} />,
       label: `${data.humidity}%`,
-      color: "text-primary",
+      variant: "default",
+      iconTint: "text-primary",
+      valueTint: "text-text",
       sparklineCategory: "humidity",
     });
   }
 
-  // Luminosity
   if (data.luminosity !== null) {
-    items.push({
+    sensorPills.push({
       key: "lux",
       icon: <Sun size={14} strokeWidth={1.5} />,
       label: `${data.luminosity} lx`,
-      color: "text-primary",
+      variant: "default",
+      iconTint: "text-primary",
+      valueTint: "text-text",
       sparklineCategory: "luminosity",
     });
   }
 
-  // Motion
+  // ── Cluster 2: Counters / states (active devices) ───────────
+  const counterPills: StatusItem[] = [];
+
   if (data.motionSensors > 0) {
     const label = data.motion ? t("aggregation.motion") : t("aggregation.calm");
     const suffix = duration ? ` · ${duration}` : "";
-    items.push({
+    counterPills.push({
       key: "motion",
       icon: <PersonStanding size={14} strokeWidth={1.5} />,
       label: `${label}${suffix}`,
-      color: data.motion ? "text-active-text" : "text-text-tertiary",
+      variant: data.motion ? "active" : "calm",
     });
   }
 
-  // Lights
   if (data.lightsTotal > 0) {
     const isOn = data.lightsOn > 0;
-    items.push({
+    counterPills.push({
       key: "lights",
       icon: <Lightbulb size={14} strokeWidth={1.5} />,
       label: `${data.lightsOn}/${data.lightsTotal}`,
-      color: isOn ? "text-active-text" : "text-text-tertiary",
+      variant: isOn ? "active" : "default",
+      iconTint: "text-text-tertiary",
+      valueTint: "text-text-tertiary",
     });
   }
 
-  // Shutters
   if (data.shuttersTotal > 0) {
     const someOpen = data.shuttersOpen > 0;
     const pos = data.averageShutterPosition;
-    const positionSuffix = pos !== null
-      ? ` · ${pos === 0 ? "Fermé" : pos === 100 ? "Ouvert" : `${pos}%`}`
-      : "";
-    items.push({
+    const positionSuffix =
+      pos !== null
+        ? ` · ${pos === 0 ? "Fermé" : pos === 100 ? "Ouvert" : `${pos}%`}`
+        : "";
+    counterPills.push({
       key: "shutters",
       icon: <ShutterIcon size={14} strokeWidth={1.5} position={pos} />,
       label: `${data.shuttersOpen}/${data.shuttersTotal}${positionSuffix}`,
-      color: someOpen ? "text-primary" : "text-text-tertiary",
+      variant: "default",
+      iconTint: "text-text-secondary",
+      valueTint: someOpen ? "text-text" : "text-text-tertiary",
     });
   }
 
-  // Water valves
   if (data.waterValvesTotal > 0) {
     const someOpen = data.waterValvesOpen > 0;
     const flowSuffix =
       someOpen && data.waterFlowTotal !== null && data.waterFlowTotal > 0
         ? ` · ${data.waterFlowTotal} m³/h`
         : "";
-    items.push({
+    counterPills.push({
       key: "water-valves",
       icon: <WaterValveIcon size={14} strokeWidth={1.5} />,
       label: `${data.waterValvesOpen}/${data.waterValvesTotal}${flowSuffix}`,
-      color: someOpen ? "text-active-text" : "text-text-tertiary",
+      variant: someOpen ? "active" : "default",
+      iconTint: "text-text-tertiary",
+      valueTint: "text-text-tertiary",
     });
   }
 
-  // Open doors
+  // ── Cluster 3: Alerts (anomalies) ───────────────────────────
+  const alertPills: StatusItem[] = [];
+
   if (data.openDoors > 0) {
-    items.push({
+    alertPills.push({
       key: "doors",
       icon: <DoorOpen size={14} strokeWidth={1.5} />,
       label: t("aggregation.open", { count: data.openDoors }),
-      color: "text-active-text",
+      variant: "default",
+      iconTint: "text-active-text",
+      valueTint: "text-active-text",
     });
   }
 
-  // Open windows
   if (data.openWindows > 0) {
-    items.push({
+    alertPills.push({
       key: "windows",
       icon: <SquareStack size={14} strokeWidth={1.5} />,
       label: t("aggregation.open", { count: data.openWindows }),
-      color: "text-active-text",
+      variant: "default",
+      iconTint: "text-active-text",
+      valueTint: "text-active-text",
     });
   }
 
-  // Water leak alert
   if (data.waterLeak) {
-    items.push({
+    alertPills.push({
       key: "water",
       icon: <Droplet size={14} strokeWidth={1.5} />,
       label: t("aggregation.waterLeak"),
-      color: "text-error",
-      alert: true,
+      variant: "alert",
     });
   }
 
-  // Smoke alert
   if (data.smoke) {
-    items.push({
+    alertPills.push({
       key: "smoke",
       icon: <Flame size={14} strokeWidth={1.5} />,
       label: t("aggregation.smoke"),
-      color: "text-error",
-      alert: true,
+      variant: "alert",
     });
   }
 
-  if (items.length === 0) return null;
+  const clusters = [sensorPills, counterPills, alertPills].filter(
+    (c) => c.length > 0,
+  );
+
+  if (clusters.length === 0) return null;
 
   return (
     <div className="flex items-center rounded-[8px] border border-border bg-surface px-1 py-1 overflow-x-auto">
-      {items.map((item, index) => (
-        <div key={item.key} className="flex items-center">
-          {index > 0 && (
-            <div className="w-px h-4 bg-border mx-1 flex-shrink-0" />
+      {clusters.map((cluster, ci) => (
+        <Fragment key={ci}>
+          {ci > 0 && (
+            <div className="w-px h-5 bg-border mx-2 flex-shrink-0" />
           )}
-          <div
-            className={`
-              flex items-center gap-1.5 px-2 py-0.5 rounded-[5px]
-              text-[13px] font-medium tabular-nums whitespace-nowrap
-              ${item.color}
-              ${item.alert ? "bg-error/8" : ""}
-            `}
-          >
-            {item.icon}
-            <span>{item.label}</span>
-            {historyEnabled && zoneId && item.sparklineCategory && (
-              <ZoneSparkline zoneId={zoneId} category={item.sparklineCategory} />
-            )}
-          </div>
-        </div>
+          {cluster.map((item, ii) => (
+            <Fragment key={item.key}>
+              {ii > 0 && (
+                <div className="w-px h-4 bg-border-light mx-1 flex-shrink-0" />
+              )}
+              <StripPill
+                item={item}
+                zoneId={zoneId}
+                historyEnabled={historyEnabled}
+              />
+            </Fragment>
+          ))}
+        </Fragment>
       ))}
+    </div>
+  );
+}
+
+// ============================================================
+// StripPill — variant → class mapping. Kept in-file for locality.
+// ============================================================
+
+interface StripPillProps {
+  item: StatusItem;
+  zoneId?: string;
+  historyEnabled?: boolean;
+}
+
+function variantClasses(variant: PillVariant): {
+  pill: string;
+  icon: string;
+  value: string;
+} {
+  switch (variant) {
+    case "alert":
+      return {
+        pill: "bg-error/10 font-semibold",
+        icon: "text-error",
+        value: "text-error",
+      };
+    case "active":
+      return {
+        pill: "",
+        icon: "text-active-text",
+        value: "text-active-text",
+      };
+    case "calm":
+      return {
+        pill: "",
+        icon: "text-success",
+        value: "text-success font-semibold",
+      };
+    default:
+      return { pill: "", icon: "", value: "" };
+  }
+}
+
+function StripPill({ item, zoneId, historyEnabled }: StripPillProps) {
+  const v = variantClasses(item.variant);
+  const iconClass = v.icon || item.iconTint || "text-text-tertiary";
+  const valueClass = v.value || item.valueTint || "text-text";
+
+  return (
+    <div
+      className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[13px] font-medium tabular-nums whitespace-nowrap ${v.pill}`}
+    >
+      <span className={`flex-shrink-0 ${iconClass}`}>{item.icon}</span>
+      <span className={valueClass}>{item.label}</span>
+      {historyEnabled && zoneId && item.sparklineCategory && (
+        <ZoneSparkline zoneId={zoneId} category={item.sparklineCategory} />
+      )}
     </div>
   );
 }
@@ -198,7 +278,10 @@ export function ZoneAggregationPills({ data, zoneId, historyEnabled }: ZoneAggre
 // Relative time hook — refreshes every 30s, zero CPU when no timestamp
 // ============================================================
 
-function useRelativeTime(since: string | null, t: (key: string) => string): string | null {
+function useRelativeTime(
+  since: string | null,
+  t: (key: string) => string,
+): string | null {
   const [, tick] = useState(0);
 
   useEffect(() => {
@@ -211,7 +294,10 @@ function useRelativeTime(since: string | null, t: (key: string) => string): stri
   return formatDuration(since, t);
 }
 
-function formatDuration(since: string, t: (key: string) => string): string | null {
+function formatDuration(
+  since: string,
+  t: (key: string) => string,
+): string | null {
   const ms = Date.now() - new Date(since).getTime();
   const seconds = Math.floor(ms / 1000);
   if (seconds < 60) return null;
@@ -220,7 +306,9 @@ function formatDuration(since: string, t: (key: string) => string): string | nul
   const hours = Math.floor(minutes / 60);
   const remainMinutes = minutes % 60;
   if (hours < 24) {
-    return remainMinutes > 0 ? `${hours}${t("time.hour")}${String(remainMinutes).padStart(2, "0")}` : `${hours}${t("time.hour")}`;
+    return remainMinutes > 0
+      ? `${hours}${t("time.hour")}${String(remainMinutes).padStart(2, "0")}`
+      : `${hours}${t("time.hour")}`;
   }
   const days = Math.floor(hours / 24);
   return `${days}${t("time.day")}`;
