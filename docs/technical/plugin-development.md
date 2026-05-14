@@ -953,24 +953,68 @@ To make your plugin appear in the Sowel plugin store, submit a PR to the Sowel r
   "icon": "Cpu",
   "author": "Your Name",
   "repo": "yourname/sowel-plugin-my-device",
+  "owner": "yourname",
   "version": "0.1.0",
+  "sha256": "a3f9...e21c",
   "tags": ["sensor", "api"]
 }
 ```
 
 #### Registry Entry Schema
 
-| Field         | Type     | Required | Description                                                                        |
-| ------------- | -------- | -------- | ---------------------------------------------------------------------------------- |
-| `id`          | string   | Yes      | Must match the plugin's `manifest.json` id                                         |
-| `type`        | string   | Yes      | `integration` or `recipe` — routes to PluginLoader or RecipeLoader at install time |
-| `name`        | string   | Yes      | Display name in the store                                                          |
-| `description` | string   | Yes      | Short description                                                                  |
-| `icon`        | string   | Yes      | Lucide icon name                                                                   |
-| `author`      | string   | Yes      | Author name                                                                        |
-| `repo`        | string   | Yes      | GitHub `owner/repo` path (used to fetch releases)                                  |
-| `version`     | string   | No       | Latest available version (shown in the store "Available" tab)                      |
-| `tags`        | string[] | Yes      | Searchable tags (e.g. `["camera", "security"]`)                                    |
+| Field         | Type     | Required | Description                                                                                                                             |
+| ------------- | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`          | string   | Yes      | Must match the plugin's `manifest.json` id                                                                                              |
+| `type`        | string   | Yes      | `integration` or `recipe` — routes to PluginLoader or RecipeLoader at install time                                                      |
+| `name`        | string   | Yes      | Display name in the store                                                                                                               |
+| `description` | string   | Yes      | Short description                                                                                                                       |
+| `icon`        | string   | Yes      | Lucide icon name                                                                                                                        |
+| `author`      | string   | Yes      | Author name (free-form display)                                                                                                         |
+| `repo`        | string   | Yes      | GitHub `owner/repo` path (used to fetch releases)                                                                                       |
+| `owner`       | string   | Yes      | GitHub login that owns the repo. Used for the official-vs-community distinction (spec 089). Defaults to `repo.split("/")[0]` if absent. |
+| `version`     | string   | No       | Latest available version (shown in the store "Available" tab)                                                                           |
+| `sha256`      | string   | **Yes**  | SHA256 of the release tarball (64 hex chars). Required since spec 089 — installs fail without it.                                       |
+| `tags`        | string[] | Yes      | Searchable tags (e.g. `["camera", "security"]`)                                                                                         |
+
+#### Security: SHA256 integrity & community plugins (spec 089)
+
+Since spec 089, the install flow verifies the tarball SHA256 against the registry entry before extracting. Two consequences for plugin authors:
+
+**Every release requires a registry update**
+
+For every new GitHub release, you must update `plugins/registry.json` with the new `version` **and** the new `sha256`. A mismatch (or a missing hash) refuses the install with a clear error in the UI.
+
+There is a helper script in the Sowel repo to compute the hash for every entry:
+
+```bash
+# In the sowel repo, after pushing a new plugin release
+node scripts/backfill-registry-sha256.mjs
+
+# Force re-hash (e.g. after a release was re-uploaded)
+FORCE=1 node scripts/backfill-registry-sha256.mjs
+```
+
+The script fetches the latest release asset for each entry and writes the SHA256 in place. Then open a PR like:
+
+```
+chore(registry): bump my-device to 0.2.0
+```
+
+**Official vs community plugins**
+
+The Sowel code hard-codes a small `OFFICIAL_OWNERS` whitelist (currently `["mchacher"]`). Plugins from these owners install with no UI friction. **Any other owner** is treated as a community plugin: the UI shows a "Community" badge in the store and opens an explicit confirmation modal before install, warning the user that Sowel verifies the SHA256 but does not vouch for the code.
+
+To become an official owner today, ping the Sowel maintainer — the whitelist is intentionally short and grows by review.
+
+---
+
+#### Author release workflow (TL;DR)
+
+1. In your plugin repo: `npm run build` then `tar -czf sowel-plugin-<id>-<version>.tar.gz manifest.json package.json dist/`
+2. Compute the hash locally: `shasum -a 256 sowel-plugin-<id>-<version>.tar.gz`
+3. `gh release create v<version> sowel-plugin-<id>-<version>.tar.gz --title "v<version>" --notes "..."`
+4. In a fork of the Sowel repo, edit `plugins/registry.json`: bump `version` + replace `sha256`. Open a PR titled `chore(registry): bump <id> to <version>`. (Or run `node scripts/backfill-registry-sha256.mjs` and let it backfill for you.)
+5. Once merged, the new version is live for all Sowel instances within ~1h (registry CDN cache).
 
 #### Remote registry fetch
 
