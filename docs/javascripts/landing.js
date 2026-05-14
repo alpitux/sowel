@@ -267,9 +267,38 @@
     update();
   }
 
+  // === Page 4 layers picker ==========================================
+  // Each .sowel-layers contains a stack of .sowel-layer-pick buttons
+  // and a .sowel-layers__detail panel with one .sowel-layer-detail per
+  // pick. Clicking a pick swaps the visible detail.
+  function initLayersPicker() {
+    document.querySelectorAll(".sowel-layers").forEach(function (layers) {
+      var picks = layers.querySelectorAll(".sowel-layer-pick");
+      var details = layers.querySelectorAll(".sowel-layer-detail");
+      function select(target) {
+        picks.forEach(function (p) {
+          p.setAttribute("aria-selected", p.dataset.target === target ? "true" : "false");
+        });
+        details.forEach(function (d) {
+          d.classList.toggle("is-active", d.dataset.id === target);
+        });
+        layers.dataset.active = target;
+      }
+      picks.forEach(function (pick) {
+        pick.addEventListener("click", function () {
+          select(pick.dataset.target);
+        });
+      });
+    });
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", function () {
+      init();
+      initLayersPicker();
+    });
   } else {
     init();
+    initLayersPicker();
   }
 })();
