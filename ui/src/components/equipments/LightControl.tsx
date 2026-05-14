@@ -80,6 +80,7 @@ export function LightControl({ equipment, onExecuteOrder, compact }: LightContro
               onTouchEnd={handleBrightnessCommit}
               onClick={(e) => e.stopPropagation()}
               className="w-[80px] slider-active"
+              style={{ "--fill-pct": `${(brightness / 254) * 100}%` } as React.CSSProperties}
             />
             <span className="text-[11px] text-text-tertiary w-7 text-right tabular-nums">
               {Math.round((brightness / 254) * 100)}%
@@ -142,6 +143,7 @@ export function LightControl({ equipment, onExecuteOrder, compact }: LightContro
             onMouseUp={handleBrightnessCommit}
             onTouchEnd={handleBrightnessCommit}
             className="flex-1 slider-active"
+            style={{ "--fill-pct": `${(brightness / 254) * 100}%` } as React.CSSProperties}
           />
           <span className="text-[12px] text-text-secondary w-10 text-right">
             {Math.round((brightness / 254) * 100)}%

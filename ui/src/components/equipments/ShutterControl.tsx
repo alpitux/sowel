@@ -68,6 +68,7 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
             onTouchEnd={handlePositionCommit}
             onClick={(e) => e.stopPropagation()}
             className="w-[80px]"
+            style={{ "--fill-pct": `${position}%`, "--fill-color": "var(--shutter-500)" } as React.CSSProperties}
           />
         )}
         {hasState && (
@@ -134,6 +135,7 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
               onMouseUp={handlePositionCommit}
               onTouchEnd={handlePositionCommit}
               className="flex-1"
+              style={{ "--fill-pct": `${position}%`, "--fill-color": "var(--shutter-500)" } as React.CSSProperties}
             />
           ) : (
             <div className="flex-1 h-1.5 bg-border-light rounded-full overflow-hidden">
