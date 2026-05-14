@@ -62,6 +62,13 @@
   filter: brightness(1.6);
 }
 
+/* All JetBrains Mono containers get tabular numbers by default —
+   keeps digits at the same width when values change (no layout jitter).
+   See spec 095 (typography polish). */
+.font-mono {
+  font-feature-settings: "tnum" 1;
+}
+
 /* ============================================================
    Base styles
    ============================================================ */

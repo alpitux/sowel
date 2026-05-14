@@ -69,7 +69,7 @@ export function ZoneEquipmentsView({
         <div key={group.labelKey} className="rounded-[10px] border border-border bg-surface overflow-hidden">
           <div className={`flex items-center gap-1.5 px-3 py-1 ${group.headerBg}`}>
             <span className={group.iconColor}>{group.icon}</span>
-            <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+            <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-widest">
               {t(group.labelKey)}
             </span>
             <span className="text-[11px] text-text-tertiary ml-auto tabular-nums">

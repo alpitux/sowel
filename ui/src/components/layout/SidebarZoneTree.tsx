@@ -65,7 +65,7 @@ function SidebarZoneNode({ zone, depth }: { zone: ZoneWithChildren; depth: numbe
           {({ isActive: linkActive }) => (
             <>
               <Home size={14} strokeWidth={1.5} className={`flex-shrink-0 transition-colors ${linkActive ? "text-primary" : "text-text group-hover:text-primary"}`} />
-              <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors truncate ${linkActive ? "text-primary" : "text-text group-hover:text-primary"}`}>
+              <span className={`text-[11px] font-semibold uppercase tracking-widest transition-colors truncate ${linkActive ? "text-primary" : "text-text group-hover:text-primary"}`}>
                 {zone.name}
               </span>
             </>

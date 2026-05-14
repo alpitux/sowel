@@ -255,7 +255,7 @@ export function IntegrationDrawer({ integration, onClose, onRefresh }: Integrati
 
           {/* Actions */}
           <div>
-            <h3 className="text-[12px] font-medium text-text-tertiary uppercase tracking-wider mb-3">
+            <h3 className="text-[12px] font-medium text-text-tertiary uppercase tracking-widest mb-3">
               {t("integrations.actions")}
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -328,7 +328,7 @@ export function IntegrationDrawer({ integration, onClose, onRefresh }: Integrati
 
           {/* Configuration */}
           <div>
-            <h3 className="text-[12px] font-medium text-text-tertiary uppercase tracking-wider mb-3">
+            <h3 className="text-[12px] font-medium text-text-tertiary uppercase tracking-widest mb-3">
               {t("integrations.configuration")}
             </h3>
             <div className="space-y-3">
@@ -346,7 +346,7 @@ export function IntegrationDrawer({ integration, onClose, onRefresh }: Integrati
           {/* OAuth Authorization */}
           {integration.supportsOAuth && (
             <div>
-              <h3 className="text-[12px] font-medium text-text-tertiary uppercase tracking-wider mb-3">
+              <h3 className="text-[12px] font-medium text-text-tertiary uppercase tracking-widest mb-3">
                 {t("integrations.authorization")}
               </h3>
               {isConnected ? (
@@ -474,7 +474,7 @@ function SettingField({
 
   return (
     <div>
-      <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1">
+      <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
         {setting.label}
         {setting.required ? <span className="text-error ml-0.5">*</span> : <span className="text-text-tertiary ml-1">(opt.)</span>}
       </label>

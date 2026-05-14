@@ -227,7 +227,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         </div>
         {/* Close button */}
         <div className="flex items-center justify-between px-4 pb-2">
-          <span className="text-[13px] font-semibold text-text-secondary uppercase tracking-wider">{t("nav.more", "Plus")}</span>
+          <span className="text-[13px] font-semibold text-text-secondary uppercase tracking-widest">{t("nav.more", "Plus")}</span>
           <button onClick={onClose} className="p-1.5 rounded-[6px] text-text-tertiary hover:bg-border-light">
             <X size={18} strokeWidth={1.5} />
           </button>
@@ -244,7 +244,7 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
           {isAdmin && (
             <>
               <div className="pt-3 pb-1 px-2">
-                <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">{t("nav.administration")}</span>
+                <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-widest">{t("nav.administration")}</span>
               </div>
               <DrawerLink icon={<Calendar size={18} strokeWidth={1.5} />} label={t("nav.calendar")} onClick={() => go("/calendar")} />
               <DrawerLink icon={<Plug size={18} strokeWidth={1.5} />} label={t("nav.integrations")} onClick={() => go("/integrations")} />

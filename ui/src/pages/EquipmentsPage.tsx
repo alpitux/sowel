@@ -42,7 +42,7 @@ export function EquipmentsPage() {
       {/* Page header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-[24px] font-semibold text-text leading-[32px]">
+          <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
             {t("equipments.title")}
           </h1>
         </div>
@@ -97,7 +97,7 @@ export function EquipmentsPage() {
         <div className="space-y-6">
           {byZone.map(({ zoneName, equipments: zoneEquipments }) => (
             <div key={zoneName}>
-              <h3 className="text-[13px] font-semibold text-text-secondary uppercase tracking-wider mb-2">
+              <h3 className="text-[13px] font-semibold text-text-secondary uppercase tracking-widest mb-2">
                 {zoneName}
               </h3>
               <div className="space-y-1.5">
