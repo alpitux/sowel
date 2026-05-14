@@ -75,7 +75,29 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 2 — A different way                                     -->
+<!-- Page 2 — Your home at your fingertips                        -->
+<!-- =========================================================== -->
+<div class="sowel-flip__page">
+<div class="sowel-section sowel-section--split">
+<div class="sowel-section__copy">
+
+<p class="sowel-eyebrow">Your home at your fingertips.</p>
+
+<p class="sowel-paragraph">A single interface for the whole house: zones, equipments, modes, recipes, energy. Open it from your laptop in the kitchen, your phone on the couch, your tablet at the office.</p>
+
+<p class="sowel-subtitle">Same data, same buttons, same recipes. Just the device you have nearby.</p>
+
+</div>
+<div class="sowel-section__visual sowel-patchwork">
+  <img class="sowel-patchwork__desktop" src="assets/landing/sejour-desktop.png" alt="Sowel desktop view of a Living Room zone showing lights, shutters and sensors" />
+  <img class="sowel-patchwork__mobile sowel-patchwork__mobile--1" src="assets/landing/dashboard-mobile.png" alt="Sowel dashboard on mobile" />
+  <img class="sowel-patchwork__mobile sowel-patchwork__mobile--2" src="assets/landing/energy-mobile.png" alt="Sowel energy live view on mobile" />
+</div>
+</div>
+</div>
+
+<!-- =========================================================== -->
+<!-- Page 3 — A different way                                     -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section sowel-section--split">
@@ -135,7 +157,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 3 — Five layers                                         -->
+<!-- Page 4 — Five layers                                         -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section">
@@ -245,7 +267,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 4 — Deploy in minutes                                   -->
+<!-- Page 5 — Deploy in minutes                                   -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section sowel-section--feature">
@@ -280,7 +302,7 @@ hide:
 </div>
 
 <!-- =========================================================== -->
-<!-- Page 5 — Take a tour                                         -->
+<!-- Page 6 — Take a tour                                         -->
 <!-- =========================================================== -->
 <div class="sowel-flip__page">
 <div class="sowel-section sowel-section--split sowel-section--next">

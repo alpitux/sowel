@@ -1496,6 +1496,70 @@ html:has(.sowel-flip) .md-header__topic:first-child {
 }
 [data-md-color-scheme="slate"] .sowel-recipe-mock__row kbd { color: #C9DCE7; }
 
+/* ============================================================
+   Patchwork — desktop screenshot + 2 floating mobile screens
+   Layout: a dominant desktop capture in the middle, a smaller
+   mobile pinned top-left, another mobile pinned bottom-right.
+   Used on the "Your home at your fingertips" page.
+   ============================================================ */
+
+.sowel-patchwork {
+  position: relative;
+  display: block;
+  align-items: stretch;
+  width: 100%;
+  min-height: clamp(20rem, 38vw, 28rem);
+}
+.sowel-patchwork__desktop {
+  display: block;
+  width: 88%;
+  max-width: 100%;
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow:
+    0 28px 60px -22px rgba(26, 79, 110, 0.34),
+    0 8px 22px -10px rgba(26, 79, 110, 0.22);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 8%, transparent);
+  transform: rotate(0.4deg);
+}
+.sowel-patchwork__mobile {
+  position: absolute;
+  width: clamp(7rem, 14vw, 11rem);
+  border-radius: 14px;
+  box-shadow:
+    0 22px 40px -14px rgba(26, 79, 110, 0.30),
+    0 6px 14px -6px rgba(26, 79, 110, 0.18);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 10%, transparent);
+  background: #fff;
+}
+.sowel-patchwork__mobile--1 {
+  top: -1.5rem;
+  left: -1rem;
+  transform: rotate(-5deg);
+}
+.sowel-patchwork__mobile--2 {
+  bottom: -1.5rem;
+  right: -0.5rem;
+  transform: rotate(4deg);
+}
+[data-md-color-scheme="slate"] .sowel-patchwork__mobile { background: #163040; }
+
+@media (max-width: 880px) {
+  .sowel-patchwork { min-height: 0; }
+  .sowel-patchwork__desktop {
+    width: 100%;
+    transform: none;
+  }
+  .sowel-patchwork__mobile {
+    position: static;
+    width: 40%;
+    margin: 1rem auto 0;
+    transform: none;
+    display: inline-block;
+  }
+  .sowel-patchwork__mobile--1 { margin-right: 4%; }
+}
+
 /* === Terminal mock for the "Deploy in minutes" page === */
 .sowel-terminal-mock {
   margin: 0 auto 1.4rem;
