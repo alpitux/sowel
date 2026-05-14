@@ -191,72 +191,54 @@ hide:
 <div class="sowel-flip__page">
 <div class="sowel-section">
 
-<div class="sowel-section--intro" markdown="0">
+<div class="sowel-layers" data-active="1" markdown="0">
+
+<div class="sowel-layers__intro">
 <p class="sowel-eyebrow">Sowel voit votre maison en pièces et en espaces, pas en câbles et en règles.</p>
 <p class="sowel-paragraph">Cinq couches décrivent votre maison avec les mots que vous utiliseriez vous-même. Touchez une couche pour voir ce qu'elle fait.</p>
 </div>
 
-<div class="sowel-pillars-frise" markdown="0">
+<ol class="sowel-layers__list">
+<li><button type="button" class="sowel-layer-pick" data-target="1" aria-selected="true"><span class="sowel-layer-pick__num">1</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Devices</span><span class="sowel-layer-pick__lead">Ce qui est sur votre réseau.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="2" aria-selected="false"><span class="sowel-layer-pick__num">2</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Équipements</span><span class="sowel-layer-pick__lead">Ce qui est dans votre pièce.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="3" aria-selected="false"><span class="sowel-layer-pick__num">3</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Zones</span><span class="sowel-layer-pick__lead">La topologie de votre maison.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="4" aria-selected="false"><span class="sowel-layer-pick__num">4</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Modes</span><span class="sowel-layer-pick__lead">Les rythmes de votre maison.</span></span></button></li>
+<li><button type="button" class="sowel-layer-pick" data-target="5" aria-selected="false"><span class="sowel-layer-pick__num">5</span><span class="sowel-layer-pick__body"><span class="sowel-layer-pick__title">Recettes</span><span class="sowel-layer-pick__lead">Les réflexes de votre maison.</span></span></button></li>
+</ol>
 
-<details class="sowel-pillar">
-<summary>
-<span class="sowel-pillar__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 9h2"/><path d="M20 15h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg></span>
-<h3 class="sowel-pillar__title">Devices</h3>
-<p class="sowel-pillar__lead">Ce qui est sur votre réseau.</p>
-</summary>
-<div class="sowel-pillar__body">
+<div class="sowel-layers__detail">
+
+<div class="sowel-layer-detail is-active" data-id="1">
+<h3>Devices</h3>
 <p>Auto-découverts, normalisés dans un seul vocabulaire commun quel que soit la marque ou le protocole.</p>
-<p class="sowel-pillar__more"><a href="user/devices/">En savoir plus →</a></p>
+<p class="sowel-layer-detail__more"><a href="user/devices/">En savoir plus →</a></p>
 </div>
-</details>
 
-<details class="sowel-pillar">
-<summary>
-<span class="sowel-pillar__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-<h3 class="sowel-pillar__title">Équipements</h3>
-<p class="sowel-pillar__lead">Ce qui est dans votre pièce.</p>
-</summary>
-<div class="sowel-pillar__body">
+<div class="sowel-layer-detail" data-id="2">
+<h3>Équipements</h3>
 <p>Lumières, volets, thermostats, compteurs. Tous standardisés, contrôles prévisibles, une seule poignée par chose.</p>
-<p class="sowel-pillar__more"><a href="user/equipments/">En savoir plus →</a></p>
+<p class="sowel-layer-detail__more"><a href="user/equipments/">En savoir plus →</a></p>
 </div>
-</details>
 
-<details class="sowel-pillar">
-<summary>
-<span class="sowel-pillar__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
-<h3 class="sowel-pillar__title">Zones</h3>
-<p class="sowel-pillar__lead">La topologie de votre maison.</p>
-</summary>
-<div class="sowel-pillar__body">
+<div class="sowel-layer-detail" data-id="3">
+<h3>Zones</h3>
 <p>Regroupez par pièce ou par étage. Sowel consolide les données automatiquement (moyennes, OU, maximum).</p>
-<p class="sowel-pillar__more"><a href="user/zones/">En savoir plus →</a></p>
+<p class="sowel-layer-detail__more"><a href="user/zones/">En savoir plus →</a></p>
 </div>
-</details>
 
-<details class="sowel-pillar">
-<summary>
-<span class="sowel-pillar__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span>
-<h3 class="sowel-pillar__title">Modes</h3>
-<p class="sowel-pillar__lead">Les rythmes de votre maison.</p>
-</summary>
-<div class="sowel-pillar__body">
+<div class="sowel-layer-detail" data-id="4">
+<h3>Modes</h3>
 <p>Jour, Soir, Nuit. Un geste (ou un planning) fait basculer toute la maison : luminosité, chauffage, recettes.</p>
-<p class="sowel-pillar__more"><a href="user/modes/">En savoir plus →</a></p>
+<p class="sowel-layer-detail__more"><a href="user/modes/">En savoir plus →</a></p>
 </div>
-</details>
 
-<details class="sowel-pillar">
-<summary>
-<span class="sowel-pillar__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.13-7.59 5 5 0 0 0-9.2 0 4 4 0 0 0-2.13 7.59c.41.2.73.58.73 1.04V20a1 1 0 0 0 1 1z"/><path d="M6 17h12"/></svg></span>
-<h3 class="sowel-pillar__title">Recettes</h3>
-<p class="sowel-pillar__lead">Les réflexes de votre maison.</p>
-</summary>
-<div class="sowel-pillar__body">
+<div class="sowel-layer-detail" data-id="5">
+<h3>Recettes</h3>
 <p>Posez un schéma éprouvé sur une zone, réglez quelques valeurs, ça tourne. Pas de flows, pas de script.</p>
-<p class="sowel-pillar__more"><a href="user/recipes/">En savoir plus →</a></p>
+<p class="sowel-layer-detail__more"><a href="user/recipes/">En savoir plus →</a></p>
 </div>
-</details>
+
+</div>
 
 </div>
 
