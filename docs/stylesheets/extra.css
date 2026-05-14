@@ -1324,11 +1324,16 @@ html:has(.sowel-flip) .md-header__topic:first-child {
   max-width: 78rem;
   margin: 0 auto;
 }
-/* Page 2 specifically gets a wider visual column so the laptop + phones
- * read at a legible size. */
+/* Page 2 gets its own grid override + a homothetic scale-down on the
+ * patchwork so the composition stays balanced but takes less room. */
 .sowel-section--devices.sowel-section--split {
   grid-template-columns: 0.9fr 1.3fr;
-  max-width: 84rem;
+  max-width: 78rem;
+}
+/* Selector matches the existing .sowel-section--split .sowel-section__visual
+ * rule (scale 0.85) and overrides it with a smaller scale for page 2 only. */
+.sowel-section--devices.sowel-section--split:not(.sowel-section--intro):not(.sowel-section--next) .sowel-patchwork {
+  transform: scale(0.78);
 }
 @media (max-width: 880px) {
   .sowel-section--split { grid-template-columns: 1fr; gap: 2rem; }
