@@ -227,7 +227,7 @@ function StatusBadge({ status }: { status: string }) {
 function InfoItem({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div className="flex flex-col gap-0.5 min-w-[120px]">
-      <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+      <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-widest">
         {label}
       </span>
       <span className={`text-[13px] text-text ${mono ? "font-mono" : ""}`}>
@@ -243,16 +243,16 @@ function OrdersTable({ orders }: { orders: DeviceOrder[] }) {
     <table className="w-full">
       <thead>
         <tr className="border-b border-border">
-          <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-wider">
+          <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-widest">
             {t("devices.col.key")}
           </th>
-          <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-wider">
+          <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-widest">
             {t("common.type")}
           </th>
-          <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-wider">
+          <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-widest">
             {t("devices.col.range")}
           </th>
-          <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-wider">
+          <th className="text-left py-2.5 px-3 text-[12px] font-medium text-text-secondary uppercase tracking-widest">
             {t("devices.col.category")}
           </th>
         </tr>

@@ -59,7 +59,7 @@ export function SetupPage() {
 
         <form onSubmit={handleSubmit} className="bg-surface rounded-[10px] border border-border p-6">
           <div className="mb-4">
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1.5">
               {t("auth.username")}
             </label>
             <input
@@ -73,7 +73,7 @@ export function SetupPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1.5">
               {t("auth.displayName")}
             </label>
             <input
@@ -86,7 +86,7 @@ export function SetupPage() {
           </div>
 
           <div className="mb-4">
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1.5">
               {t("auth.password")}
             </label>
             <input
@@ -99,7 +99,7 @@ export function SetupPage() {
           </div>
 
           <div className="mb-5">
-            <label className="block text-[12px] text-text-tertiary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1.5">
               {t("auth.confirmPassword")}
             </label>
             <input

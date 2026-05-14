@@ -166,7 +166,7 @@ export function LogsPage() {
       <div className="mb-4">
         <div className="flex items-center gap-2.5 mb-1">
           <ScrollText size={22} strokeWidth={1.5} className="text-text-secondary" />
-          <h1 className="text-[24px] font-semibold text-text leading-[32px]">
+          <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
             {t("logs.title")}
           </h1>
         </div>

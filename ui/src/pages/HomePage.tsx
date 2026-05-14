@@ -145,7 +145,7 @@ export function HomePage() {
               <Menu size={18} strokeWidth={1.5} />
             </button>
           )}
-          <h1 className="text-[17px] sm:text-[22px] font-semibold text-text leading-[24px] sm:leading-[28px]">
+          <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
             {currentZone.name}
           </h1>
         </div>
@@ -314,7 +314,7 @@ function CollapsibleSection({
             strokeWidth={2}
             className={`text-text-tertiary transition-transform duration-200 ${collapsed ? "-rotate-90" : ""}`}
           />
-          <h2 className="text-[13px] font-semibold text-text-secondary uppercase tracking-wider group-hover:text-text transition-colors duration-150">
+          <h2 className="text-[13px] font-semibold text-text-secondary uppercase tracking-widest group-hover:text-text transition-colors duration-150">
             {title}
           </h2>
         </button>

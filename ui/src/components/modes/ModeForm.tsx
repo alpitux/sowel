@@ -56,7 +56,7 @@ export function ModeForm({ initial, onSubmit, onClose, title }: ModeFormProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-widest mb-1.5">
               {t("modes.name")}
             </label>
             <input
@@ -72,7 +72,7 @@ export function ModeForm({ initial, onSubmit, onClose, title }: ModeFormProps) {
 
           {/* Description */}
           <div>
-            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-medium text-text-secondary uppercase tracking-widest mb-1.5">
               {t("modes.description")}
               <span className="text-text-tertiary font-normal normal-case tracking-normal ml-1">({t("common.optional")})</span>
             </label>

@@ -160,7 +160,7 @@ export function DeviceList({ devices, deviceData, activeTab, deviceEquipmentMap 
               className="hidden md:table-cell"
             />
             <th className="py-2 px-3 text-left hidden md:table-cell">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-text-tertiary">
                 {t("devices.col.equipment")}
               </span>
             </th>
@@ -310,7 +310,7 @@ function SortHeader({
     >
       <span className={`inline-flex items-center gap-1 ${alignClass}`}>
         <span
-          className={`text-[11px] font-semibold uppercase tracking-wider ${
+          className={`text-[11px] font-semibold uppercase tracking-widest ${
             isActive ? "text-primary" : "text-text-tertiary group-hover:text-text-secondary"
           } transition-colors duration-100`}
         >

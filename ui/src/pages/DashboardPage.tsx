@@ -110,7 +110,7 @@ export function DashboardPage() {
       <div>
         {/* Desktop header */}
         <div className="hidden sm:flex items-center justify-between mb-5">
-          <h1 className="text-[22px] font-semibold text-text leading-[28px]">
+          <h1 className="text-[18px] sm:text-[24px] font-semibold text-text leading-[24px] sm:leading-[32px]">
             {t("dashboard.title")}
           </h1>
           {isAdmin && (

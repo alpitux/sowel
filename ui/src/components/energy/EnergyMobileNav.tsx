@@ -38,7 +38,7 @@ export function EnergyMobileNav() {
             <div className="bg-surface flex-shrink-0" style={{ height: "env(safe-area-inset-top, 0px)" }} />
             <div className="px-3 pt-4 pb-4 space-y-1">
               <div className="px-2 pb-3">
-                <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">{t("nav.energy")}</span>
+                <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-widest">{t("nav.energy")}</span>
               </div>
               {items.map((item) => {
                 const active = location.pathname === item.to;
