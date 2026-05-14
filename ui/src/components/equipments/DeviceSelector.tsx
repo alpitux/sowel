@@ -306,7 +306,7 @@ export function DeviceSelector({
                   const picked = candidateByDevice[device.id];
                   return (
                     <div className="ml-11 mt-1 mb-2 space-y-1">
-                      <div className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-1">
+                      <div className="text-[11px] font-medium text-text-secondary uppercase tracking-widest mb-1">
                         {t("deviceSelector.pickChannel")}
                       </div>
                       {cs.map((c) => {
