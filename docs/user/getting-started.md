@@ -86,28 +86,31 @@ After the first account is created, the regular **login screen** greets you on s
 
 After logging in, follow these steps to set up your home.
 
-### Step 1: Set up your home
+### Step 1: Tell Sowel where your home is
 
-Open **Settings** in the sidebar. The **Home** panel at the top is the first thing to configure:
+Right after the admin account is created, Sowel opens a **welcome wizard** that asks for the bare minimum it needs to run correctly: a home name and the home location.
 
-![Home settings — empty](../screenshots/getting-started-home-empty-en.png)
+![Welcome wizard, empty form](../screenshots/getting-started-home-empty-en.png)
 
 Fill in:
 
-- **Home name** — a friendly label, e.g. `My Home`
-- **Latitude** and **Longitude** — your home's geographic coordinates. You can get them from any map service (Google Maps, OpenStreetMap, etc.) by right-clicking on your location.
-- The **Sunrise / Sunset offsets** are usually fine at the defaults (30 / 45 minutes). They control how long after sunrise Sowel treats the house as in daylight, and how long before sunset it starts treating it as night.
+- **Home name**: a friendly label, e.g. `My Home`
+- **Latitude** and **Longitude**: your home's geographic coordinates. You can get them from any map service (Google Maps, OpenStreetMap, etc.) by right-clicking on your location.
 
-![Home settings — filled](../screenshots/getting-started-home-filled-en.png)
+![Welcome wizard, filled form](../screenshots/getting-started-home-filled-en.png)
+
+Click **Continue**. Sowel saves the settings, derives the local timezone from the coordinates, and restarts the engine. The wizard does not show up again on subsequent logins.
 
 !!! warning "Why this is mandatory"
 Without latitude/longitude set, Sowel runs in UTC. Calendar-based mode scheduling, sunset shutters, and the HP/HC tariff classification on the Energy page will not work correctly until your home location is configured.
+
+You can fine-tune sunrise/sunset offsets later from **Settings**: the defaults (30 / 45 minutes) suit most setups.
 
 ### Step 2: Install and configure integrations
 
 Open **Administration > Plugins** in the sidebar to browse the catalogue, then **Administration > Integrations** to configure the ones you installed.
 
-![Integrations page](../screenshots/getting-started-integrations.png)
+![Integrations page](../screenshots/getting-started-integrations-en.png)
 
 Each integration has its own settings panel. Settings vary: some need an MQTT broker URL (Zigbee2MQTT, LoRa2MQTT, Tasmota, Shelly), some need a cloud account (Panasonic, MCZ), some need OAuth credentials (Netatmo, Legrand, SmartThings). Each one ships with a help text describing what it expects.
 
@@ -120,7 +123,7 @@ Integration settings are stored in the database, not in environment files. You c
 
 Go to **Administration > Devices**.
 
-![Devices page](../screenshots/getting-started-devices.png)
+![Devices page](../screenshots/getting-started-devices-en.png)
 
 Once an integration connects, devices appear automatically. The table shows:
 
@@ -135,7 +138,7 @@ Use the integration tabs at the top to filter by source. If devices do not appea
 
 Go to **Administration > Topology**.
 
-![Zones page](../screenshots/getting-started-zones.png)
+![Zones page](../screenshots/getting-started-zones-en.png)
 
 Build the spatial structure of your home as a nestable tree. A typical setup:
 
@@ -175,7 +178,7 @@ A single equipment can bind to multiple devices. For example, three dimmer modul
 
 Go to **Home** in the sidebar.
 
-![Home view](../screenshots/getting-started-home.png)
+![Home view](../screenshots/getting-started-home-en.png)
 
 The zone tree appears on the left. Click any zone to see:
 
@@ -188,7 +191,7 @@ The zone tree appears on the left. Click any zone to see:
 
 Go to **Dashboard** and click **Edit**.
 
-![Dashboard](../screenshots/getting-started-dashboard.png)
+![Dashboard](../screenshots/getting-started-dashboard-en.png)
 
 Add widgets for the equipment and zones you use most. Widgets update in real-time via WebSocket. You can reorder them by drag-and-drop, rename them, and customize their icons.
 
