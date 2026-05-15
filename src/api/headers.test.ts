@@ -12,10 +12,10 @@ async function buildAppWithHelmet(): Promise<FastifyInstance> {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:"],
         connectSrc: ["'self'", "ws:", "wss:"],
-        fontSrc: ["'self'"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         manifestSrc: ["'self'"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
@@ -63,6 +63,13 @@ describe("Security headers", () => {
     expect(csp).toContain("style-src 'self' 'unsafe-inline'");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("object-src 'none'");
+  });
+
+  it("allows Google Fonts in CSP (Nunito heading font loaded from CDN)", async () => {
+    const res = await app.inject({ method: "GET", url: "/health" });
+    const csp = res.headers["content-security-policy"] as string;
+    expect(csp).toMatch(/style-src[^;]*https:\/\/fonts\.googleapis\.com/);
+    expect(csp).toMatch(/font-src[^;]*https:\/\/fonts\.gstatic\.com/);
   });
 
   it("allows WebSocket connections in CSP (connect-src includes ws: and wss:)", async () => {

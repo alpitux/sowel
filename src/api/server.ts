@@ -154,10 +154,13 @@ export async function createServer(deps: ServerDeps) {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        // Google Fonts CSS (`fonts.googleapis.com`) is loaded as a stylesheet
+        // from ui/index.html for the Nunito heading font.
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:"],
         connectSrc: ["'self'", "ws:", "wss:"],
-        fontSrc: ["'self'"],
+        // Font files served by `fonts.gstatic.com` (Google Fonts asset CDN).
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
         manifestSrc: ["'self'"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
