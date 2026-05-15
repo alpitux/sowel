@@ -86,28 +86,31 @@ Une fois le premier compte créé, l'**écran de connexion** classique vous accu
 
 Après la connexion, suivez ces étapes pour configurer votre maison.
 
-### Étape 1 : Configurer votre maison
+### Étape 1 : Indiquer où se trouve votre maison
 
-Ouvrez **Réglages** dans la barre latérale. Le panneau **Maison** en haut est la première chose à configurer :
+Juste après la création du compte administrateur, Sowel ouvre un **assistant de bienvenue** qui demande le strict minimum nécessaire pour fonctionner correctement : un nom de maison et son emplacement.
 
-![Réglages Maison — vide](../screenshots/getting-started-home-empty-fr.png)
+![Assistant de bienvenue, formulaire vide](../screenshots/getting-started-home-empty-fr.png)
 
 Remplissez :
 
-- **Nom de la maison** — un libellé parlant, par ex. `Ma Maison`
-- **Latitude** et **Longitude** — les coordonnées géographiques de votre maison. Vous pouvez les obtenir depuis n'importe quel service de cartographie (Google Maps, OpenStreetMap, etc.) en faisant clic droit sur votre emplacement.
-- Les **décalages lever / coucher** conviennent généralement aux valeurs par défaut (30 / 45 minutes). Ils contrôlent combien de temps après le lever Sowel considère qu'il fait jour, et combien de temps avant le coucher il commence à traiter comme nuit.
+- **Nom de la maison** : un libellé parlant, par ex. `Ma Maison`
+- **Latitude** et **Longitude** : les coordonnées géographiques de votre maison. Vous pouvez les obtenir depuis n'importe quel service de cartographie (Google Maps, OpenStreetMap, etc.) en faisant clic droit sur votre emplacement.
 
-![Réglages Maison — rempli](../screenshots/getting-started-home-filled-fr.png)
+![Assistant de bienvenue, formulaire rempli](../screenshots/getting-started-home-filled-fr.png)
+
+Cliquez sur **Continuer**. Sowel enregistre les réglages, déduit le fuseau horaire local des coordonnées, et redémarre le moteur. L'assistant ne réapparaît plus aux connexions suivantes.
 
 !!! warning "Pourquoi c'est obligatoire"
 Sans latitude/longitude configurées, Sowel tourne en UTC. La planification de modes par calendrier, les volets au coucher du soleil, et la classification tarifaire HP/HC sur la page Énergie ne fonctionneront pas correctement tant que la localisation de la maison n'est pas définie.
+
+Vous pourrez ajuster plus tard les décalages de lever et coucher depuis les **Réglages** : les valeurs par défaut (30 / 45 minutes) conviennent à la plupart des installations.
 
 ### Étape 2 : Installer et configurer les intégrations
 
 Ouvrez **Administration > Plugins** pour parcourir le catalogue, puis **Administration > Intégrations** pour configurer celles que vous avez installées.
 
-![Page intégrations](../screenshots/getting-started-integrations.png)
+![Page intégrations](../screenshots/getting-started-integrations-fr.png)
 
 Chaque intégration a son propre panneau. Les réglages varient : URL d'un broker MQTT (Zigbee2MQTT, LoRa2MQTT, Tasmota, Shelly), compte cloud (Panasonic, MCZ), identifiants OAuth (Netatmo, Legrand, SmartThings). Chacune embarque un texte d'aide qui décrit ce qu'elle attend.
 
@@ -120,7 +123,7 @@ Les réglages d'intégration sont stockés dans la base de données, pas dans de
 
 Allez dans **Administration > Devices**.
 
-![Page devices](../screenshots/getting-started-devices.png)
+![Page appareils](../screenshots/getting-started-devices-fr.png)
 
 Une fois qu'une intégration est connectée, les devices apparaissent automatiquement. Le tableau affiche :
 
@@ -135,7 +138,7 @@ Utilisez les onglets d'intégration en haut pour filtrer par source. Si les devi
 
 Allez dans **Administration > Topologie**.
 
-![Page zones](../screenshots/getting-started-zones.png)
+![Page topologie](../screenshots/getting-started-zones-fr.png)
 
 Construisez la structure spatiale de votre maison sous forme d'arbre imbriquable. Une configuration typique :
 
@@ -175,7 +178,7 @@ Un seul équipement peut se lier à plusieurs devices. Par exemple, trois module
 
 Allez sur **Accueil** dans la barre latérale.
 
-![Vue accueil](../screenshots/getting-started-home.png)
+![Vue Maison](../screenshots/getting-started-home-fr.png)
 
 L'arbre des zones apparaît à gauche. Cliquez sur n'importe quelle zone pour voir :
 
@@ -188,7 +191,7 @@ L'arbre des zones apparaît à gauche. Cliquez sur n'importe quelle zone pour vo
 
 Allez sur **Tableau de bord** et cliquez sur **Éditer**.
 
-![Tableau de bord](../screenshots/getting-started-dashboard.png)
+![Tableau de bord](../screenshots/getting-started-dashboard-fr.png)
 
 Ajoutez des widgets pour les équipements et zones que vous utilisez le plus. Les widgets se mettent à jour en temps réel via WebSocket. Vous pouvez les réordonner par glisser-déposer, les renommer, et personnaliser leurs icônes.
 

@@ -127,13 +127,25 @@ EQUIPMENT_TRANSLATE = {
     "Vanne Plantations": "Plants Valve",
 }
 
-# Tables to fully empty (credentials, live data, personal)
+# Default admin baked into the fixture so the showroom restores into a usable
+# state without going through the setup wizard. Password = `sowel-demo-2026`.
+FIXTURE_ADMIN = {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "username": "admin",
+    "display_name": "Admin",
+    "role": "admin",
+    "password_hash": "$2b$12$bEFMiVNgBdureq1BVgIf1u5l/UVVSZEjM0UUJCGUW40vkkCRnqsKG",
+    "created_at": "2026-01-01T00:00:00.000Z",
+    "updated_at": "2026-01-01T00:00:00.000Z",
+}
+
+# Tables to fully empty (credentials, sessions, broker config).
+# device_data and device_orders are kept: data_bindings + order_bindings FK
+# into them and would fail the restore integrity check if emptied. The values
+# are cached telemetry (states, brightness, etc.), not personal.
 TABLES_TO_EMPTY = {
-    "users",
     "api_tokens",
     "refresh_tokens",
-    "device_data",
-    "device_orders",
     "mqtt_brokers",
     "mqtt_publishers",
     "mqtt_publisher_mappings",
@@ -180,7 +192,7 @@ def anonymize(backup: dict) -> dict:
         ]
         t["dashboard_widgets"] = [
             w for w in t["dashboard_widgets"]
-            if w.get("entity_id") not in deleted_eq_ids
+            if w.get("equipment_id") not in deleted_eq_ids
         ]
         t["recipe_instances"] = [
             r for r in t["recipe_instances"]
@@ -218,6 +230,10 @@ def anonymize(backup: dict) -> dict:
     for tbl in TABLES_TO_EMPTY:
         if tbl in t:
             t[tbl] = []
+
+    # 6b) Replace users with a single baked-in admin (so the restore lands in a
+    # logged-in-able state without re-running the setup wizard).
+    t["users"] = [dict(FIXTURE_ADMIN)]
 
     # 7) Plugins: keep entries but neutralize any token-like config (just safe scrub)
     for p in t.get("plugins", []):
