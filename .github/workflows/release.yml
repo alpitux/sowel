@@ -130,22 +130,21 @@ jobs:
           cache-from: type=gha,scope=amd64
           cache-to: type=gha,scope=amd64,mode=max
 
-  # ── Docker build (arm64, async, non-blocking) ────────────
-  # Runs after the amd64 image is published, then promotes the main
-  # tags to a multi-arch manifest combining both architectures.
+  # ── Docker build (arm64, native runner, parallel with amd64) ────
+  # Runs on a native arm64 GitHub-hosted runner (free for public repos).
+  # No QEMU emulation — build time drops from ~12 min to ~2 min and runs
+  # in parallel with the amd64 job. Once both archs are pushed, the
+  # multi-arch manifest is promoted in this job's last step.
   # Failure here does NOT fail the release — amd64 image stays valid,
   # the main tags just remain amd64-only until the next release.
   docker-arm64:
-    needs: docker
-    runs-on: ubuntu-latest
+    needs: ci
+    runs-on: ubuntu-24.04-arm
     permissions:
       packages: write
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -180,6 +179,36 @@ jobs:
           cache-from: type=gha,scope=arm64
           cache-to: type=gha,scope=arm64,mode=max
 
+  # ── Promote tags to multi-arch manifest ────────────────────
+  # Waits for BOTH archs to be pushed, then merges :V and :V-arm64 into
+  # a single multi-arch :V tag (same for :latest). Done in a dedicated
+  # job so the two arch builds can run in parallel without an ordering
+  # constraint between them.
+  promote-manifest:
+    needs: [docker, docker-arm64]
+    if: always() && needs.docker.result == 'success' && needs.docker-arm64.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "version=${{ inputs.test_tag }}" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          fi
       - name: Promote tags to multi-arch manifest
         env:
           REPO: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -191,15 +220,16 @@ jobs:
             docker buildx imagetools create --tag ${REPO}:latest ${REPO}:latest ${REPO}:latest-arm64
           fi
 
-  # ── Create GitHub Release (after BOTH archs are pushed) ──
-  # Gated behind docker-arm64 so the Release is not visible until the
-  # multi-arch manifest exists. Otherwise arm64 instances (Pi) would
+  # ── Create GitHub Release (after multi-arch manifest is published) ──
+  # Gated behind promote-manifest so the Release is not visible until
+  # the multi-arch manifest exists. Otherwise arm64 instances (Pi) would
   # see "update available" while `docker pull` still fails for them.
-  # arm64 stays continue-on-error, so a broken arm64 build does not
-  # prevent the Release — but in that case the main tag remains
-  # amd64-only and arm64 users see no update (correct behaviour).
+  # If arm64 fails (continue-on-error), promote-manifest is skipped, and
+  # this job still runs because of `always() && needs.docker.result ==
+  # 'success'` — the main tag stays amd64-only and arm64 users correctly
+  # see no update.
   release:
-    needs: [docker, docker-arm64]
+    needs: [docker, docker-arm64, promote-manifest]
     if: always() && needs.docker.result == 'success' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
