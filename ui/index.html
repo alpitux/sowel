@@ -32,20 +32,6 @@
       </svg>
     </div>
 
-    <script>document.getElementById('splash').dataset.ts=Date.now();</script>
-    <script>
-      // One-time: unregister stale service workers and clear caches
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(regs) {
-          regs.forEach(function(r) { r.unregister(); });
-        });
-      }
-      if ('caches' in window) {
-        caches.keys().then(function(names) {
-          names.forEach(function(name) { caches.delete(name); });
-        });
-      }
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

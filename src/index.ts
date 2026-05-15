@@ -112,6 +112,21 @@ async function main() {
 
   logger.info("Sowel — Founded by Marc Chachereau — AGPL-3.0");
 
+  // WAN exposure warnings (spec 105)
+  const corsRaw = process.env["CORS_ORIGINS"];
+  if (corsRaw === "*") {
+    logger.warn(
+      "CORS is set to wildcard '*'. This is dangerous if Sowel is exposed to the Internet. Restrict CORS_ORIGINS to known origins.",
+    );
+    const apiHost = process.env["API_HOST"];
+    if (apiHost !== "127.0.0.1" && apiHost !== "localhost") {
+      logger.warn(
+        { apiHost: apiHost ?? "0.0.0.0" },
+        "CORS=* combined with a non-loopback API_HOST is the highest-risk configuration. Restrict at least one before exposing this instance to the public Internet.",
+      );
+    }
+  }
+
   // Snapshot for /api/v1/system/timezone endpoint
   const tzInfo = {
     tz: tzResult.tz,
