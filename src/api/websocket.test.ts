@@ -70,5 +70,27 @@ describe("websocket auth helpers", () => {
       expect(isWsOriginAllowed(["http://localhost:3000", "spoofed"], corsOrigins)).toBe(true);
       expect(isWsOriginAllowed(["https://evil.tld"], corsOrigins)).toBe(false);
     });
+
+    it("allows same-origin requests (Origin host matches Host header)", () => {
+      // LAN deployment: user opens http://domopi.local:3001, browser sends
+      // Origin: http://domopi.local:3001 and Host: domopi.local:3001.
+      // Even though domopi.local:3001 is not in CORS_ORIGINS, same-origin is allowed.
+      expect(isWsOriginAllowed("http://domopi.local:3001", corsOrigins, "domopi.local:3001")).toBe(
+        true,
+      );
+      expect(isWsOriginAllowed("https://sowel.exemple.com", corsOrigins, "sowel.exemple.com")).toBe(
+        true,
+      );
+    });
+
+    it("refuses cross-origin requests (Origin host does NOT match Host header)", () => {
+      // Cross-site request: page on evil.tld tries to open a WS to sowel.exemple.com.
+      // Origin host (evil.tld) does not match Host header (sowel.exemple.com).
+      expect(isWsOriginAllowed("https://evil.tld", corsOrigins, "sowel.exemple.com")).toBe(false);
+    });
+
+    it("tolerates a malformed Origin URL by falling through to deny", () => {
+      expect(isWsOriginAllowed("not-a-url", corsOrigins, "domopi.local:3001")).toBe(false);
+    });
   });
 });

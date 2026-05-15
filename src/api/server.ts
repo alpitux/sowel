@@ -159,11 +159,17 @@ export async function createServer(deps: ServerDeps) {
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:"],
         connectSrc: ["'self'", "ws:", "wss:"],
-        // Font files served by `fonts.gstatic.com` (Google Fonts asset CDN).
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        // Font files: own bundle (Inter is inlined as `data:` URIs by Vite)
+        // plus `fonts.gstatic.com` for the Nunito heading font loaded by index.html.
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         manifestSrc: ["'self'"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
+        // Helmet sets this by default. We disable it because most Sowel
+        // deployments are LAN-only on plain HTTP — forcing HTTPS would
+        // break asset loading. Reverse proxies that terminate TLS still
+        // benefit from the conditional HSTS header below.
+        "upgrade-insecure-requests": null,
       },
     },
     strictTransportSecurity: false,
