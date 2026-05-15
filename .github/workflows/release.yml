@@ -214,3 +214,25 @@ jobs:
           gh release create "$V" \
             --title "Sowel ${V#v}" \
             --generate-notes
+
+  # ── GHCR retention policy ─────────────────────────────────
+  # After a successful release, prune old container versions on GHCR so
+  # storage doesn't grow unbounded across patches. Keeps the N newest
+  # versions (by creation date) and never touches the :latest /
+  # :latest-arm64 floating tags. Each release adds ~6 manifests
+  # (multi-arch index + amd64 + arm64 + attestations + SBOM), so the
+  # default 30 covers roughly the last 5 releases — plenty for rollback.
+  prune-ghcr:
+    needs: [release]
+    if: always() && needs.release.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: sowel
+          package-type: container
+          owner: mchacher
+          min-versions-to-keep: 30
+          ignore-versions: '^(latest|latest-arm64)$'
