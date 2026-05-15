@@ -432,10 +432,13 @@ export class UpdateManager {
    * (e.g., after changing home location and re-deriving the timezone).
    *
    * The helper container runs:
-   *   sleep 3 && docker compose up -d <service>
+   *   sleep 3 && docker compose up -d --force-recreate <service>
    *
-   * which recreates the sowel container with the current image. The compose
-   * file is re-parsed so any env var changes are picked up.
+   * --force-recreate is critical: without it, compose sees no diff (image
+   * unchanged, env unchanged) and skips the restart entirely. Sowel would
+   * keep running with stale env, the UI would stay on "Update in progress"
+   * forever (the `updating` flag is intentionally never reset here since
+   * we expect to be killed by the helper).
    */
   async restartViaHelper(): Promise<void> {
     if (this.updating) {
@@ -455,7 +458,7 @@ export class UpdateManager {
       const cmd = [
         "sh",
         "-c",
-        `sleep 3 && echo "[sowel-restarter] recreating ${ctx.serviceName}..." && docker compose up -d ${ctx.serviceName} && echo "[sowel-restarter] done"`,
+        `sleep 3 && echo "[sowel-restarter] recreating ${ctx.serviceName}..." && docker compose up -d --force-recreate ${ctx.serviceName} && echo "[sowel-restarter] done"`,
       ];
       await this.runHelperContainer({
         name: RESTART_HELPER_NAME,
