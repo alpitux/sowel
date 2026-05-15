@@ -1,161 +1,189 @@
 # Energy Monitoring
 
-Sowel includes built-in energy monitoring that tracks your home's electricity consumption over time. It supports HP/HC (peak/off-peak) tariff classification and autoconsumption tracking for solar production.
+Sowel includes built-in energy monitoring that tracks your home's electricity consumption and (optionally) your solar production over time. It supports peak / off-peak tariff classification, autoconsumption tracking, and a by-usage breakdown when you instrument dedicated circuits.
 
-## Overview
+## The three energy equipment types
 
-Energy monitoring works through a pipeline:
+Energy monitoring in Sowel is **integration-agnostic**. Any plugin that reports energy or power data on a device can feed the energy pipeline, as long as the device is bound to one of these three equipment types.
 
-1. An **energy meter equipment** (e.g., Netatmo Energy module on your main breaker) reports consumption data
-2. Sowel writes this data to **InfluxDB**, a time-series database
-3. InfluxDB automatically aggregates the data into hourly and daily summaries
-4. The **Energy page** in the UI displays charts and totals
+| Equipment type            | What it represents                                                   | Required device data                                           |
+| ------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `main_energy_meter`       | Your main grid meter (whole-home import / export)                    | Cumulative energy (Wh), or a signed grid energy delta per tick |
+| `energy_meter`            | A submeter on a dedicated circuit (heat pump, pool, EV charger, ...) | Cumulative energy (Wh) **or** instantaneous power (W)          |
+| `energy_production_meter` | Your solar (or other local production) meter                         | Cumulative production energy (Wh)                              |
 
-## Requirements
+You can mix and match: a setup with only a main meter is fine, you do not need solar to use the Energy page. Conversely, you can have many submeters without a main meter — you will just lose the "Other" residual on the by-usage view.
 
-- An energy meter device connected to one of your integrations (e.g., Netatmo Home Control)
-- An equipment of type **main_energy_meter** configured in Sowel
-- InfluxDB running (included in the Docker setup)
+!!! info "Power-only submeters"
+Cheap zigbee clamps that report only `power` (W) and not `energy` (Wh) are supported for submeters. Sowel integrates the power signal locally into a Wh stream attributed to the submeter equipment, with the same per-minute cadence as the main meter. State survives restarts.
+
+## How the data flows
+
+```
+Energy meter device (any integration)
+  -> Plugin reports `energy` (Wh) or `power` (W)
+    -> HistoryWriter writes per-minute points to InfluxDB
+      -> EnergyAggregator computes hour / day / month / year cumuls
+        -> Energy page renders charts and totals
+```
+
+InfluxDB stores raw points in a short-retention bucket, then automatic downsampling tasks aggregate them into hourly and daily buckets with much longer retention. The Energy page picks the right bucket transparently based on the time range you are looking at.
 
 !!! info "InfluxDB is automatic"
-InfluxDB is mandatory and starts with Sowel. On first launch, Sowel automatically creates the required buckets, downsampling tasks, and energy aggregation tasks. No manual InfluxDB configuration is needed.
+InfluxDB is mandatory and starts with Sowel via Docker Compose. On first launch, Sowel auto-creates the required buckets, downsampling tasks, and energy aggregation tasks. No manual InfluxDB configuration is needed.
 
 ## Setting up energy monitoring
 
-### Step 1: Connect your energy integration
+### Step 1: Connect an energy integration
 
-Make sure your energy data source is configured in **Administration > Integrations**. For Netatmo, this means setting up the Netatmo Home Control integration with your OAuth credentials.
+Install a plugin that provides energy meter devices (browse the catalogue from **Administration > Plugins**) and configure it from **Administration > Integrations**. Any plugin that surfaces a device exposing `energy` or `power` data is eligible.
 
-### Step 2: Create the energy equipment
+### Step 2: Create the main energy meter equipment
 
 Go to **Administration > Equipments** and create an equipment:
 
 - **Type**: Main Energy Meter
-- **Zone**: assign to a relevant zone (e.g., Home or Utility Room)
-- **Bind** to your energy meter device
+- **Zone**: typically the Home root, or a Utility zone
+- **Bind** to your grid meter device's `energy` data
 
-Once bound, Sowel starts recording energy data to InfluxDB.
+Once bound, Sowel starts writing one energy point per minute to InfluxDB.
 
-### Step 3: (Optional) Configure HP/HC tariffs
+### Step 3: (Optional) Add a production meter
 
-If your electricity plan uses peak (HP) and off-peak (HC) hours, configure the tariff schedule so Sowel can split your consumption accordingly.
+If you have local production (solar panels typically), create an equipment of type **Energy Production Meter** and bind it to your production meter device. With both a main meter and a production meter in place, Sowel computes:
 
-Go to **Settings > Tariff Configuration**:
+- **Grid consumption**: energy drawn from the grid
+- **Autoconsumption**: energy produced and consumed in the house
+- **Grid injection**: energy produced and pushed to the grid
+- **Total consumption**: grid + autoconsumption
 
-1. Define your tariff schedule -- which hours are HP and which are HC
-2. You can set different schedules for different days of the week
-3. Optionally enter your HP and HC prices per kWh
+### Step 4: (Optional) Configure peak / off-peak tariffs
 
-**Example: Standard French HP/HC tariff**
+If your electricity plan splits hours into peak and off-peak, configure the schedule so Sowel can break down your consumption.
 
-| Hours          | Tariff        |
-| -------------- | ------------- |
-| 06:00 -- 22:00 | HP (peak)     |
-| 22:00 -- 06:00 | HC (off-peak) |
+Go to **Settings > Administration > Energy tariffs**:
 
-!!! tip
-If no tariff is configured, all consumption is classified as HP by default. The Energy page still works -- you just do not see the HP/HC breakdown.
+![Tariff configuration](../screenshots/energy-tariff-settings-en.png)
 
-### Step 4: (Optional) Set up submeters for a by-usage breakdown
+1. Optionally enter your peak and off-peak prices per kWh (used for cost views; classification works without them)
+2. Define your time slots: which hours are peak and which are off-peak
+3. You can add as many slots as you need to cover the 24 hours of the day
 
-You can add **submeter equipments** of type `energy_meter` on dedicated circuits (heat pump, pool, EV charger, etc.) to break down what your main meter measures into named usages.
+If no tariff is configured, all consumption is classified as peak by default — you simply do not see the split.
 
-To set up a submeter:
+### Step 5: (Optional) Add submeters for a by-usage breakdown
 
-1. Bind a Zigbee or Wi-Fi energy meter / energy plug to the relevant circuit.
-2. Go to **Administration > Equipments** and create an equipment of type **Energy Meter**.
-3. Bind it to the device's `energy` (Wh) data.
+To know how your main meter's consumption splits across circuits, add an `energy_meter` equipment for each circuit you instrument.
 
-Once at least one submeter is configured, the Energy page shows a **Total / By usage** toggle. The "By usage" view renders a stacked bar chart with one stack per submeter, plus an **Other** stack for the residual not captured by any submeter (i.e. `main meter - sum of submeters`).
+1. Install a zigbee energy clamp, smart plug, or Wi-Fi meter on the dedicated circuit
+2. Go to **Administration > Equipments** and create an equipment of type **Energy Meter**
+3. Bind it to the device's `energy` (Wh) data, or — if your device reports only `power` (W) — to its `power` data: Sowel integrates the power signal into a Wh stream automatically
 
-### Step 5: (Optional) Set up production tracking
+Once at least one submeter is configured, the **By usage** toggle appears on the Consumption page. The toggle is hidden when no submeter exists.
 
-If you have solar panels, create an equipment of type **energy_production_meter** and bind it to your production meter device. Sowel will then track:
+## Using the Energy section
 
-- **Grid consumption** -- energy drawn from the grid
-- **Autoconsumption** -- energy produced and consumed locally
-- **Total consumption** -- grid + autoconsumption
+The sidebar groups the energy views under **Energy**:
 
-## Using the Energy page
+- **Live**: instant flow between grid, production, and house consumption
+- **Consumption**: historical consumption with peak / off-peak split and self-consumption overlay
+- **Production**: historical solar production with autoconsumption / injection split
 
-Navigate to **Energy** in the sidebar. The page shows:
+### Live view
 
-### Period selector
+The Live view shows what is happening right now — power values updated in real time via WebSocket.
 
-Switch between different time views:
+![Live energy flow](../screenshots/energy-live-en.png)
 
-| Period    | What it shows                                |
-| --------- | -------------------------------------------- |
-| **Day**   | Hourly consumption bars for a selected day   |
-| **Month** | Daily consumption bars for a selected month  |
-| **Year**  | Monthly consumption bars for a selected year |
+The diagram shows three boxes (Grid, Consumption, Production) with arrows indicating the direction of energy flow. When solar production exceeds in-house consumption, a "Solar surplus" indicator appears, and the share of solar going to the grid versus to the house is shown on the arrows.
 
-Use the navigation arrows to move between dates.
+Tiles are hidden when their underlying equipment is not configured: with no production meter, only Grid and Consumption are shown.
 
-### Consumption chart
+### Consumption view
 
-A bar chart showing energy consumption over the selected period. Each bar is color-coded:
+Pick a period (Day, Week, Month, Year) and navigate dates with the arrows. The chart renders bars for each time bucket of the selected period.
 
-- **Blue** -- grid consumption
-- **Light blue** -- off-peak (HC) portion, if HP/HC is configured
-- **Green** -- autoconsumption, if production tracking is configured
+![Daily consumption chart](../screenshots/energy-consumption-day-en.png)
+
+Color coding on the **Total** chart:
+
+| Color      | Meaning                                                  |
+| ---------- | -------------------------------------------------------- |
+| Dark blue  | Peak-hours grid consumption                              |
+| Light blue | Off-peak-hours grid consumption                          |
+| Green      | Autoconsumption (only when a production meter is set up) |
+
+Below the chart, totals are shown in kWh: grid (split into peak / off-peak), autoconsumption, and total (with the self-consumption share as a percentage).
 
 #### Total / By usage toggle
 
-If you have configured at least one submeter (see [Step 4](#step-4-optional-set-up-submeters-for-a-by-usage-breakdown)), a **Total / By usage** toggle appears above the chart:
+When at least one submeter is configured, a **Total / By usage** toggle appears above the chart. The **By usage** view replaces the peak / off-peak split with one stack per submeter, plus an **Other** stack for the residual that the main meter saw but no submeter accounted for.
 
-- **Total** -- the standard HP/HC/production view described above
-- **By usage** -- a stacked bar chart with one color per submeter (e.g. PAC, Pool) plus an **Other** residual that represents what the main meter saw but no submeter accounted for
+![By usage breakdown](../screenshots/energy-consumption-by-usage-en.png)
 
-The toggle is hidden when no submeter is configured. Totals widgets (HP/HC, autoconsumption) keep their values across both views.
+Submeters use a deterministic color palette so the same circuit keeps the same color across days and views. The "Other" stack is clamped at zero, so a submeter that briefly overshoots the main meter (due to sampling skew) cannot make it negative.
 
-### Totals
+Totals widgets (peak / off-peak, autoconsumption) stay unchanged when you toggle modes.
 
-Below the chart, you see summary totals:
+#### Longer periods
 
-- **Grid consumption** in kWh
-- **HP / HC split** in kWh (if tariff is configured)
-- **Autoconsumption** in kWh (if production is tracked)
-- **Total consumption** in kWh
+Switching to **Month** or **Year** keeps the same colors and totals, but each bar represents a day (Month view) or a month (Year view).
 
-### Production page
+![Monthly consumption chart](../screenshots/energy-consumption-month-en.png)
 
-If you have solar production configured, a **Production** tab appears showing:
+### Production view
 
-- Production bar chart (same period selector as consumption)
-- Production totals
-- Autoconsumption ratio
+The Production page renders solar (or other local production) history:
+
+![Daily production chart](../screenshots/energy-production-day-en.png)
+
+| Color       | Meaning                                               |
+| ----------- | ----------------------------------------------------- |
+| Light green | Autoconsumption — produced and consumed locally       |
+| Dark green  | Grid injection — produced and pushed back to the grid |
+
+Totals below the chart sum the two slices into the day's, month's, or year's total production.
 
 ## Data pipeline
 
 Understanding how data flows helps with troubleshooting:
 
 ```
-Energy meter device
-  --> 30-minute energy readings
-    --> InfluxDB "sowel" bucket (7-day retention, raw data)
-      --> Hourly aggregation task
-        --> InfluxDB "sowel-energy-hourly" bucket (2-year retention)
-          --> Daily aggregation task
-            --> InfluxDB "sowel-energy-daily" bucket (10-year retention)
+Plugin reports energy or power
+  -> per-minute energy points written to InfluxDB "sowel" bucket  (7-day retention)
+    -> sowel-energy-sum-hourly task
+      -> "sowel-energy-hourly" bucket  (2-year retention)
+        -> sowel-energy-sum-daily task
+          -> "sowel-energy-daily" bucket  (10-year retention)
 ```
 
-- **Day view**: For recent days (less than a week old), the chart queries raw data for real-time accuracy. For older days, it uses the hourly bucket.
-- **Month/Year view**: Uses the daily bucket for efficient queries over long periods.
+The Energy page chooses the bucket based on the period:
+
+- **Day view** for today and recent days: queries the raw bucket for real-time accuracy
+- **Day view** for older days: queries the hourly bucket
+- **Month / Year**: queries the daily bucket for fast, long-range queries
+
+The aggregator also keeps in-memory cumuls (hour, day, month, year) that the Live view and Home page widgets read directly, refreshed on every new energy tick.
 
 ## Troubleshooting
 
 ### No data appears on the Energy page
 
-1. Check that your energy integration is connected (green indicator in Integrations)
-2. Verify that the energy equipment exists and is bound to a device
-3. Wait for at least one polling cycle (typically 30 minutes for Netatmo)
-4. Check the logs for any error messages related to energy or InfluxDB
+1. Check that the integration providing your energy meter device is connected (green indicator in **Administration > Integrations**)
+2. Verify the equipment exists (Main Energy Meter and/or Energy Production Meter) and is bound to a device that actually emits `energy` data
+3. Wait for at least one polling / push cycle — exact frequency depends on the plugin, but typically a few minutes at most
+4. Check **Settings > System > Logs** for messages from the `history-writer` or `energy-aggregator` modules
 
-### HP/HC split shows everything as HP
+### Peak / off-peak shows everything as peak
 
-This means no tariff schedule is configured. Go to **Settings > Tariff Configuration** and define your HP/HC hours.
+This means no tariff schedule is configured. Go to **Settings > Administration > Energy tariffs** and define your slots.
 
 ### Old data is missing
 
-Data older than 7 days is only available if the hourly aggregation task has run successfully. Check that InfluxDB is running and that Sowel has created the aggregation tasks (this happens automatically on startup).
+Data older than 7 days lives only in the downsampled hourly and daily buckets. If those buckets are empty, the downsampling tasks have not run yet (they run once per hour and once per day). Check that InfluxDB is running and reachable, and inspect the logs of the `history-writer` module on startup — Sowel logs whether the tasks were created or already existed.
+
+### By usage view shows a large "Other" residual
+
+This means your submeters do not cover most of the main meter's consumption — which is normal: the main meter sees everything in the house, while submeters typically cover specific high-power circuits. The residual is "Other circuits".
+
+If the residual is **negative** (clamped to zero in the chart), one of your submeters is reporting more than the main meter sees — usually a clamp wired backwards or a calibration mismatch. The integrator clamps negative power deltas at zero and logs a WARN once per occurrence.
