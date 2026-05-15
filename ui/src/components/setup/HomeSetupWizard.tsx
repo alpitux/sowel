@@ -1,0 +1,194 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Home, Loader2 } from "lucide-react";
+import { getSettings, updateSettings } from "../../api";
+import { useAuth } from "../../store/useAuth";
+import { SowelLogo } from "../layout/SowelLogo";
+
+/**
+ * First-login Home setup wizard. Blocks the app when:
+ *   - the user is admin, AND
+ *   - `home.name` is empty in settings.
+ *
+ * Forces the admin to provide home name + latitude + longitude before
+ * doing anything else. Configuring these at first login derives the
+ * timezone BEFORE any restart-triggering settings change, sidestepping
+ * the "Restart required → Update in progress" trap the user hit on a
+ * fresh install.
+ *
+ * Non-admin users are not blocked — they would just see an incomplete
+ * home name in the topbar until an admin completes the setup.
+ */
+export function HomeSetupWizard() {
+  const { t } = useTranslation();
+  const user = useAuth((s) => s.user);
+  const [loaded, setLoaded] = useState(false);
+  const [required, setRequired] = useState(false);
+  const [homeName, setHomeName] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const isAdmin = user?.role === "admin";
+
+  useEffect(() => {
+    if (!isAdmin) {
+      setLoaded(true);
+      return;
+    }
+    let cancelled = false;
+    getSettings()
+      .then((all) => {
+        if (cancelled) return;
+        const name = (all["home.name"] ?? "").trim();
+        setRequired(name === "");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // If we cannot read settings, do not block the UI — let the
+        // user see the standard error path.
+        setRequired(false);
+      })
+      .finally(() => {
+        if (!cancelled) setLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  if (!loaded || !required) return null;
+
+  const lat = Number(latitude);
+  const lon = Number(longitude);
+  const validName = homeName.trim().length > 0;
+  const validLat = Number.isFinite(lat) && lat >= -90 && lat <= 90;
+  const validLon = Number.isFinite(lon) && lon >= -180 && lon <= 180;
+  const canSubmit = validName && validLat && validLon && !saving;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await updateSettings({
+        "home.name": homeName.trim(),
+        "home.latitude": String(lat),
+        "home.longitude": String(lon),
+      });
+      // Re-read to confirm and dismiss.
+      const all = await getSettings();
+      if ((all["home.name"] ?? "").trim() !== "") {
+        setRequired(false);
+      } else {
+        setError(t("setup.home.error.notSaved", "Could not save settings, please retry."));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-[var(--n-25)] flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-surface rounded-[14px] border border-border max-w-md w-full p-6 my-auto shadow-lg">
+        <div className="flex items-center gap-3 mb-4">
+          <SowelLogo size={32} />
+          <div className="min-w-0">
+            <h1 className="text-[18px] font-bold text-text leading-tight">
+              {t("setup.home.title", "Bienvenue sur Sowel")}
+            </h1>
+            <p className="text-[12px] text-text-tertiary mt-0.5">
+              {t("setup.home.subtitle", "Une dernière étape avant de commencer")}
+            </p>
+          </div>
+        </div>
+
+        <p className="text-[13px] text-text-secondary mb-5">
+          {t(
+            "setup.home.body",
+            "Indiquez le nom et la position de votre maison. Sowel s'en sert pour calculer le lever et le coucher du soleil et pour déterminer votre fuseau horaire.",
+          )}
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
+              <Home size={12} className="inline mr-1 -mt-0.5" />
+              {t("setup.home.name", "Nom de la maison")}
+            </label>
+            <input
+              type="text"
+              value={homeName}
+              onChange={(e) => setHomeName(e.target.value)}
+              placeholder={t("setup.home.namePlaceholder", "Ma maison, Studio Paris...")}
+              className="w-full px-3 py-2 text-[14px] bg-background border border-border rounded-[6px] text-text placeholder:text-text-tertiary focus:outline-none focus:border-primary"
+              autoFocus
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
+                {t("setup.home.latitude", "Latitude")}
+              </label>
+              <input
+                type="number"
+                step="0.0001"
+                min={-90}
+                max={90}
+                value={latitude}
+                onChange={(e) => setLatitude(e.target.value)}
+                placeholder="48.8566"
+                className="w-full px-3 py-2 text-[14px] bg-background border border-border rounded-[6px] text-text placeholder:text-text-tertiary focus:outline-none focus:border-primary"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[12px] text-text-tertiary uppercase tracking-widest mb-1">
+                {t("setup.home.longitude", "Longitude")}
+              </label>
+              <input
+                type="number"
+                step="0.0001"
+                min={-180}
+                max={180}
+                value={longitude}
+                onChange={(e) => setLongitude(e.target.value)}
+                placeholder="2.3522"
+                className="w-full px-3 py-2 text-[14px] bg-background border border-border rounded-[6px] text-text placeholder:text-text-tertiary focus:outline-none focus:border-primary"
+                required
+              />
+            </div>
+          </div>
+
+          <p className="text-[11px] text-text-tertiary">
+            {t(
+              "setup.home.hint",
+              "Astuce: ouvrez Google Maps sur l'emplacement de votre maison, clic droit → les deux nombres affichés sont la latitude et la longitude.",
+            )}
+          </p>
+
+          {error && (
+            <div className="text-[12px] text-error bg-error/10 px-3 py-2 rounded-[6px]">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className="w-full px-4 py-2.5 text-[14px] font-semibold text-white bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed rounded-[6px] transition-colors inline-flex items-center justify-center gap-2"
+          >
+            {saving ? <Loader2 size={16} className="animate-spin" /> : null}
+            {t("setup.home.submit", "Continuer")}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
