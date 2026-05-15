@@ -184,8 +184,10 @@ function HomeSettingsSection() {
     getSettings()
       .then((all) => {
         const name = all["home.name"] ?? "";
-        const lat = all["home.latitude"] ?? "";
-        const lon = all["home.longitude"] ?? "";
+        // Normalize decimal separator: storage uses `.`, but legacy rows
+        // may have `,` from older saves. UI inputs are dot-only.
+        const lat = (all["home.latitude"] ?? "").replace(",", ".");
+        const lon = (all["home.longitude"] ?? "").replace(",", ".");
         const sr = all["home.sunriseOffset"] ?? "30";
         const ss = all["home.sunsetOffset"] ?? "45";
         setHomeName(name);
@@ -264,10 +266,10 @@ function HomeSettingsSection() {
               {t("settings.latitude")}
             </label>
             <input
-              type="number"
-              step="any"
+              type="text"
+              inputMode="decimal"
               value={latitude}
-              onChange={(e) => setLatitude(e.target.value)}
+              onChange={(e) => setLatitude(e.target.value.replace(",", "."))}
               placeholder="48.8566"
               className="w-full px-3 py-2 text-[14px] bg-background border border-border rounded-[6px] text-text placeholder:text-text-tertiary focus:outline-none focus:border-primary"
             />
@@ -277,10 +279,10 @@ function HomeSettingsSection() {
               {t("settings.longitude")}
             </label>
             <input
-              type="number"
-              step="any"
+              type="text"
+              inputMode="decimal"
               value={longitude}
-              onChange={(e) => setLongitude(e.target.value)}
+              onChange={(e) => setLongitude(e.target.value.replace(",", "."))}
               placeholder="2.3522"
               className="w-full px-3 py-2 text-[14px] bg-background border border-border rounded-[6px] text-text placeholder:text-text-tertiary focus:outline-none focus:border-primary"
             />
