@@ -147,12 +147,10 @@ export function HomeSetupWizard() {
                 {t("setup.home.latitude", "Latitude")}
               </label>
               <input
-                type="number"
-                step="0.0001"
-                min={-90}
-                max={90}
+                type="text"
+                inputMode="decimal"
                 value={latitude}
-                onChange={(e) => setLatitude(e.target.value)}
+                onChange={(e) => setLatitude(e.target.value.replace(",", "."))}
                 placeholder="48.8566"
                 className="w-full px-3 py-2 text-[14px] bg-background border border-border rounded-[6px] text-text placeholder:text-text-tertiary focus:outline-none focus:border-primary"
                 required
@@ -163,12 +161,10 @@ export function HomeSetupWizard() {
                 {t("setup.home.longitude", "Longitude")}
               </label>
               <input
-                type="number"
-                step="0.0001"
-                min={-180}
-                max={180}
+                type="text"
+                inputMode="decimal"
                 value={longitude}
-                onChange={(e) => setLongitude(e.target.value)}
+                onChange={(e) => setLongitude(e.target.value.replace(",", "."))}
                 placeholder="2.3522"
                 className="w-full px-3 py-2 text-[14px] bg-background border border-border rounded-[6px] text-text placeholder:text-text-tertiary focus:outline-none focus:border-primary"
                 required
