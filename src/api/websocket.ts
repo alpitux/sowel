@@ -39,16 +39,31 @@ export function extractWsToken(
  * Returns true when the connection's Origin is acceptable.
  * - Missing Origin: allowed (non-browser clients like Node scripts have no Origin).
  * - Wildcard in corsOrigins: allowed (explicit user choice).
+ * - Same-origin: allowed (Origin host matches the Host header the request was
+ *   reached on). This makes LAN deployments at `http://<hostname>:<port>` work
+ *   without the operator having to add their hostname to CORS_ORIGINS.
  * - Otherwise: must match one of the whitelisted origins.
  */
 export function isWsOriginAllowed(
   origin: string | string[] | undefined,
   corsOrigins: string[],
+  hostHeader?: string | string[],
 ): boolean {
   if (!origin) return true;
   if (corsOrigins.includes("*")) return true;
   const value = Array.isArray(origin) ? origin[0] : origin;
-  return corsOrigins.includes(value);
+  if (corsOrigins.includes(value)) return true;
+  // Same-origin check: compare Origin's host to the request's Host header.
+  const host = Array.isArray(hostHeader) ? hostHeader[0] : hostHeader;
+  if (host) {
+    try {
+      const originHost = new URL(value).host;
+      if (originHost === host) return true;
+    } catch {
+      // Malformed Origin URL — fall through to deny.
+    }
+  }
+  return false;
 }
 
 type WsTopic =
@@ -205,7 +220,7 @@ export function registerWebSocket(app: FastifyInstance, deps: WebSocketDeps): vo
 
   app.get("/ws", { websocket: true }, (socket, request) => {
     // Origin check: refuse browser clients from non-whitelisted origins.
-    if (!isWsOriginAllowed(request.headers.origin, corsOrigins)) {
+    if (!isWsOriginAllowed(request.headers.origin, corsOrigins, request.headers.host)) {
       logger.warn({ origin: request.headers.origin }, "WebSocket rejected: Origin not allowed");
       socket.close(4003, "Origin not allowed");
       return;

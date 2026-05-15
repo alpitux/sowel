@@ -15,10 +15,11 @@ async function buildAppWithHelmet(): Promise<FastifyInstance> {
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:"],
         connectSrc: ["'self'", "ws:", "wss:"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         manifestSrc: ["'self'"],
         objectSrc: ["'none'"],
         frameAncestors: ["'none'"],
+        "upgrade-insecure-requests": null,
       },
     },
     strictTransportSecurity: false,
@@ -70,6 +71,18 @@ describe("Security headers", () => {
     const csp = res.headers["content-security-policy"] as string;
     expect(csp).toMatch(/style-src[^;]*https:\/\/fonts\.googleapis\.com/);
     expect(csp).toMatch(/font-src[^;]*https:\/\/fonts\.gstatic\.com/);
+  });
+
+  it("allows data: URIs in font-src (Inter font is inlined by Vite as data: woff2)", async () => {
+    const res = await app.inject({ method: "GET", url: "/health" });
+    const csp = res.headers["content-security-policy"] as string;
+    expect(csp).toMatch(/font-src[^;]*\bdata:/);
+  });
+
+  it("does NOT include upgrade-insecure-requests (would break LAN HTTP deployments)", async () => {
+    const res = await app.inject({ method: "GET", url: "/health" });
+    const csp = res.headers["content-security-policy"] as string;
+    expect(csp).not.toContain("upgrade-insecure-requests");
   });
 
   it("allows WebSocket connections in CSP (connect-src includes ws: and wss:)", async () => {
