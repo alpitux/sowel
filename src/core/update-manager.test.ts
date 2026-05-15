@@ -212,9 +212,11 @@ describe("UpdateManager", () => {
       expect(runSpy).toHaveBeenCalledTimes(1);
       const callArg = runSpy.mock.calls[0][0] as { name: string; cmd: string[] };
       expect(callArg.name).toBe("sowel-restarter");
-      // Command should contain docker compose up -d (no pull)
       const fullCmd = callArg.cmd.join(" ");
-      expect(fullCmd).toContain("docker compose up -d sowel");
+      // Critical: --force-recreate must be present. Without it compose sees
+      // no diff (image + env unchanged) and never restarts the container,
+      // leaving the UI stuck on "Update in progress".
+      expect(fullCmd).toContain("docker compose up -d --force-recreate sowel");
       expect(fullCmd).not.toContain("docker compose pull");
 
       expect(progressEvents).toContain("restart");
