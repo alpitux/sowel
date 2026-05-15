@@ -31,6 +31,7 @@ import { useUpdateAvailable } from "../../hooks/useUpdateAvailable";
 import { usePluginUpdates } from "./usePluginUpdates";
 import { InstallPrompt } from "./InstallPrompt";
 import { UpdateOverlay } from "../system/UpdateOverlay";
+import { HomeSetupWizard } from "../setup/HomeSetupWizard";
 import { ROOT_ZONE_ID } from "../../lib/constants";
 import { useEnergy } from "../../store/useEnergy";
 import { useUiState } from "../../store/useUiState";
@@ -183,6 +184,9 @@ export function AppLayout() {
 
       {/* Self-update overlay (shown during sowel self-update) */}
       <UpdateOverlay />
+
+      {/* First-login Home setup wizard — blocks the UI when home.name is empty */}
+      <HomeSetupWizard />
     </div>
   );
 }
