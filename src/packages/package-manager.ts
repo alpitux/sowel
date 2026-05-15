@@ -1,4 +1,4 @@
-import { resolve, relative } from "node:path";
+import { resolve, relative, sep } from "node:path";
 import {
   existsSync,
   readFileSync,
@@ -7,6 +7,7 @@ import {
   createWriteStream,
   lstatSync,
   readdirSync,
+  readlinkSync,
 } from "node:fs";
 import { rename } from "node:fs/promises";
 import { pipeline } from "node:stream/promises";
@@ -599,27 +600,45 @@ export class PackageManager {
     }
 
     // ── Symlink post-extraction scan (spec 089 C1) ────────────
-    this.assertNoSymlinks(extractDir, entry.id);
+    // Refuse only symlinks that escape the extract dir (the real attack
+    // vector — e.g. link → /etc/passwd or ../../sensitive). Internal
+    // symlinks that point within the extracted tree are legitimate and
+    // common (e.g. node_modules/.bin/* shipped by every npm package).
+    this.assertNoEscapingSymlinks(extractDir, extractDir, entry.id);
 
     return extractDir;
   }
 
-  /** Walk a directory recursively; throw SymlinkInTarballError if any entry is a symlink. */
-  private assertNoSymlinks(dir: string, pluginId: string): void {
+  /**
+   * Walk a directory recursively. Throw SymlinkInTarballError if any
+   * symlink's target resolves OUTSIDE the extract root (escape attempt).
+   * Symlinks pointing within the root are allowed — npm packages
+   * routinely ship node_modules/.bin/* symlinks like that.
+   */
+  private assertNoEscapingSymlinks(root: string, dir: string, pluginId: string): void {
+    const rootAbs = resolve(root);
     const entries = readdirSync(dir, { withFileTypes: true });
     for (const e of entries) {
       const full = resolve(dir, e.name);
       const stat = lstatSync(full);
       if (stat.isSymbolicLink()) {
-        try {
-          rmSync(dir, { recursive: true, force: true });
-        } catch {
-          /* ignore */
+        const target = readlinkSync(full);
+        // Resolve target relative to the symlink's parent dir (POSIX semantics).
+        const resolved = resolve(dir, target);
+        if (resolved !== rootAbs && !resolved.startsWith(rootAbs + sep)) {
+          // Best-effort cleanup before bailing.
+          try {
+            rmSync(root, { recursive: true, force: true });
+          } catch {
+            /* ignore */
+          }
+          throw new SymlinkInTarballError(pluginId, relative(root, full));
         }
-        throw new SymlinkInTarballError(pluginId, relative(dir, full));
+        // Internal symlink — safe, skip (don't recurse into it).
+        continue;
       }
       if (e.isDirectory()) {
-        this.assertNoSymlinks(full, pluginId);
+        this.assertNoEscapingSymlinks(root, full, pluginId);
       }
     }
   }
