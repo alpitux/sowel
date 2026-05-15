@@ -77,13 +77,15 @@ export class CommunityPluginConfirmationRequiredError extends Error {
   }
 }
 
-/** Thrown when a tarball contains a symlink entry (post-extraction scan). */
+/** Thrown when a tarball contains a symlink whose target escapes the extract dir. */
 export class SymlinkInTarballError extends Error {
   constructor(
     public readonly pluginId: string,
     public readonly symlinkPath: string,
   ) {
-    super(`Plugin ${pluginId}: tarball contains symlink (${symlinkPath}); refused for security.`);
+    super(
+      `Plugin ${pluginId}: tarball contains an escaping symlink (${symlinkPath}); refused for security.`,
+    );
     this.name = "SymlinkInTarballError";
   }
 }
