@@ -17,7 +17,7 @@ declare module "fastify" {
 // Public routes that don't require authentication
 // ============================================================
 
-const PUBLIC_ROUTES = new Set([
+export const PUBLIC_ROUTES: ReadonlySet<string> = new Set([
   "/api/v1/auth/status",
   "/api/v1/auth/setup",
   "/api/v1/auth/login",
@@ -25,7 +25,7 @@ const PUBLIC_ROUTES = new Set([
   "/api/v1/health",
 ]);
 
-function isPublicRoute(url: string): boolean {
+export function isPublicRoute(url: string): boolean {
   // Strip query string
   const path = url.split("?")[0];
   if (PUBLIC_ROUTES.has(path)) return true;

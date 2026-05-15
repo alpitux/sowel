@@ -151,6 +151,12 @@ Specs are grouped by theme and annotated with status:
 | 091 | By-usage consumption chart   | ✅     | New `GET /energy/by-usage` endpoint and a Total / By usage toggle on the Energy page rendering a stacked breakdown per submeter `energy_meter` + an "Other" residual (`main meter - Σ submeters`).                                                                                                                |
 | 092 | State-triggered light recipe | ✅     | New external recipe plugin `state-trigger-light` (in `plugins/registry.json`). Turns lights on for a fixed duration when a watched equipment's `state` alias transitions to a target value. Optional nightOnly filter via the sunlight manager. Introduces `crossZone` and `includeDescendants` slot constraints. |
 
+## V1.7 — WAN hardening & security
+
+| #   | Title         | Status | Summary                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --- | ------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 105 | WAN hardening | ✅     | Closes WAN-exposure gaps: `@fastify/helmet` (CSP/HSTS/X-Frame-Options), CORS default tightened from `*` to localhost, WebSocket mandatory auth via `Sec-WebSocket-Protocol` subprotocol + `Origin` validation, non-root container via entrypoint+gosu (transparent upgrade from root-owned volumes), `docker.sock` self-update opt-in via override file, auth-by-default invariant on all `/api/v1/*` routes. |
+
 ---
 
 ## How to use this index after context loss

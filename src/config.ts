@@ -89,7 +89,7 @@ export function loadConfig(): AppConfig {
       level: env("LOG_LEVEL", "info"),
     },
     cors: {
-      origins: env("CORS_ORIGINS", "*")
+      origins: env("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173")
         .split(",")
         .map((s) => s.trim()),
     },

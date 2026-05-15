@@ -77,18 +77,30 @@ On first boot, Sowel:
 
 These are **named Docker volumes**, persistent across container recreation. They are what make self-update and backup/restore work — the stateful data survives.
 
-### Required host binding
+### Container user (spec 105)
 
-For **self-update** (spec 060) to work, the Docker socket must be mounted:
+Since v1.7.0, the Sowel container runs as a non-root user (`sowel`, uid 1000). The image's entrypoint (`docker-entrypoint.sh`) starts briefly as root, runs `chown -R sowel:sowel /app/data /app/plugins` idempotently, then drops to the `sowel` user via `gosu`. This makes upgrades from older root-running versions transparent: `docker compose pull && docker compose up -d` is enough, no manual `chown` is required on existing root-owned volumes.
 
-```yaml
-services:
-  sowel:
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+If you override `user:` in a `docker-compose.override.yml` to run as a different UID, the entrypoint skips the chown and you must manage volume ownership yourself.
+
+### Self-update is opt-in (spec 105)
+
+For **self-update** to work, the Docker socket must be mounted. Since v1.7.0 this is **opt-in** — the default `docker-compose.yml` no longer mounts it.
+
+To enable in-app self-update, copy the override template and bring the stack up again:
+
+```bash
+cp docker-compose.override.example.yml docker-compose.override.yml
+docker compose up -d
 ```
 
-Without this, the "Update now" button in the UI is disabled.
+The override mounts `/var/run/docker.sock` into the container, restoring the "Update now" button in the UI. Read the security note at the top of the override file before enabling: mounting the Docker socket gives the container effective control over the Docker daemon on the host, so a successful RCE against Sowel would escalate to host root.
+
+Without this override, the "Update now" button is disabled in the UI and `POST /api/v1/system/update` returns 503. You can still update manually:
+
+```bash
+docker compose pull && docker compose up -d sowel
+```
 
 ---
 

@@ -255,9 +255,21 @@ InfluxDB is mandatory -- Sowel connects on startup and auto-creates buckets, dow
 - **Passwords**: bcrypt (cost 12).
 - **JWT**: HS256 via `jsonwebtoken`. Access token TTL: 15 min. Refresh token TTL: 30 days.
 - **API tokens**: `swl_` prefix, SHA-256 hash stored, generated via `crypto.randomBytes(32)`. Legacy prefixes `wch_` and `cbl_` also accepted.
-- **Auth middleware**: Tries JWT decode first, then API token lookup.
+- **Auth-by-default** (spec 105): a global Fastify `onRequest` hook enforces authentication on every `/api/v1/*` route. The list of public routes is the `PUBLIC_ROUTES` constant in `src/auth/auth-middleware.ts` (`/health`, `/auth/status`, `/auth/setup`, `/auth/login`, `/auth/refresh`) plus OAuth callback paths. Any new route is protected unless explicitly added to that whitelist.
 - **Roles**: `admin` > `standard` > `viewer` (hierarchical permissions).
 - **First-run setup**: `POST /api/v1/auth/setup` creates the first admin user.
+
+### WebSocket authentication (spec 105)
+
+The `/ws` endpoint requires authentication. Browser clients pass the token via the `Sec-WebSocket-Protocol: bearer.<token>` subprotocol (the WebSocket API does not allow custom headers). Non-browser clients (scripts, integrations) may use `Authorization: Bearer <token>` instead. Anonymous connections are refused with close code 4001. Connections with an `Origin` header not in the CORS whitelist are refused with 4003.
+
+### Security headers (spec 105)
+
+The Fastify server registers `@fastify/helmet` with a Content-Security-Policy that allows only same-origin scripts, inline styles (for Tailwind), and WebSocket connections. `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and conditional HSTS (only when the request arrived over HTTPS) are emitted.
+
+### CORS defaults
+
+`CORS_ORIGINS` defaults to `http://localhost:3000,http://localhost:5173`. Setting it to `*` is permitted but emits a startup warning, doubled when `API_HOST` is not loopback.
 
 ---
 
