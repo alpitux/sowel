@@ -22,7 +22,10 @@ services:
     volumes:
       - sowel-data:/app/data
       - sowel-plugins:/app/plugins
-      - /var/run/docker.sock:/var/run/docker.sock # self-update
+      # In-app self-update is opt-in. To enable it, copy
+      # docker-compose.override.example.yml to docker-compose.override.yml
+      # and run `docker compose up -d`. Read the override file's header
+      # for the security trade-off before enabling.
     depends_on:
       - influxdb
 

@@ -68,9 +68,9 @@ export function registerSystemRoutes(app: FastifyInstance, deps: SystemDeps): vo
     }
 
     if (!updateManager.isDockerAvailable()) {
-      return reply.code(400).send({
+      return reply.code(503).send({
         error:
-          "Docker socket not available. Update manually with: docker compose pull && docker compose up -d",
+          "In-app self-update is disabled because /var/run/docker.sock is not mounted. Enable it by copying docker-compose.override.example.yml to docker-compose.override.yml, or update manually with: docker compose pull && docker compose up -d",
       });
     }
 
@@ -115,8 +115,9 @@ export function registerSystemRoutes(app: FastifyInstance, deps: SystemDeps): vo
     }
 
     if (!updateManager.isDockerAvailable()) {
-      return reply.code(400).send({
-        error: "Docker socket not available. Restart manually with: docker compose restart sowel",
+      return reply.code(503).send({
+        error:
+          "In-app restart is disabled because /var/run/docker.sock is not mounted. Enable it by copying docker-compose.override.example.yml to docker-compose.override.yml, or restart manually with: docker compose restart sowel",
       });
     }
 
