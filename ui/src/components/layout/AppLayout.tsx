@@ -13,7 +13,27 @@ import type { ZoneWithChildren } from "../../types";
 import { useEquipments } from "../../store/useEquipments";
 import { useZoneAggregation } from "../../store/useZoneAggregation";
 import { useAuth } from "../../store/useAuth";
-import { Home, Layers, LayoutDashboard, LogOut, Menu, Settings, User, Zap, X, Calendar, Plug, Send, Bell, BarChart3, ChevronRight, AlertTriangle, RefreshCw, Power, MoreVertical } from "lucide-react";
+import {
+  Home,
+  Layers,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  User,
+  Zap,
+  X,
+  Calendar,
+  Plug,
+  Send,
+  Bell,
+  BarChart3,
+  ChevronRight,
+  AlertTriangle,
+  RefreshCw,
+  Power,
+  MoreVertical,
+} from "lucide-react";
 
 // Display name → 1-2 uppercase initials for the avatar pill.
 function getInitials(name: string): string {
@@ -70,9 +90,19 @@ export function AppLayout() {
     fetchAggregation();
     fetchTimezone();
     connect();
-    getSettings().then((s) => setHomeName(s["home.name"] ?? "")).catch(() => {});
+    getSettings()
+      .then((s) => setHomeName(s["home.name"] ?? ""))
+      .catch(() => {});
     return () => disconnect();
-  }, [fetchDevices, fetchZones, fetchEquipments, fetchAggregation, fetchTimezone, connect, disconnect]);
+  }, [
+    fetchDevices,
+    fetchZones,
+    fetchEquipments,
+    fetchAggregation,
+    fetchTimezone,
+    connect,
+    disconnect,
+  ]);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -84,11 +114,12 @@ export function AppLayout() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Safe area spacer for iOS PWA */}
-        <div className="header-tint flex-shrink-0" style={{ height: "env(safe-area-inset-top, 0px)" }} />
+        <div
+          className="header-tint flex-shrink-0"
+          style={{ height: "env(safe-area-inset-top, 0px)" }}
+        />
         {/* Top bar — compact on mobile, full on desktop */}
-        <header
-          className="flex items-center min-h-[56px] sm:min-h-[49px] px-3 sm:px-6 border-b border-border-light bg-surface gap-2"
-        >
+        <header className="flex items-center min-h-[56px] sm:min-h-[49px] px-3 sm:px-6 border-b border-border-light bg-surface gap-2">
           {/* Left: mobile burger (on zone pages) + title+sub (mockup parity), desktop breadcrumb */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <MobileTopbarBurger />
@@ -182,11 +213,14 @@ export function AppLayout() {
       {/* Alarms sheet — opened by the header pill */}
       <AlarmsSheet open={alarmsOpen} onClose={() => setAlarmsOpen(false)} />
 
-      {/* Self-update overlay (shown during sowel self-update) */}
-      <UpdateOverlay />
-
-      {/* First-login Home setup wizard — blocks the UI when home.name is empty */}
+      {/* First-login Home setup wizard — blocks the UI when home.name is empty.
+          Rendered BEFORE UpdateOverlay so that an active restart (e.g. the one
+          the wizard itself triggers on submit) visually replaces the wizard
+          rather than letting the user see a stale form behind the overlay. */}
       <HomeSetupWizard />
+
+      {/* Self-update overlay (shown during sowel self-update / restart) */}
+      <UpdateOverlay />
     </div>
   );
 }
@@ -305,9 +339,7 @@ function MobileTopbarTitle({ homeName }: { homeName: string }) {
     const path = buildZonePath(zoneMatch[1], tree);
     if (path.length > 0) {
       const segments = path[0].id === ROOT_ZONE_ID ? path.slice(1) : path;
-      sub = segments.length > 0
-        ? segments.map((s) => s.name).join(" · ")
-        : t("nav.maison");
+      sub = segments.length > 0 ? segments.map((s) => s.name).join(" · ") : t("nav.maison");
     }
   } else if (onHomeRoute) {
     // /home without a zoneId (transient before redirect, or single-zone setup)
@@ -324,18 +356,19 @@ function MobileTopbarTitle({ homeName }: { homeName: string }) {
 
   return (
     <div className="min-w-0">
-      <div className="text-[16px] font-bold text-text leading-[1.15] tracking-[-0.015em] truncate">{homeLabel}</div>
+      <div className="text-[16px] font-bold text-text leading-[1.15] tracking-[-0.015em] truncate">
+        {homeLabel}
+      </div>
       {sub && (
-        <div className="text-[11px] text-text-tertiary font-medium leading-[1.3] truncate">{sub}</div>
+        <div className="text-[11px] text-text-tertiary font-medium leading-[1.3] truncate">
+          {sub}
+        </div>
       )}
     </div>
   );
 }
 
-function buildZonePath(
-  zoneId: string,
-  tree: ZoneWithChildren[]
-): { id: string; name: string }[] {
+function buildZonePath(zoneId: string, tree: ZoneWithChildren[]): { id: string; name: string }[] {
   const out: { id: string; name: string }[] = [];
   function walk(zones: ZoneWithChildren[], trail: { id: string; name: string }[]): boolean {
     for (const z of zones) {
@@ -357,8 +390,10 @@ function getRouteLabel(pathname: string, t: (k: string) => string): string | nul
   if (pathname.startsWith("/energy")) {
     const energy = t("nav.energy");
     if (pathname.startsWith("/energy/live")) return `${energy} · ${t("nav.energy.live")}`;
-    if (pathname.startsWith("/energy/consumption")) return `${energy} · ${t("nav.energy.consumption")}`;
-    if (pathname.startsWith("/energy/production")) return `${energy} · ${t("nav.energy.production")}`;
+    if (pathname.startsWith("/energy/consumption"))
+      return `${energy} · ${t("nav.energy.consumption")}`;
+    if (pathname.startsWith("/energy/production"))
+      return `${energy} · ${t("nav.energy.production")}`;
     return energy;
   }
   if (pathname.startsWith("/modes")) return t("nav.modes");
@@ -377,7 +412,13 @@ function getRouteLabel(pathname: string, t: (k: string) => string): string | nul
   return null;
 }
 
-function MobileNav({ drawerOpen, setDrawerOpen }: { drawerOpen: boolean; setDrawerOpen: (v: boolean) => void }) {
+function MobileNav({
+  drawerOpen,
+  setDrawerOpen,
+}: {
+  drawerOpen: boolean;
+  setDrawerOpen: (v: boolean) => void;
+}) {
   const { t } = useTranslation();
   const energyAvailable = useEnergy((s) => s.available);
 
@@ -385,20 +426,43 @@ function MobileNav({ drawerOpen, setDrawerOpen }: { drawerOpen: boolean; setDraw
     <>
       <nav className="flex lg:hidden flex-col border-t border-border bg-surface">
         <div className="flex items-center justify-around min-h-[56px] px-2">
-          <MobileNavLink to="/dashboard" label={t("nav.dashboard")} icon={<LayoutDashboard size={18} strokeWidth={1.5} />} />
-          <MobileNavLink to="/home" label={t("nav.maison")} icon={<Home size={18} strokeWidth={1.5} />} />
-          {energyAvailable && <MobileNavLink to="/energy" label={t("nav.energy")} icon={<Zap size={18} strokeWidth={1.5} />} />}
-          <MobileNavLink to="/modes" label={t("nav.modes")} icon={<Layers size={18} strokeWidth={1.5} />} />
+          <MobileNavLink
+            to="/dashboard"
+            label={t("nav.dashboard")}
+            icon={<LayoutDashboard size={18} strokeWidth={1.5} />}
+          />
+          <MobileNavLink
+            to="/home"
+            label={t("nav.maison")}
+            icon={<Home size={18} strokeWidth={1.5} />}
+          />
+          {energyAvailable && (
+            <MobileNavLink
+              to="/energy"
+              label={t("nav.energy")}
+              icon={<Zap size={18} strokeWidth={1.5} />}
+            />
+          )}
+          <MobileNavLink
+            to="/modes"
+            label={t("nav.modes")}
+            icon={<Layers size={18} strokeWidth={1.5} />}
+          />
           <button
             onClick={() => setDrawerOpen(true)}
             className="flex flex-col items-center justify-center py-1 px-3 rounded-[6px] text-[11px] font-medium text-text-secondary"
           >
-            <span className="mb-0.5"><Menu size={18} strokeWidth={1.5} /></span>
+            <span className="mb-0.5">
+              <Menu size={18} strokeWidth={1.5} />
+            </span>
             <span className="text-[11px]">{t("nav.more", "Plus")}</span>
           </button>
         </div>
         {/* Safe area spacer for iOS PWA home indicator */}
-        <div className="bg-surface flex-shrink-0" style={{ height: "env(safe-area-inset-bottom, 0px)" }} />
+        <div
+          className="bg-surface flex-shrink-0"
+          style={{ height: "env(safe-area-inset-bottom, 0px)" }}
+        />
       </nav>
 
       {/* Drawer overlay */}
@@ -431,29 +495,60 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         </div>
         {/* Close button */}
         <div className="flex items-center justify-between px-4 pb-2">
-          <span className="text-[13px] font-semibold text-text-secondary uppercase tracking-widest">{t("nav.more", "Plus")}</span>
-          <button onClick={onClose} className="p-1.5 rounded-[6px] text-text-tertiary hover:bg-border-light">
+          <span className="text-[13px] font-semibold text-text-secondary uppercase tracking-widest">
+            {t("nav.more", "Plus")}
+          </span>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-[6px] text-text-tertiary hover:bg-border-light"
+          >
             <X size={18} strokeWidth={1.5} />
           </button>
         </div>
 
         <div className="px-3 pb-4 space-y-1">
           {/* Settings */}
-          <DrawerLink icon={<Settings size={18} strokeWidth={1.5} />} label={t("nav.settings")} onClick={() => go("/settings")} />
+          <DrawerLink
+            icon={<Settings size={18} strokeWidth={1.5} />}
+            label={t("nav.settings")}
+            onClick={() => go("/settings")}
+          />
 
           {/* Analyse */}
-          <DrawerLink icon={<BarChart3 size={18} strokeWidth={1.5} />} label={t("nav.analyse")} onClick={() => go("/analyse")} />
+          <DrawerLink
+            icon={<BarChart3 size={18} strokeWidth={1.5} />}
+            label={t("nav.analyse")}
+            onClick={() => go("/analyse")}
+          />
 
           {/* Admin section */}
           {isAdmin && (
             <>
               <div className="pt-3 pb-1 px-2">
-                <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-widest">{t("nav.administration")}</span>
+                <span className="text-[11px] font-semibold text-text-tertiary uppercase tracking-widest">
+                  {t("nav.administration")}
+                </span>
               </div>
-              <DrawerLink icon={<Calendar size={18} strokeWidth={1.5} />} label={t("nav.calendar")} onClick={() => go("/calendar")} />
-              <DrawerLink icon={<Plug size={18} strokeWidth={1.5} />} label={t("nav.integrations")} onClick={() => go("/integrations")} />
-              <DrawerLink icon={<Send size={18} strokeWidth={1.5} />} label={t("nav.mqttPublishers")} onClick={() => go("/mqtt-publishers")} />
-              <DrawerLink icon={<Bell size={18} strokeWidth={1.5} />} label={t("nav.notificationPublishers")} onClick={() => go("/notification-publishers")} />
+              <DrawerLink
+                icon={<Calendar size={18} strokeWidth={1.5} />}
+                label={t("nav.calendar")}
+                onClick={() => go("/calendar")}
+              />
+              <DrawerLink
+                icon={<Plug size={18} strokeWidth={1.5} />}
+                label={t("nav.integrations")}
+                onClick={() => go("/integrations")}
+              />
+              <DrawerLink
+                icon={<Send size={18} strokeWidth={1.5} />}
+                label={t("nav.mqttPublishers")}
+                onClick={() => go("/mqtt-publishers")}
+              />
+              <DrawerLink
+                icon={<Bell size={18} strokeWidth={1.5} />}
+                label={t("nav.notificationPublishers")}
+                onClick={() => go("/notification-publishers")}
+              />
             </>
           )}
 
@@ -471,7 +566,10 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
                   )}
                 </div>
                 <button
-                  onClick={() => { logout(); onClose(); }}
+                  onClick={() => {
+                    logout();
+                    onClose();
+                  }}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-text-tertiary hover:bg-border-light text-[12px]"
                 >
                   <LogOut size={14} strokeWidth={1.5} />
@@ -483,13 +581,24 @@ function MobileDrawer({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Safe area spacer */}
-        <div className="bg-surface flex-shrink-0" style={{ height: "env(safe-area-inset-bottom, 0px)" }} />
+        <div
+          className="bg-surface flex-shrink-0"
+          style={{ height: "env(safe-area-inset-bottom, 0px)" }}
+        />
       </div>
     </div>
   );
 }
 
-function DrawerLink({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+function DrawerLink({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
