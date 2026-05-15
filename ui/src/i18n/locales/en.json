@@ -514,7 +514,7 @@
   "backup.confirmRestoreMessage": "This will replace all current data with the contents of {{filename}}. Continue?",
 
   "update.checkNow": "Check for updates",
-  "update.dockerUnavailable": "Self-update unavailable — Docker socket not mounted.",
+  "update.dockerUnavailable": "Self-update unavailable: Docker socket not mounted. To enable, copy docker-compose.override.example.yml to docker-compose.override.yml and run `docker compose up -d`.",
   "update.notComposeManaged": "Self-update only available with docker compose. Update manually with: docker compose pull && docker compose up -d",
   "update.confirmTitle": "Update to v{{version}}?",
   "update.confirmMessage": "Sowel will be updated from v{{current}} to v{{latest}}. The operation takes ~30-60 seconds.",

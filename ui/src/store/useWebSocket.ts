@@ -47,12 +47,15 @@ let currentTopics: WsTopic[] = ["system"];
 const MAX_RECONNECT_DELAY = 30_000;
 
 function getWsUrl(): string {
-  const token = localStorage.getItem("sowel_access_token");
   // In dev mode, connect directly to the backend to avoid Vite proxy EPIPE issues
   const wsHost = import.meta.env.DEV ? `${window.location.hostname}:3000` : window.location.host;
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  const base = `${protocol}//${wsHost}/ws`;
-  return token ? `${base}?token=${encodeURIComponent(token)}` : base;
+  return `${protocol}//${wsHost}/ws`;
+}
+
+function getWsSubprotocol(): string | undefined {
+  const token = localStorage.getItem("sowel_access_token");
+  return token ? `bearer.${token}` : undefined;
 }
 
 function getReconnectDelay(): number {
@@ -206,7 +209,8 @@ export const useWebSocket = create<WebSocketState>((set) => ({
     }
 
     set({ status: "connecting" });
-    ws = new WebSocket(getWsUrl());
+    const subprotocol = getWsSubprotocol();
+    ws = subprotocol ? new WebSocket(getWsUrl(), subprotocol) : new WebSocket(getWsUrl());
 
     ws.onopen = () => {
       set({ status: "connected" });

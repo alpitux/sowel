@@ -3,6 +3,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
 import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
@@ -146,6 +147,40 @@ export async function createServer(deps: ServerDeps) {
     methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
   });
 
+  // Security headers (CSP, X-Frame-Options, Referrer-Policy, X-Content-Type-Options).
+  // HSTS is set conditionally below (HTTPS only) to avoid breaking local HTTP setups.
+  await app.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'", "ws:", "wss:"],
+        fontSrc: ["'self'"],
+        manifestSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+    strictTransportSecurity: false,
+    frameguard: { action: "deny" },
+    referrerPolicy: { policy: "no-referrer" },
+    noSniff: true,
+  });
+
+  // HSTS only when the request arrived over HTTPS (via reverse proxy or direct TLS).
+  app.addHook("onSend", (req, reply, payload, done) => {
+    const xfProto = req.headers["x-forwarded-proto"];
+    const proto =
+      (Array.isArray(xfProto) ? xfProto[0] : xfProto) ??
+      ((req.socket as { encrypted?: boolean }).encrypted ? "https" : "http");
+    if (proto === "https") {
+      reply.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    done(null, payload);
+  });
+
   // Rate limiting (global: 300 req/min per IP — SPA makes many parallel calls)
   await app.register(rateLimit, {
     max: 300,
@@ -155,8 +190,17 @@ export async function createServer(deps: ServerDeps) {
   // Multipart file uploads (for backup restore)
   await app.register(multipart, { limits: { fileSize: 500 * 1024 * 1024 } }); // 500 MB
 
-  // WebSocket
-  await app.register(websocket);
+  // WebSocket — confirm the `bearer.<token>` subprotocol on handshake so that
+  // browsers don't drop the connection. Other subprotocols are refused.
+  await app.register(websocket, {
+    options: {
+      handleProtocols: (protocols: Set<string> | string[]) => {
+        const list = protocols instanceof Set ? Array.from(protocols) : protocols;
+        const bearer = list.find((p) => p.startsWith("bearer."));
+        return bearer ?? false;
+      },
+    },
+  });
 
   // Prevent browser caching on time-sensitive API routes
   const noCacheRoutes = ["/api/v1/energy/", "/api/v1/charts/", "/api/v1/logs"];
@@ -222,7 +266,7 @@ export async function createServer(deps: ServerDeps) {
   });
   registerSystemRoutes(app, { versionChecker, updateManager, tzInfo, logger });
   registerLogRoutes(app, { logBuffer, logger });
-  registerWebSocket(app, { eventBus, authService, logBuffer, logger });
+  registerWebSocket(app, { eventBus, authService, logBuffer, logger, corsOrigins });
 
   // Serve UI static files from project root ui-dist/
   const currentDir = import.meta.dirname ?? dirname(fileURLToPath(import.meta.url));

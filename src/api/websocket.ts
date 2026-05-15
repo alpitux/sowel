@@ -11,6 +11,44 @@ interface WebSocketDeps {
   authService: AuthService;
   logBuffer: LogRingBuffer;
   logger: Logger;
+  corsOrigins: string[];
+}
+
+/**
+ * Extracts a bearer token from either the Authorization header or the
+ * `Sec-WebSocket-Protocol` subprotocol (`bearer.<token>`). The subprotocol path
+ * is the one used by browser clients since the WebSocket API does not allow
+ * setting arbitrary request headers.
+ */
+export function extractWsToken(
+  authorization: string | undefined,
+  subprotocol: string | string[] | undefined,
+): string | null {
+  if (authorization && authorization.startsWith("Bearer ")) {
+    return authorization.slice("Bearer ".length).trim() || null;
+  }
+  if (!subprotocol) return null;
+  const raw = Array.isArray(subprotocol) ? subprotocol.join(",") : subprotocol;
+  const protocols = raw.split(",").map((p) => p.trim());
+  const bearer = protocols.find((p) => p.startsWith("bearer."));
+  if (!bearer) return null;
+  return bearer.slice("bearer.".length) || null;
+}
+
+/**
+ * Returns true when the connection's Origin is acceptable.
+ * - Missing Origin: allowed (non-browser clients like Node scripts have no Origin).
+ * - Wildcard in corsOrigins: allowed (explicit user choice).
+ * - Otherwise: must match one of the whitelisted origins.
+ */
+export function isWsOriginAllowed(
+  origin: string | string[] | undefined,
+  corsOrigins: string[],
+): boolean {
+  if (!origin) return true;
+  if (corsOrigins.includes("*")) return true;
+  const value = Array.isArray(origin) ? origin[0] : origin;
+  return corsOrigins.includes(value);
 }
 
 type WsTopic =
@@ -102,7 +140,7 @@ function deduplicateEvents(events: EngineEvent[]): EngineEvent[] {
 }
 
 export function registerWebSocket(app: FastifyInstance, deps: WebSocketDeps): void {
-  const { eventBus, authService, logBuffer, logger: baseLogger } = deps;
+  const { eventBus, authService, logBuffer, logger: baseLogger, corsOrigins } = deps;
   const logger = baseLogger.child({ module: "websocket" });
   const clients = new Map<WebSocket, ClientState>();
 
@@ -166,25 +204,39 @@ export function registerWebSocket(app: FastifyInstance, deps: WebSocketDeps): vo
   }
 
   app.get("/ws", { websocket: true }, (socket, request) => {
-    // Auth via query param: ws://host/ws?token=xxx
-    const url = new URL(request.url, `http://${request.headers.host}`);
-    const token = url.searchParams.get("token");
+    // Origin check: refuse browser clients from non-whitelisted origins.
+    if (!isWsOriginAllowed(request.headers.origin, corsOrigins)) {
+      logger.warn({ origin: request.headers.origin }, "WebSocket rejected: Origin not allowed");
+      socket.close(4003, "Origin not allowed");
+      return;
+    }
 
-    if (token) {
-      try {
-        if (token.startsWith("swl_") || token.startsWith("wch_") || token.startsWith("cbl_")) {
-          const result = authService.verifyApiToken(token);
-          if (!result) {
-            socket.close(4001, "Invalid token");
-            return;
-          }
-        } else {
-          authService.verifyAccessToken(token);
+    // Authentication: token via Authorization header (Bearer) or via
+    // `Sec-WebSocket-Protocol: bearer.<token>` subprotocol (browser path).
+    const token = extractWsToken(
+      request.headers.authorization,
+      request.headers["sec-websocket-protocol"],
+    );
+
+    if (!token) {
+      logger.warn("WebSocket rejected: no authentication credentials provided");
+      socket.close(4001, "Authentication required");
+      return;
+    }
+
+    try {
+      if (token.startsWith("swl_") || token.startsWith("wch_") || token.startsWith("cbl_")) {
+        const result = authService.verifyApiToken(token);
+        if (!result) {
+          socket.close(4001, "Invalid token");
+          return;
         }
-      } catch {
-        socket.close(4001, "Invalid token");
-        return;
+      } else {
+        authService.verifyAccessToken(token);
       }
+    } catch {
+      socket.close(4001, "Invalid token");
+      return;
     }
 
     // Default subscription: system events only
