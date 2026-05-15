@@ -148,7 +148,7 @@ Bouton physique ou télécommande. Pas piloté directement, utilisé comme décl
 
 #### Compteur d'énergie
 
-Suit la consommation d'énergie d'un circuit ou d'un device spécifique. Souvent utilisé comme **sous-compteur** sur une ligne dédiée (pompe à chaleur, piscine, borne VE) pour alimenter la [ventilation par usage](energy.md#bouton-total-par-usage) sur la page Énergie.
+Suit la consommation d'énergie d'un circuit ou d'un device spécifique. Souvent utilisé comme **sous-compteur** sur une ligne dédiée (pompe à chaleur, piscine, borne VE) pour alimenter la [ventilation par usage](energy.md#bascule-total-par-usage) sur la page Énergie.
 
 - **Contrôles :** Affichage de la puissance (W) et de l'énergie quotidienne (Wh/kWh)
 - **Données attendues :** énergie cumulée (Wh)
