@@ -233,9 +233,9 @@ describe("PackageManager — spec 089 C1 attack regression guards", () => {
     );
   });
 
-  // C1.3 — tarball with a symlink entry is refused by post-extraction scan
-  it("refuses install when tarball contains a symlink", async () => {
-    // Add a symlink to the source dir before tarring.
+  // C1.3 — tarball with a symlink that ESCAPES the extract dir is refused
+  it("refuses install when tarball contains a symlink escaping the extract dir", async () => {
+    // Absolute symlink → escapes any extract dir.
     const symlinkSrc = resolve(pkgSrcDir, "evil-link");
     symlinkSync("/etc/passwd", symlinkSrc);
     await buildTarball(pkgSrcDir, tarballPath);
@@ -259,6 +259,67 @@ describe("PackageManager — spec 089 C1 attack regression guards", () => {
     await expect(manager.installFromGitHub("mchacher/sowel-plugin-test")).rejects.toBeInstanceOf(
       SymlinkInTarballError,
     );
+  });
+
+  // C1.3b — tarball with a symlink ESCAPING via .. traversal is refused
+  it("refuses install when tarball contains a symlink escaping via .. traversal", async () => {
+    const symlinkSrc = resolve(pkgSrcDir, "evil-link");
+    // Build a relative symlink with many .. so it always escapes regardless
+    // of where the tarball is extracted (e.g. /tmp/extract/evil-link → /etc/passwd).
+    symlinkSync("../../../../../../../../etc/passwd", symlinkSrc);
+    await buildTarball(pkgSrcDir, tarballPath);
+    const newSha = sha256OfFile(tarballPath);
+
+    setRegistry([
+      {
+        id: "test-plugin",
+        name: "Test",
+        description: "x",
+        icon: "Puzzle",
+        author: "mchacher",
+        repo: "mchacher/sowel-plugin-test",
+        owner: "mchacher",
+        sha256: newSha,
+        tags: [],
+      },
+    ]);
+    mockGithubFetch(tarballPath);
+
+    await expect(manager.installFromGitHub("mchacher/sowel-plugin-test")).rejects.toBeInstanceOf(
+      SymlinkInTarballError,
+    );
+  });
+
+  // C1.3c — internal symlink (npm node_modules/.bin pattern) is ALLOWED
+  it("allows install when tarball contains an internal symlink (e.g. node_modules/.bin)", async () => {
+    // Mimic node_modules/.bin/foo → ../foo/bin.js (npm-installed package layout).
+    const binDir = resolve(pkgSrcDir, "node_modules", ".bin");
+    const targetDir = resolve(pkgSrcDir, "node_modules", "foo");
+    mkdirSync(binDir, { recursive: true });
+    mkdirSync(targetDir, { recursive: true });
+    writeFileSync(resolve(targetDir, "bin.js"), "console.log('hi');\n");
+    // Relative target pointing within the extract tree.
+    symlinkSync("../foo/bin.js", resolve(binDir, "foo"));
+    await buildTarball(pkgSrcDir, tarballPath);
+    const newSha = sha256OfFile(tarballPath);
+
+    setRegistry([
+      {
+        id: "test-plugin",
+        name: "Test",
+        description: "x",
+        icon: "Puzzle",
+        author: "mchacher",
+        repo: "mchacher/sowel-plugin-test",
+        owner: "mchacher",
+        sha256: newSha,
+        tags: [],
+      },
+    ]);
+    mockGithubFetch(tarballPath);
+
+    const manifest = await manager.installFromGitHub("mchacher/sowel-plugin-test");
+    expect(manifest.id).toBe("test-plugin");
   });
 
   // C1 — package absent from registry is refused (not silently downloaded)
