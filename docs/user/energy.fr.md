@@ -1,161 +1,189 @@
 # Suivi énergétique
 
-Sowel intègre un suivi énergétique qui mesure la consommation électrique de votre maison dans le temps. Il prend en charge la classification tarifaire HP/HC (heures pleines/heures creuses) et le suivi de l'autoconsommation pour la production solaire.
+Sowel intègre un suivi énergétique qui mesure la consommation électrique de votre maison et (en option) votre production solaire dans le temps. Il prend en charge la classification tarifaire heures pleines / heures creuses, le suivi de l'autoconsommation, et un découpage par usage lorsque vous instrumentez des circuits dédiés.
 
-## Vue d'ensemble
+## Les trois types d'équipement énergie
 
-Le suivi énergétique fonctionne via un pipeline :
+Le suivi énergétique de Sowel est **indépendant de l'intégration**. N'importe quel plugin qui remonte des données d'énergie ou de puissance peut alimenter le pipeline, du moment que le device est lié à l'un des trois types d'équipement ci-dessous.
 
-1. Un **équipement compteur d'énergie** (par ex. module Netatmo Energy sur votre disjoncteur principal) remonte les données de consommation
-2. Sowel écrit ces données dans **InfluxDB**, une base de données de séries temporelles
-3. InfluxDB agrège automatiquement les données en résumés horaires et journaliers
-4. La **page Énergie** dans l'UI affiche les graphiques et les totaux
+| Type d'équipement         | Ce qu'il représente                                                     | Données device requises                                        |
+| ------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `main_energy_meter`       | Votre compteur principal (import / export réseau pour toute la maison)  | Énergie cumulée (Wh), ou delta d'énergie réseau signé par tick |
+| `energy_meter`            | Un sous-compteur sur un circuit dédié (PAC, piscine, recharge VE, etc.) | Énergie cumulée (Wh) **ou** puissance instantanée (W)          |
+| `energy_production_meter` | Votre compteur de production solaire (ou autre production locale)       | Énergie de production cumulée (Wh)                             |
 
-## Prérequis
+Vous pouvez mixer : une installation avec uniquement un compteur principal fonctionne, vous n'avez pas besoin de solaire pour utiliser la page Énergie. Inversement, vous pouvez avoir plusieurs sous-compteurs sans compteur principal, vous perdrez juste la barre "Autre" sur la vue par usage.
 
-- Un device de compteur d'énergie connecté à l'une de vos intégrations (par ex. Netatmo Home Control)
-- Un équipement de type **main_energy_meter** configuré dans Sowel
-- InfluxDB en service (inclus dans la configuration Docker)
+!!! info "Sous-compteurs en puissance seule"
+Les pinces zigbee bon marché qui ne remontent que `power` (W) et pas `energy` (Wh) sont supportées en sous-compteur. Sowel intègre localement le signal de puissance en un flux Wh attribué à l'équipement sous-compteur, à la même cadence par minute que le compteur principal. L'état survit aux redémarrages.
+
+## Comment les données circulent
+
+```
+Device compteur d'énergie (toute intégration)
+  -> Le plugin remonte `energy` (Wh) ou `power` (W)
+    -> HistoryWriter écrit des points minute par minute dans InfluxDB
+      -> EnergyAggregator calcule les cumuls heure / jour / mois / année
+        -> La page Énergie affiche graphiques et totaux
+```
+
+InfluxDB stocke les points bruts dans un bucket à rétention courte, puis des tâches de downsampling automatiques agrègent en buckets horaire et journalier avec des rétentions bien plus longues. La page Énergie choisit le bon bucket de manière transparente selon la fenêtre temporelle affichée.
 
 !!! info "InfluxDB est automatique"
-InfluxDB est obligatoire et démarre avec Sowel. Au premier lancement, Sowel crée automatiquement les buckets requis, les tâches de downsampling et les tâches d'agrégation énergétique. Aucune configuration manuelle d'InfluxDB n'est nécessaire.
+InfluxDB est obligatoire et démarre avec Sowel via Docker Compose. Au premier lancement, Sowel crée automatiquement les buckets requis, les tâches de downsampling et les tâches d'agrégation énergétique. Aucune configuration manuelle d'InfluxDB n'est nécessaire.
 
 ## Configurer le suivi énergétique
 
-### Étape 1 : connecter votre intégration énergie
+### Étape 1 : connecter une intégration énergie
 
-Assurez-vous que votre source de données énergie est configurée dans **Administration > Intégrations**. Pour Netatmo, cela signifie configurer l'intégration Netatmo Home Control avec vos identifiants OAuth.
+Installez un plugin qui fournit des devices de compteur d'énergie (parcourez le catalogue depuis **Administration > Plugins**) et configurez-le depuis **Administration > Intégrations**. Tout plugin qui expose un device avec des données `energy` ou `power` convient.
 
-### Étape 2 : créer l'équipement énergie
+### Étape 2 : créer le compteur d'énergie principal
 
 Allez dans **Administration > Équipements** et créez un équipement :
 
 - **Type** : Compteur d'énergie principal
-- **Zone** : affectez-le à une zone pertinente (par ex. Maison ou Local technique)
-- **Liez** à votre device compteur d'énergie
+- **Zone** : typiquement la racine Maison, ou une zone Local technique
+- **Liez** à la donnée `energy` du device de votre compteur réseau
 
-Une fois lié, Sowel commence à enregistrer les données d'énergie dans InfluxDB.
+Une fois lié, Sowel commence à écrire un point d'énergie par minute dans InfluxDB.
 
-### Étape 3 : (facultatif) configurer les tarifs HP/HC
+### Étape 3 : (facultatif) ajouter un compteur de production
 
-Si votre contrat d'électricité utilise des heures pleines (HP) et creuses (HC), configurez la grille tarifaire afin que Sowel puisse répartir votre consommation en conséquence.
-
-Allez dans **Réglages > Configuration tarifaire** :
-
-1. Définissez votre grille tarifaire : quelles heures sont HP et lesquelles sont HC
-2. Vous pouvez définir des grilles différentes selon les jours de la semaine
-3. Optionnellement, saisissez vos prix HP et HC par kWh
-
-**Exemple : tarif HP/HC français standard**
-
-| Heures        | Tarif        |
-| ------------- | ------------ |
-| 06:00 à 22:00 | HP (pleines) |
-| 22:00 à 06:00 | HC (creuses) |
-
-!!! tip
-Si aucun tarif n'est configuré, toute la consommation est classée HP par défaut. La page Énergie fonctionne quand même, vous ne verrez juste pas la ventilation HP/HC.
-
-### Étape 4 : (facultatif) configurer des sous-compteurs pour une ventilation par usage
-
-Vous pouvez ajouter des **équipements sous-compteurs** de type `energy_meter` sur des circuits dédiés (pompe à chaleur, piscine, borne VE, etc.) pour répartir ce que mesure votre compteur principal en usages nommés.
-
-Pour configurer un sous-compteur :
-
-1. Liez un compteur d'énergie ou une prise mesurée Zigbee/Wi-Fi au circuit pertinent.
-2. Allez dans **Administration > Équipements** et créez un équipement de type **Compteur d'énergie**.
-3. Liez-le à la donnée `energy` (Wh) du device.
-
-Une fois qu'au moins un sous-compteur est configuré, la page Énergie affiche un bouton **Total / Par usage**. La vue "Par usage" rend un graphique en barres empilées avec une pile par sous-compteur, plus une pile **Autre** pour le résidu non capturé par un sous-compteur (c'est-à-dire `compteur principal - somme des sous-compteurs`).
-
-### Étape 5 : (facultatif) configurer le suivi de production
-
-Si vous avez des panneaux solaires, créez un équipement de type **energy_production_meter** et liez-le au device de votre compteur de production. Sowel suivra alors :
+Si vous avez une production locale (panneaux solaires en général), créez un équipement de type **Compteur de production d'énergie** et liez-le au device de votre compteur de production. Avec un compteur principal et un compteur de production en place, Sowel calcule :
 
 - **Consommation réseau** : énergie tirée du réseau
-- **Autoconsommation** : énergie produite et consommée localement
+- **Autoconsommation** : énergie produite et consommée à la maison
+- **Injection réseau** : énergie produite renvoyée vers le réseau
 - **Consommation totale** : réseau + autoconsommation
 
-## Utiliser la page Énergie
+### Étape 4 : (facultatif) configurer les tarifs heures pleines / creuses
 
-Naviguez vers **Énergie** dans la barre latérale. La page affiche :
+Si votre contrat d'électricité distingue les heures pleines des heures creuses, configurez la grille pour que Sowel puisse répartir votre consommation.
 
-### Sélecteur de période
+Allez dans **Réglages > Administration > Tarifs énergie** :
 
-Basculez entre différentes vues temporelles :
+![Configuration tarifaire](../screenshots/energy-tariff-settings-fr.png)
 
-| Période   | Ce qui est affiché                                       |
-| --------- | -------------------------------------------------------- |
-| **Jour**  | Barres de consommation horaires pour un jour choisi      |
-| **Mois**  | Barres de consommation journalières pour un mois choisi  |
-| **Année** | Barres de consommation mensuelles pour une année choisie |
+1. Saisissez optionnellement vos prix HP et HC par kWh (utilisés pour les vues coût ; la classification fonctionne sans)
+2. Définissez vos créneaux horaires : quelles heures sont HP et lesquelles sont HC
+3. Vous pouvez ajouter autant de créneaux que nécessaire pour couvrir les 24 h de la journée
 
-Utilisez les flèches de navigation pour vous déplacer entre les dates.
+Sans configuration tarifaire, toute la consommation est classée en HP par défaut, vous ne voyez juste pas la répartition.
 
-### Graphique de consommation
+### Étape 5 : (facultatif) ajouter des sous-compteurs pour une répartition par usage
 
-Un graphique en barres qui montre la consommation d'énergie sur la période sélectionnée. Chaque barre est codée par couleur :
+Pour savoir comment la consommation de votre compteur principal se répartit entre les circuits, ajoutez un équipement `energy_meter` pour chaque circuit instrumenté.
 
-- **Bleu** : consommation réseau
-- **Bleu clair** : portion en heures creuses (HC), si HP/HC est configuré
-- **Vert** : autoconsommation, si le suivi de production est configuré
+1. Installez une pince zigbee, une prise intelligente ou un compteur Wi-Fi sur le circuit dédié
+2. Allez dans **Administration > Équipements** et créez un équipement de type **Compteur d'énergie**
+3. Liez-le à la donnée `energy` (Wh) du device, ou — si votre device ne remonte que `power` (W) — à sa donnée `power` : Sowel intègre automatiquement le signal de puissance en flux Wh
 
-#### Bouton Total / Par usage
+Dès qu'un sous-compteur est configuré, le bouton **Par usage** apparaît sur la page Consommation. Le bouton est masqué tant qu'aucun sous-compteur n'existe.
 
-Si vous avez configuré au moins un sous-compteur (voir [Étape 4](#etape-4-facultatif-configurer-des-sous-compteurs-pour-une-ventilation-par-usage)), un bouton **Total / Par usage** apparaît au-dessus du graphique :
+## Utiliser la section Énergie
 
-- **Total** : la vue HP/HC/production standard décrite plus haut
-- **Par usage** : un graphique en barres empilées avec une couleur par sous-compteur (par ex. PAC, Piscine) plus un résidu **Autre** qui représente ce que le compteur principal a vu mais qu'aucun sous-compteur n'a comptabilisé
+La barre latérale regroupe les vues énergie sous **Énergie** :
 
-Le bouton est masqué quand aucun sous-compteur n'est configuré. Les widgets de totaux (HP/HC, autoconsommation) conservent leurs valeurs entre les deux vues.
+- **Live** : flux instantané entre réseau, production et consommation maison
+- **Consommation** : consommation historique avec répartition HP/HC et autoconsommation
+- **Production** : production solaire historique avec répartition autoconsommation / injection
 
-### Totaux
+### Vue Live
 
-Sous le graphique, vous voyez les totaux récapitulatifs :
+La vue Live affiche ce qui se passe en temps réel — valeurs de puissance mises à jour en continu via WebSocket.
 
-- **Consommation réseau** en kWh
-- **Répartition HP / HC** en kWh (si le tarif est configuré)
-- **Autoconsommation** en kWh (si la production est suivie)
-- **Consommation totale** en kWh
+![Flux énergétique en temps réel](../screenshots/energy-live-fr.png)
 
-### Page Production
+Le diagramme montre trois cases (Réseau, Consommation, Production) avec des flèches indiquant le sens du flux. Quand la production solaire dépasse la consommation maison, un indicateur "Surplus solaire" apparaît et la part de solaire qui part au réseau versus celle qui alimente la maison s'affiche sur les flèches.
 
-Si vous avez configuré la production solaire, un onglet **Production** apparaît, qui affiche :
+Les cases sont masquées quand l'équipement correspondant n'est pas configuré : sans compteur de production, seules Réseau et Consommation sont affichées.
 
-- Graphique en barres de production (même sélecteur de période que la consommation)
-- Totaux de production
-- Ratio d'autoconsommation
+### Vue Consommation
+
+Choisissez une période (Jour, Sem, Mois, Année) et naviguez avec les flèches. Le graphique affiche une barre par seau temporel de la période sélectionnée.
+
+![Consommation journalière](../screenshots/energy-consumption-day-fr.png)
+
+Code couleur sur le graphique **Total** :
+
+| Couleur    | Signification                                                |
+| ---------- | ------------------------------------------------------------ |
+| Bleu foncé | Consommation réseau en heures pleines                        |
+| Bleu clair | Consommation réseau en heures creuses                        |
+| Vert       | Autoconsommation (uniquement avec un compteur de production) |
+
+Sous le graphique, les totaux sont affichés en kWh : réseau (réparti HP / HC), autoconsommation, et total (avec le pourcentage d'autoconsommation).
+
+#### Bascule Total / Par usage
+
+Quand au moins un sous-compteur est configuré, un bouton **Total / Par usage** apparaît au-dessus du graphique. La vue **Par usage** remplace la répartition HP / HC par une pile par sous-compteur, plus une pile **Autre** pour le résidu vu par le compteur principal mais non comptabilisé par les sous-compteurs.
+
+![Répartition par usage](../screenshots/energy-consumption-by-usage-fr.png)
+
+Les sous-compteurs utilisent une palette de couleurs déterministe afin qu'un même circuit garde la même couleur d'un jour à l'autre. La pile "Autre" est bornée à zéro, donc un sous-compteur qui dépasserait brièvement le compteur principal (à cause d'un décalage d'échantillonnage) ne peut pas la rendre négative.
+
+Les totaux (HP / HC, autoconsommation) restent identiques entre les deux modes.
+
+#### Périodes plus longues
+
+Passer en **Mois** ou **Année** garde les mêmes couleurs et totaux, mais chaque barre représente un jour (vue Mois) ou un mois (vue Année).
+
+![Consommation mensuelle](../screenshots/energy-consumption-month-fr.png)
+
+### Vue Production
+
+La page Production affiche l'historique de la production solaire (ou autre production locale) :
+
+![Production journalière](../screenshots/energy-production-day-fr.png)
+
+| Couleur    | Signification                                       |
+| ---------- | --------------------------------------------------- |
+| Vert clair | Autoconsommation, produit et consommé sur place     |
+| Vert foncé | Injection réseau, produit et renvoyé vers le réseau |
+
+Les totaux sous le graphique somment les deux tranches en production journalière, mensuelle ou annuelle.
 
 ## Pipeline de données
 
-Comprendre le flux des données aide au dépannage :
+Comprendre comment circulent les données aide au diagnostic :
 
 ```
-Energy meter device
-  --> 30-minute energy readings
-    --> InfluxDB "sowel" bucket (7-day retention, raw data)
-      --> Hourly aggregation task
-        --> InfluxDB "sowel-energy-hourly" bucket (2-year retention)
-          --> Daily aggregation task
-            --> InfluxDB "sowel-energy-daily" bucket (10-year retention)
+Le plugin remonte energy ou power
+  -> Points minute par minute écrits dans le bucket InfluxDB "sowel" (rétention 7 jours)
+    -> Tâche sowel-energy-sum-hourly
+      -> Bucket "sowel-energy-hourly" (rétention 2 ans)
+        -> Tâche sowel-energy-sum-daily
+          -> Bucket "sowel-energy-daily" (rétention 10 ans)
 ```
 
-- **Vue Jour** : pour les jours récents (moins d'une semaine), le graphique interroge les données brutes pour une précision en temps réel. Pour les jours plus anciens, il utilise le bucket horaire.
-- **Vue Mois/Année** : utilise le bucket journalier pour des requêtes efficaces sur de longues périodes.
+La page Énergie choisit le bucket selon la période :
+
+- **Vue Jour** pour aujourd'hui et les jours récents : interroge le bucket brut pour la précision temps réel
+- **Vue Jour** pour les jours plus anciens : interroge le bucket horaire
+- **Mois / Année** : interroge le bucket journalier pour des requêtes rapides sur longue plage
+
+L'agrégateur garde aussi en mémoire les cumuls (heure, jour, mois, année) que la vue Live et les widgets de la page Maison lisent directement, rafraîchis à chaque nouveau tick d'énergie.
 
 ## Dépannage
 
 ### Aucune donnée n'apparaît sur la page Énergie
 
-1. Vérifiez que votre intégration énergie est connectée (indicateur vert dans Intégrations)
-2. Vérifiez que l'équipement énergie existe et est lié à un device
-3. Patientez le temps d'au moins un cycle de polling (typiquement 30 minutes pour Netatmo)
-4. Consultez les logs pour des messages d'erreur liés à l'énergie ou à InfluxDB
+1. Vérifiez que l'intégration qui fournit votre device de compteur est connectée (indicateur vert dans **Administration > Intégrations**)
+2. Vérifiez que l'équipement existe (Compteur principal et/ou Compteur de production) et qu'il est lié à un device qui émet réellement la donnée `energy`
+3. Attendez au moins un cycle de remontée ; la fréquence exacte dépend du plugin, mais c'est typiquement quelques minutes au maximum
+4. Consultez **Réglages > Système > Logs** pour les messages des modules `history-writer` ou `energy-aggregator`
 
-### La répartition HP/HC affiche tout en HP
+### La répartition HP / HC affiche tout en HP
 
-Cela signifie qu'aucune grille tarifaire n'est configurée. Allez dans **Réglages > Configuration tarifaire** et définissez vos heures HP/HC.
+Cela signifie qu'aucune grille tarifaire n'est configurée. Allez dans **Réglages > Administration > Tarifs énergie** et définissez vos créneaux.
 
-### Des données anciennes manquent
+### Les anciennes données sont manquantes
 
-Les données de plus de 7 jours ne sont disponibles que si la tâche d'agrégation horaire s'est exécutée correctement. Vérifiez qu'InfluxDB tourne et que Sowel a créé les tâches d'agrégation (cela se fait automatiquement au démarrage).
+Les données antérieures à 7 jours ne vivent que dans les buckets horaire et journalier (downsamplés). S'ils sont vides, c'est que les tâches de downsampling n'ont pas encore tourné (elles s'exécutent une fois par heure et une fois par jour). Vérifiez qu'InfluxDB tourne et est joignable, et inspectez les logs du module `history-writer` au démarrage : Sowel y indique si les tâches ont été créées ou existaient déjà.
+
+### Le résidu "Autre" est très important sur la vue par usage
+
+Cela veut dire que vos sous-compteurs ne couvrent pas la majorité de la consommation du compteur principal, ce qui est normal : le compteur principal voit tout ce qui consomme dans la maison, alors que les sous-compteurs ne couvrent typiquement que des circuits dédiés à forte puissance. Le résidu correspond aux "autres circuits".
+
+Si le résidu est **négatif** (borné à zéro dans le graphique), c'est qu'un de vos sous-compteurs remonte plus que ce que voit le compteur principal, généralement une pince câblée à l'envers ou un défaut de calibration. L'intégrateur borne les deltas négatifs à zéro et logue un WARN à la première occurrence.
