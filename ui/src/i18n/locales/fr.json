@@ -1006,10 +1006,10 @@
   "settings.version.noDocker": "Docker non disponible. Mettez à jour manuellement :",
 
   "activity.title": "Activité",
-  "activity.subtitle": "dernière heure",
+  "activity.subtitle": "dernières 24 h",
   "activity.live": "live",
   "activity.offline": "offline",
-  "activity.empty": "Aucune activité dans la dernière heure",
+  "activity.empty": "Aucune activité dans les dernières 24 h",
   "activity.loading": "Chargement de l'activité…",
   "activity.loadError": "Impossible de charger l'activité",
 

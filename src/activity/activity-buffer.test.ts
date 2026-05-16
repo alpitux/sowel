@@ -408,11 +408,11 @@ describe("ActivityBuffer", () => {
       expect(onActivity).toHaveBeenCalledTimes(2);
     });
 
-    it("caps the buffer at 200 items", () => {
-      for (let i = 0; i < 250; i++) {
+    it("caps the buffer at 2000 items", () => {
+      for (let i = 0; i < 2500; i++) {
         h.bus.emit({ type: "mode.activated", modeId: `m${i}`, modeName: `M${i}` });
       }
-      expect(h.buffer.size()).toBe(200);
+      expect(h.buffer.size()).toBe(2000);
     });
   });
 });

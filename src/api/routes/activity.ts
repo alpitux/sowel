@@ -19,7 +19,7 @@ export function registerActivityRoutes(app: FastifyInstance, deps: ActivityDeps)
     };
   }>("/api/v1/activity", async (request) => {
     const { zoneId, includeDescendants, limit } = request.query;
-    const parsedLimit = Math.min(Math.max(Number(limit) || 50, 1), 50);
+    const parsedLimit = Math.min(Math.max(Number(limit) || 100, 1), 200);
     const parsedIncludeDescendants = includeDescendants !== "false";
 
     const items = activityBuffer.getItems({
