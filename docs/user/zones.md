@@ -95,7 +95,7 @@ Each zone has a live **Activity** panel on the right side of the Home view. It i
 
 The panel groups events by hour. The most recent bucket is labeled `HH:00 → now`, older buckets are labeled `HH:00`.
 
-![Activity panel showing zone-only events](../screenshots/activity-zone-only-en.png)
+![Zone view showing the Activity panel in the right column](../screenshots/activity-zone-view-en.png)
 
 ### What is tracked
 
@@ -116,9 +116,7 @@ When a recipe dispatches multiple identical orders in a quick burst (e.g., Motio
 
 ### Sub-zones toggle
 
-By default, the panel only shows events whose zone matches the one you are viewing, plus events that apply globally (mode changes, sunrise/sunset, system alarms). When you are on a parent zone (for example "Home"), enable the toggle in the panel header to also include events from all sub-zones.
-
-![Activity panel with the sub-zones toggle on](../screenshots/activity-with-descendants-en.png)
+By default, the panel only shows events whose zone matches the one you are viewing, plus events that apply globally (mode changes, sunrise/sunset, system alarms). When you are on a parent zone (for example "Home"), enable the small Network-icon toggle in the panel header to also include events from all sub-zones — that is what the screenshot above shows, with the toggle filled blue.
 
 The toggle appears only on zones that have children. Your choice is remembered across navigation (stored in the browser).
 
