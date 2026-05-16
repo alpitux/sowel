@@ -1032,5 +1032,7 @@
   "activity.source.external": "via {{channel}}",
 
   "activity.toggleDescendants.on": "Masquer l'activité des sous-zones",
-  "activity.toggleDescendants.off": "Inclure l'activité des sous-zones"
+  "activity.toggleDescendants.off": "Inclure l'activité des sous-zones",
+
+  "activity.bucket.now": "maintenant"
 }
