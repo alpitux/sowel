@@ -75,7 +75,8 @@ type WsTopic =
   | "calendar"
   | "mqtt-publishers"
   | "system"
-  | "logs";
+  | "logs"
+  | "activity";
 
 const VALID_TOPICS = new Set<WsTopic>([
   "devices",
@@ -87,6 +88,7 @@ const VALID_TOPICS = new Set<WsTopic>([
   "mqtt-publishers",
   "system",
   "logs",
+  "activity",
 ]);
 const BATCH_INTERVAL_MS = 200;
 
@@ -115,6 +117,8 @@ function getEventTopic(event: EngineEvent): WsTopic {
     case "mqtt-broker":
     case "mqtt-publisher":
       return "mqtt-publishers";
+    case "activity":
+      return "activity";
     default:
       return "system";
   }

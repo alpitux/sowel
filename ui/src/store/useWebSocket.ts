@@ -6,9 +6,18 @@ import { useEquipments } from "./useEquipments";
 import { useZoneAggregation } from "./useZoneAggregation";
 import { useRecipes } from "./useRecipes";
 import { useModes } from "./useModes";
+import { useActivity } from "./useActivity";
 import { INTEGRATION_LABELS } from "../constants";
 
-export type WsTopic = "devices" | "equipments" | "zones" | "modes" | "recipes" | "calendar" | "system";
+export type WsTopic =
+  | "devices"
+  | "equipments"
+  | "zones"
+  | "modes"
+  | "recipes"
+  | "calendar"
+  | "system"
+  | "activity";
 
 type ConnectionStatus = "connecting" | "connected" | "disconnected";
 
@@ -187,6 +196,9 @@ function handleEvent(event: EngineEvent): void {
       break;
     case "system.restart_required":
       useWebSocket.setState({ restartRequired: event.reason });
+      break;
+    case "activity.added":
+      useActivity.getState().addItem(event.item);
       break;
   }
 }

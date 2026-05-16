@@ -1003,5 +1003,31 @@
   "settings.version.updating": "Updating...",
   "settings.version.updateStarted": "Update started — Sowel will restart...",
   "settings.version.upToDate": "Sowel is up to date",
-  "settings.version.noDocker": "Docker not available. Update manually:"
+  "settings.version.noDocker": "Docker not available. Update manually:",
+
+  "activity.title": "Activity",
+  "activity.subtitle": "last hour",
+  "activity.live": "live",
+  "activity.offline": "offline",
+  "activity.empty": "No activity in the last hour",
+  "activity.loading": "Loading activity…",
+  "activity.loadError": "Failed to load activity",
+
+  "activity.templates.order.executed": "<b>{{equipmentName}}</b> → {{value}}",
+  "activity.templates.order.executed.multi": "<b>{{firstName}}</b> ×{{count}} → {{value}}",
+  "activity.templates.motion.detected": "Motion detected on <b>{{equipmentName}}</b>",
+  "activity.templates.recipe.started": "Recipe <b>{{recipeName}}</b> started",
+  "activity.templates.recipe.stopped": "Recipe <b>{{recipeName}}</b> stopped",
+  "activity.templates.recipe.error": "Recipe <b>{{recipeName}}</b> failed",
+  "activity.templates.mode.activated": "Mode <b>{{modeName}}</b> activated",
+  "activity.templates.mode.deactivated": "Mode <b>{{modeName}}</b> deactivated",
+  "activity.templates.sunlight.sunrise": "<b>Sunrise</b>",
+  "activity.templates.sunlight.sunset": "<b>Sunset</b>",
+  "activity.templates.alarm.raised": "<b>{{source}}</b>: {{message}}",
+
+  "activity.source.recipe": "by {{recipeName}}",
+  "activity.source.mode": "by mode {{modeName}}",
+  "activity.source.manual": "manual",
+  "activity.source.button": "via {{buttonLabel}}",
+  "activity.source.external": "via {{channel}}"
 }

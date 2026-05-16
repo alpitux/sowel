@@ -24,6 +24,15 @@ export interface RecipeContext {
   state: RecipeStateStore;
   log: (message: string, level?: "info" | "warn" | "error") => void;
   helpers: RecipeHelpers;
+  /**
+   * Dispatch an order pre-attributed to this recipe instance (spec 101).
+   * Prefer this over `equipmentManager.executeOrder` to populate the Activity feed.
+   */
+  dispatchOrder: (
+    equipmentId: string,
+    alias: string,
+    value: unknown,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 // ============================================================

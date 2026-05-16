@@ -259,7 +259,12 @@ describe("ButtonActionManager", () => {
         previous: null,
       });
 
-      expect(equipmentManager.executeOrder).toHaveBeenCalledWith("eq-light-1", "state", "ON");
+      expect(equipmentManager.executeOrder).toHaveBeenCalledWith(
+        "eq-light-1",
+        "state",
+        "ON",
+        expect.objectContaining({ kind: "button" }),
+      );
     });
   });
 
@@ -314,7 +319,12 @@ describe("ButtonActionManager", () => {
       });
 
       expect(modeManager.activateMode).toHaveBeenCalledWith("mode-1");
-      expect(equipmentManager.executeOrder).toHaveBeenCalledWith("eq-light-1", "state", "ON");
+      expect(equipmentManager.executeOrder).toHaveBeenCalledWith(
+        "eq-light-1",
+        "state",
+        "ON",
+        expect.objectContaining({ kind: "button" }),
+      );
     });
   });
 
@@ -340,6 +350,7 @@ describe("ButtonActionManager", () => {
         ["zone-1", "zone-child-1"],
         "allLightsOn",
         undefined,
+        expect.objectContaining({ kind: "button" }),
       );
     });
 
@@ -364,6 +375,7 @@ describe("ButtonActionManager", () => {
         ["zone-1"],
         "allThermostatsSetpoint",
         21,
+        expect.objectContaining({ kind: "button" }),
       );
     });
 

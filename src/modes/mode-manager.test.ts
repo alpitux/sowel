@@ -255,7 +255,12 @@ describe("ModeManager", () => {
         { type: "order", equipmentId: "eq-1", orderAlias: "state", value: "ON" },
       ]);
       manager.activateMode(modeId);
-      expect(equipmentManager.executeOrder).toHaveBeenCalledWith("eq-1", "state", "ON");
+      expect(equipmentManager.executeOrder).toHaveBeenCalledWith(
+        "eq-1",
+        "state",
+        "ON",
+        expect.objectContaining({ kind: "mode", modeId, modeName: expect.any(String) }),
+      );
     });
 
     it("executes recipe_toggle impacts on activation", () => {
@@ -296,8 +301,18 @@ describe("ModeManager", () => {
 
     it("executes only the zone-specific impacts", () => {
       manager.applyModeToZone(modeId, zone1);
-      expect(equipmentManager.executeOrder).toHaveBeenCalledWith("eq-1", "state", "ON");
-      expect(equipmentManager.executeOrder).not.toHaveBeenCalledWith("eq-2", "state", "OFF");
+      expect(equipmentManager.executeOrder).toHaveBeenCalledWith(
+        "eq-1",
+        "state",
+        "ON",
+        expect.objectContaining({ kind: "mode", modeId }),
+      );
+      expect(equipmentManager.executeOrder).not.toHaveBeenCalledWith(
+        "eq-2",
+        "state",
+        "OFF",
+        expect.anything(),
+      );
     });
 
     it("does not change mode active status", () => {

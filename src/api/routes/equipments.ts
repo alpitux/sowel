@@ -141,10 +141,12 @@ export function registerEquipmentRoutes(app: FastifyInstance, deps: EquipmentsDe
     const { value } = request.body ?? {};
 
     try {
+      const userId = request.auth?.userId ?? "anonymous";
       const result = await equipmentManager.executeOrder(
         request.params.id,
         request.params.alias,
         value,
+        { kind: "manual", userId },
       );
       if (!result.success) {
         return reply.code(502).send({ error: result.error });
