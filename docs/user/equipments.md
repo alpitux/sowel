@@ -4,6 +4,8 @@ Equipments are the core concept in Sowel. An equipment is a **functional unit** 
 
 **A Device is what's on the network, an Equipment is what's in the room.** You never think about the Zigbee dimmer module installed behind the wall -- you think about your living room lights.
 
+![Equipments admin page grouped by zone and type](../screenshots/equipments-en.png)
+
 ## Creating an equipment
 
 Go to **Administration > Equipments** and click **Add Equipment**.
