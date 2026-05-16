@@ -142,18 +142,34 @@ export class ActivityBuffer {
   }
 
   private onDataChanged(event: { equipmentId: string; alias: string; value: unknown }): void {
-    if (event.alias !== "motion") return;
-    // Only the rising edge — value === true (or string "true"/"ON")
-    const v = event.value;
-    const isOn =
-      v === true ||
-      (typeof v === "string" && (v.toUpperCase() === "ON" || v.toLowerCase() === "true"));
-    if (!isOn) return;
+    // Filter by binding category (stable, integration-set) rather than alias (user-set).
     const equipment = this.equipmentManager.getById(event.equipmentId);
     if (!equipment) return;
-    this.push("motion", equipment.zoneId ?? null, {
-      template: "motion.detected",
-      params: { equipmentName: equipment.name },
+    const bindings = this.equipmentManager.getDataBindingsWithValues(event.equipmentId);
+    const binding = bindings.find((b) => b.alias === event.alias);
+    if (!binding) return;
+
+    const category = binding.category;
+    if (category !== "motion" && category !== "water_leak" && category !== "smoke") return;
+
+    // Only the rising edge — value === true (or string "true"/"ON"/"1")
+    if (!isRisingEdge(event.value)) return;
+
+    if (category === "motion") {
+      this.push("motion", equipment.zoneId ?? null, {
+        template: "motion.detected",
+        params: { equipmentName: equipment.name },
+      });
+      return;
+    }
+
+    // water_leak or smoke → alarm category, scoped to the equipment's zone
+    this.push("alarm", equipment.zoneId ?? null, {
+      template: "alarm.raised",
+      params: {
+        source: equipment.name,
+        message: category === "water_leak" ? "Fuite d'eau détectée" : "Fumée détectée",
+      },
     });
   }
 
@@ -217,6 +233,20 @@ export class ActivityBuffer {
       params: { source: event.source, message: event.message },
     });
   }
+}
+
+function isRisingEdge(value: unknown): boolean {
+  if (value === true) return true;
+  if (typeof value === "number") return value > 0;
+  if (typeof value === "string") {
+    const v = value.trim();
+    if (v === "1") return true;
+    const upper = v.toUpperCase();
+    if (upper === "ON" || upper === "TRUE" || upper === "DETECTED" || upper === "OCCUPIED") {
+      return true;
+    }
+  }
+  return false;
 }
 
 function formatValue(value: unknown): string {

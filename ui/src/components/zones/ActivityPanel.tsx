@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Network } from "lucide-react";
 import { useActivity } from "../../store/useActivity";
 import { useWebSocket } from "../../store/useWebSocket";
-import type { ActivityItem } from "../../types";
+import { useZones } from "../../store/useZones";
+import type { ActivityItem, ZoneWithChildren } from "../../types";
 import { ActivityItemRow } from "./ActivityItemRow";
 
 interface Props {
@@ -15,8 +17,16 @@ export function ActivityPanel({ zoneId }: Props) {
   const status = useActivity((s) => s.status);
   const loadForZone = useActivity((s) => s.loadForZone);
   const reset = useActivity((s) => s.reset);
+  const includeDescendants = useActivity((s) => s.includeDescendants);
+  const setIncludeDescendants = useActivity((s) => s.setIncludeDescendants);
+  const tree = useZones((s) => s.tree);
   const wsStatus = useWebSocket((s) => s.status);
   const isLive = wsStatus === "connected";
+
+  // Compute descendant zone IDs for the current zone (excluding the zone itself).
+  // Updated whenever the tree or zoneId changes; passed to the store on load + toggle.
+  const descendantIds = useMemo(() => collectDescendantIds(tree, zoneId), [tree, zoneId]);
+  const hasDescendants = descendantIds.length > 0;
 
   // Re-render every minute so relative-time labels stay fresh.
   // One global timer per ActivityPanel instance, not per item.
@@ -30,8 +40,8 @@ export function ActivityPanel({ zoneId }: Props) {
   useEffect(() => {
     if (!zoneId) return;
     reset();
-    void loadForZone(zoneId);
-  }, [zoneId, loadForZone, reset]);
+    void loadForZone(zoneId, descendantIds);
+  }, [zoneId, loadForZone, reset, descendantIds]);
 
   const groups = useMemo(() => groupByHour(items, new Date()), [items]);
 
@@ -45,11 +55,31 @@ export function ActivityPanel({ zoneId }: Props) {
         <span className="text-[0.72rem] text-primary/65 font-medium normal-case tracking-normal">
           {t("activity.subtitle")}
         </span>
+        {hasDescendants && (
+          <button
+            type="button"
+            onClick={() => void setIncludeDescendants(!includeDescendants, descendantIds)}
+            title={
+              includeDescendants
+                ? t("activity.toggleDescendants.on")
+                : t("activity.toggleDescendants.off")
+            }
+            aria-pressed={includeDescendants}
+            className={
+              includeDescendants
+                ? "ml-auto inline-flex items-center justify-center w-[22px] h-[22px] rounded-[4px] bg-primary text-[var(--n-0)] hover:bg-primary-hover transition-colors"
+                : "ml-auto inline-flex items-center justify-center w-[22px] h-[22px] rounded-[4px] bg-transparent text-primary border border-[var(--p-100)] hover:bg-surface transition-colors"
+            }
+          >
+            <Network size={12} strokeWidth={2} />
+          </button>
+        )}
         <span
           className={
-            isLive
-              ? "ml-auto font-mono text-[0.68rem] font-semibold leading-none px-[7px] py-[1px] rounded-full bg-[var(--green-50)] text-[var(--green-700)] border border-[var(--green-50)]"
-              : "ml-auto font-mono text-[0.68rem] font-semibold leading-none px-[7px] py-[1px] rounded-full bg-background text-text-tertiary border border-border-light"
+            (hasDescendants ? "ml-[0.4rem] " : "ml-auto ") +
+            (isLive
+              ? "font-mono text-[0.68rem] font-semibold leading-none px-[7px] py-[1px] rounded-full bg-[var(--green-50)] text-[var(--green-700)] border border-[var(--green-50)]"
+              : "font-mono text-[0.68rem] font-semibold leading-none px-[7px] py-[1px] rounded-full bg-background text-text-tertiary border border-border-light")
           }
         >
           {isLive ? `● ${t("activity.live")}` : `○ ${t("activity.offline")}`}
@@ -126,4 +156,27 @@ function formatHour(timestamp: number): string {
 
 function pad(n: number): string {
   return n.toString().padStart(2, "0");
+}
+
+function collectDescendantIds(tree: ZoneWithChildren[], zoneId: string): string[] {
+  const found = findZone(tree, zoneId);
+  if (!found) return [];
+  const out: string[] = [];
+  const walk = (z: ZoneWithChildren) => {
+    for (const child of z.children ?? []) {
+      out.push(child.id);
+      walk(child);
+    }
+  };
+  walk(found);
+  return out;
+}
+
+function findZone(tree: ZoneWithChildren[], zoneId: string): ZoneWithChildren | null {
+  for (const z of tree) {
+    if (z.id === zoneId) return z;
+    const child = findZone(z.children ?? [], zoneId);
+    if (child) return child;
+  }
+  return null;
 }
