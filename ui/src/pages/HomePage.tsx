@@ -22,6 +22,7 @@ import { ZoneAggregationPills } from "../components/home/ZoneAggregationPills";
 import { ZoneCommands, type ZoneOrder } from "../components/home/ZoneCommands";
 import { ZoneRecipesSection } from "../components/recipes/ZoneRecipesSection";
 import { ZoneModesSection } from "../components/home/ZoneModesSection";
+import { ActivityPanel } from "../components/zones/ActivityPanel";
 import { EquipmentForm } from "../components/equipments/EquipmentForm";
 import { autoCreateBindings } from "../components/equipments/bindingUtils";
 import { buildBoundOrderKeysByDevice } from "../lib/binding-utils";
@@ -29,7 +30,7 @@ import { useWsSubscription } from "../hooks/useWsSubscription";
 import type { EquipmentType, ZoneAggregatedData, ZoneWithChildren } from "../types";
 
 export function HomePage() {
-  useWsSubscription(["zones", "equipments", "modes", "recipes"]);
+  useWsSubscription(["zones", "equipments", "modes", "recipes", "activity"]);
   const { t } = useTranslation();
   const { zoneId } = useParams();
   const navigate = useNavigate();
@@ -204,7 +205,7 @@ export function HomePage() {
               <ZoneRecipesSection zoneId={zoneId} zoneName={currentZone.name} />
             </Panel>
           )}
-          {/* TODO spec 101: ActivityPanel slot */}
+          {zoneId && <ActivityPanel zoneId={zoneId} />}
         </div>
       </div>
 

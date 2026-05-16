@@ -18,6 +18,7 @@ import type {
   MqttPublisher, MqttPublisherMapping, MqttPublisherWithMappings,
   DashboardWidget, WidgetConfig, WidgetFamily,
   EnergyHistoryResponse, EnergyStatus, TariffConfig, EnergyByUsageResponse,
+  ActivityItem,
 } from "./types";
 
 const API_BASE = "/api/v1";
@@ -1278,4 +1279,17 @@ export async function saveTariffConfig(config: TariffConfig): Promise<void> {
     method: "PUT",
     body: JSON.stringify(config),
   });
+}
+
+// ============================================================
+// Activity (spec 101)
+// ============================================================
+
+export async function getActivity(
+  zoneId: string,
+  limit = 50,
+): Promise<{ items: ActivityItem[] }> {
+  return fetchJSON<{ items: ActivityItem[] }>(
+    `${API_BASE}/activity?zoneId=${encodeURIComponent(zoneId)}&includeDescendants=true&limit=${limit}`,
+  );
 }

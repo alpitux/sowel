@@ -146,7 +146,7 @@ export class ButtonActionManager {
       );
 
       try {
-        this.executeEffect(row.effect_type as ButtonEffectType, config);
+        this.executeEffect(row.effect_type as ButtonEffectType, config, row.id);
         this.logger.debug(
           { bindingId: row.id, effectType: row.effect_type, config },
           "Button action effect executed",
@@ -160,7 +160,11 @@ export class ButtonActionManager {
     }
   }
 
-  private executeEffect(effectType: ButtonEffectType, config: Record<string, unknown>): void {
+  private executeEffect(
+    effectType: ButtonEffectType,
+    config: Record<string, unknown>,
+    bindingId: string,
+  ): void {
     switch (effectType) {
       case "mode_activate": {
         const modeId = config.modeId as string;
@@ -193,7 +197,10 @@ export class ButtonActionManager {
         const orderAlias = config.orderAlias as string;
         const orderValue = config.value;
         this.equipmentManager
-          .executeOrder(targetEquipmentId, orderAlias, orderValue)
+          .executeOrder(targetEquipmentId, orderAlias, orderValue, {
+            kind: "button",
+            buttonId: bindingId,
+          })
           .catch((err) => {
             this.logger.error(
               { err, targetEquipmentId, orderAlias },
@@ -219,9 +226,11 @@ export class ButtonActionManager {
         const orderKey = config.orderKey as string;
         const value = config.value;
         const zoneIds = this.zoneManager.getDescendantIds(zoneId);
-        this.equipmentManager.executeZoneOrder(zoneIds, orderKey, value).catch((err) => {
-          this.logger.error({ err, zoneId, orderKey }, "Button zone order dispatch failed");
-        });
+        this.equipmentManager
+          .executeZoneOrder(zoneIds, orderKey, value, { kind: "button", buttonId: bindingId })
+          .catch((err) => {
+            this.logger.error({ err, zoneId, orderKey }, "Button zone order dispatch failed");
+          });
         break;
       }
     }
