@@ -95,7 +95,7 @@ Chaque zone dispose d'un panneau **Activité** en direct sur le côté droit de 
 
 Le panneau regroupe les événements par heure. Le bucket le plus récent porte le label `HH:00 → maintenant`, les buckets plus anciens portent simplement `HH:00`.
 
-![Panneau Activité affichant les événements de la zone seule](../screenshots/activity-zone-only-fr.png)
+![Vue zone avec le panneau Activité dans la colonne droite](../screenshots/activity-zone-view-fr.png)
 
 ### Ce qui est tracé
 
@@ -116,9 +116,7 @@ Quand une recette dispatche plusieurs ordres identiques en rafale (par exemple M
 
 ### Basculer l'activité des sous-zones
 
-Par défaut, le panneau n'affiche que les événements de la zone que vous consultez, plus les événements globaux (changements de mode, lever/coucher de soleil, alarmes système). Quand vous êtes sur une zone parent (par exemple « Maison »), activez le bouton dans l'en-tête pour inclure aussi les événements de toutes les sous-zones.
-
-![Panneau Activité avec le toggle sous-zones actif](../screenshots/activity-with-descendants-fr.png)
+Par défaut, le panneau n'affiche que les événements de la zone que vous consultez, plus les événements globaux (changements de mode, lever/coucher de soleil, alarmes système). Quand vous êtes sur une zone parent (par exemple « Maison »), activez le petit bouton avec l'icône Network dans l'en-tête pour inclure aussi les événements de toutes les sous-zones — c'est ce que montre la capture ci-dessus, avec le bouton rempli en bleu.
 
 Le bouton n'apparaît que sur les zones qui ont des enfants. Votre choix est mémorisé entre les navigations (stocké dans le navigateur).
 
