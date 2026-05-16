@@ -89,6 +89,53 @@ Dans la vue **Accueil**, chaque zone affiche un **bandeau d'état** avec les don
 
 Sous le bandeau, les équipements sont regroupés par type (Lumières, Volets, Capteurs) avec des contrôles intégrés.
 
+## Fil d'activité
+
+Chaque zone dispose d'un panneau **Activité** en direct sur le côté droit de la vue Accueil. C'est un widget de coup d'œil qui montre ce qui vient de se passer dans la zone : ordres dispatchés, mouvement détecté, recettes démarrées, changements de mode, lever/coucher de soleil, alarmes.
+
+Le panneau regroupe les événements par heure. Le bucket le plus récent porte le label `HH:00 → maintenant`, les buckets plus anciens portent simplement `HH:00`.
+
+![Panneau Activité affichant les événements de la zone seule](../screenshots/activity-zone-only-fr.png)
+
+### Ce qui est tracé
+
+| Catégorie     | Déclencheur                                                                       | Exemple                                                 |
+| ------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Ordre**     | Tout ordre dispatché sur un équipement par une recette, un mode, un bouton, l'API | `Lumière → ON manuel`, `Lumière → OFF par Motion Light` |
+| **Mouvement** | Front montant d'un capteur de présence (catégorie binding `motion`)               | `Mouvement détecté sur PIR Salon`                       |
+| **Recette**   | Démarrage ou arrêt d'une instance de recette                                      | `Recette Motion Light démarrée`                         |
+| **Mode**      | Activation ou désactivation d'un mode                                             | `Mode Nuit activé`                                      |
+| **Soleil**    | Lever ou coucher du soleil                                                        | `Coucher du soleil`                                     |
+| **Alarme**    | Alarme système, erreur de recette, détection fuite d'eau ou fumée                 | `Détecteur Cuisine : Fumée détectée`                    |
+
+Chaque ligne indique **qui a déclenché l'événement** : nom de la recette, nom du mode, « manuel » pour les actions directes via l'UI, identifiant du bouton, ou « externe » pour un MQTT entrant.
+
+### Fusion des ordres simultanés
+
+Quand une recette dispatche plusieurs ordres identiques en rafale (par exemple Motion Light qui éteint trois appliques au même instant), le fil regroupe le tout en une seule ligne avec un compteur : `Applique x 1 ×3 → OFF par Motion Light`. La fenêtre est de 500 ms ; même alias, même valeur et même source sont requis pour la fusion.
+
+### Basculer l'activité des sous-zones
+
+Par défaut, le panneau n'affiche que les événements de la zone que vous consultez, plus les événements globaux (changements de mode, lever/coucher de soleil, alarmes système). Quand vous êtes sur une zone parent (par exemple « Maison »), activez le bouton dans l'en-tête pour inclure aussi les événements de toutes les sous-zones.
+
+![Panneau Activité avec le toggle sous-zones actif](../screenshots/activity-with-descendants-fr.png)
+
+Le bouton n'apparaît que sur les zones qui ont des enfants. Votre choix est mémorisé entre les navigations (stocké dans le navigateur).
+
+### Mobile
+
+Sur mobile, le panneau se situe sous la section **Comportements** et n'affiche que les 10 événements les plus récents. C'est un coup d'œil, pas un historique. Pour aller plus loin, utilisez la page **Journaux**.
+
+![Panneau Activité sur mobile (cap à 10 items)](../screenshots/activity-mobile-fr.png)
+
+### Statut live
+
+La pastille en haut à droite affiche `● live` quand l'application est connectée à Sowel via WebSocket. Si la connexion est perdue, elle bascule en `○ offline` et le panneau cesse de recevoir de nouveaux événements jusqu'à la reconnexion.
+
+### Fenêtre mémoire
+
+Le moteur Sowel garde les **dernières 24 heures** d'événements en mémoire (avec un plafond à 2000 entrées). Le tampon est remis à zéro au redémarrage du conteneur, comme le ring buffer des logs. Pour une investigation plus profonde ou plus ancienne, utilisez la page Journaux.
+
 ## Ordres de zone
 
 Chaque zone expose des ordres automatiques que vous pouvez utiliser depuis l'UI ou dans les automatisations :

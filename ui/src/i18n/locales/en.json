@@ -1032,5 +1032,7 @@
   "activity.source.external": "via {{channel}}",
 
   "activity.toggleDescendants.on": "Hide sub-zone activity",
-  "activity.toggleDescendants.off": "Include sub-zone activity"
+  "activity.toggleDescendants.off": "Include sub-zone activity",
+
+  "activity.bucket.now": "now"
 }

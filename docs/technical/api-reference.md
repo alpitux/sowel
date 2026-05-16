@@ -30,6 +30,7 @@ Sowel exposes a REST API under `/api/v1/` and a WebSocket endpoint at `/ws`. All
 - [MQTT Publishers](#mqtt-publishers)
 - [Notification Publishers](#notification-publishers)
 - [Button Actions](#button-actions)
+- [Activity](#activity)
 - [Logs (Admin)](#logs-admin)
 - [Backup (Admin)](#backup-admin)
 - [Health](#health)
@@ -358,6 +359,42 @@ Map physical button presses (Zigbee buttons, etc.) to actions (mode activation, 
 
 ---
 
+## Activity
+
+Recent engine events for the zone-view activity panel. Reads from the in-memory ring buffer (24h retention, capped at 2000 entries, reset on restart). See [Zones — Activity feed](../user/zones.md#activity-feed) for the user-facing description.
+
+| Method | Path               | Description                                                                                                                  |
+| ------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/v1/activity` | List activity items. Query: `?zoneId=<uuid>&includeDescendants=true&limit=100`. `limit` is clamped to [1, 200], default 100. |
+
+Filtering: items whose `zoneId` matches the query parameter are returned, plus items whose `zoneId` is `null` (global events: mode changes, sunrise/sunset, system alarms). When `includeDescendants=true` (default), items from child zones are also returned.
+
+Response shape:
+
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "timestamp": 1715864400000,
+      "category": "order",
+      "zoneId": "uuid-of-living-room",
+      "message": {
+        "template": "order.executed",
+        "params": { "equipmentName": "Lumière", "alias": "state", "value": "ON" }
+      },
+      "source": { "kind": "recipe", "instanceId": "...", "recipeName": "Motion Light" }
+    }
+  ]
+}
+```
+
+Item categories: `order`, `motion`, `recipe`, `mode`, `sunlight`, `alarm`.
+
+Source kinds: `recipe`, `mode`, `manual`, `button`, `external`. The `source` field is only present on `category=order` items.
+
+---
+
 ## Logs (Admin)
 
 Admin-only log access from the in-memory ring buffer.
@@ -415,7 +452,7 @@ Send a JSON message to subscribe to additional topics:
 { "type": "subscribe", "topics": ["devices", "equipments", "zones", "modes", "recipes"] }
 ```
 
-**Available topics**: `devices`, `equipments`, `zones`, `modes`, `recipes`, `calendar`, `mqtt-publishers`, `system`, `logs`.
+**Available topics**: `devices`, `equipments`, `zones`, `modes`, `recipes`, `calendar`, `mqtt-publishers`, `system`, `logs`, `activity`.
 
 The `system` topic is always included regardless of subscription.
 
@@ -430,6 +467,25 @@ Events are batched every 200ms and sent as a JSON array. High-frequency data eve
   { "type": "zone.data.changed", "zoneId": "...", "key": "temperature", "value": 21.8 }
 ]
 ```
+
+### Activity Stream
+
+When subscribed to the `activity` topic, the server pushes new items as they are produced. Each push is a single event (not batched), shape identical to the items returned by `GET /api/v1/activity`:
+
+```json
+{
+  "type": "activity.added",
+  "item": {
+    "id": "uuid",
+    "timestamp": 1715864400000,
+    "category": "motion",
+    "zoneId": "uuid-of-zone",
+    "message": { "template": "motion.detected", "params": { "equipmentName": "PIR Living Room" } }
+  }
+}
+```
+
+Clients must filter the live stream by their current zone scope (the server broadcasts all items to subscribers without per-client zone filtering).
 
 ### Log Streaming
 

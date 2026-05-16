@@ -54,7 +54,11 @@ export function ActivityPanel({ zoneId }: Props) {
     () => (isMobile ? items.slice(0, MOBILE_CAP) : items),
     [items, isMobile],
   );
-  const groups = useMemo(() => groupByHour(visibleItems, new Date()), [visibleItems]);
+  const nowSuffix = t("activity.bucket.now");
+  const groups = useMemo(
+    () => groupByHour(visibleItems, new Date(), nowSuffix),
+    [visibleItems, nowSuffix],
+  );
 
   return (
     <section className="bg-surface border border-border-light rounded-lg overflow-hidden">
@@ -138,7 +142,7 @@ interface Group {
   items: ActivityItem[];
 }
 
-function groupByHour(items: ActivityItem[], now: Date): Group[] {
+function groupByHour(items: ActivityItem[], now: Date, nowSuffix: string): Group[] {
   const groups: Group[] = [];
   const groupMap = new Map<string, Group>();
 
@@ -148,7 +152,8 @@ function groupByHour(items: ActivityItem[], now: Date): Group[] {
     const key = bucketKey(item.timestamp);
     let group = groupMap.get(key);
     if (!group) {
-      const label = key === currentHourBucket ? `${formatHour(item.timestamp)} → maintenant` : formatHour(item.timestamp);
+      const hour = formatHour(item.timestamp);
+      const label = key === currentHourBucket ? `${hour} → ${nowSuffix}` : hour;
       group = { key, label, items: [] };
       groupMap.set(key, group);
       groups.push(group);
