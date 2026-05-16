@@ -71,6 +71,10 @@ If a slot looks empty or wrong, the **Save** button stays disabled and the recip
 
 The instance starts as soon as you save. Toggle it on/off from the recipe list anytime. Open the instance to see its **log** -- a per-instance trace of what it has done and why.
 
+![Zone view showing the Behaviors panel — Modes and Recipes — alongside the live Activity feed](../screenshots/activity-zone-view-en.png)
+
+The zone view's **Behaviors** panel is where you toggle running recipes on the fly without going through the admin. The **Activity** panel on the right shows each recipe firing in real time.
+
 ---
 
 ## How recipes interact with [modes](modes.md)

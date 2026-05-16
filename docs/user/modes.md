@@ -17,6 +17,8 @@ Think of modes as presets for your entire home. Instead of manually turning off 
 
 Only one mode can be active at a time. Activating a new mode deactivates the previous one.
 
+![Modes page with three named profiles and a toggle to activate the current mode](../screenshots/modes-en.png)
+
 ## Creating a mode
 
 Go to **Administration > Modes** and click **Add Mode**.
@@ -87,6 +89,8 @@ Modes can be activated automatically on a weekly schedule. See [Calendar schedul
 ## Calendar scheduling
 
 The calendar manages **weekly profiles** for automatic mode activation. This is how you automate your daily routine.
+
+![Calendar page showing the active profile and its weekly time slots](../screenshots/calendar-en.png)
 
 ### Profiles
 

@@ -17,6 +17,8 @@ Voyez les modes comme des préréglages pour toute votre maison. Au lieu d'étei
 
 Un seul mode peut être actif à la fois. L'activation d'un nouveau mode désactive le précédent.
 
+![Page Modes avec trois profils nommés et un toggle pour activer le mode courant](../screenshots/modes-fr.png)
+
 ## Créer un mode
 
 Allez dans **Administration > Modes** et cliquez sur **Ajouter un mode**.
@@ -87,6 +89,8 @@ Les modes peuvent être activés automatiquement selon une grille hebdomadaire. 
 ## Planification calendaire
 
 Le calendrier gère des **profils hebdomadaires** d'activation automatique de modes. C'est ainsi que vous automatisez votre routine quotidienne.
+
+![Page Calendrier montrant le profil actif et ses créneaux hebdomadaires](../screenshots/calendar-fr.png)
 
 ### Profils
 
