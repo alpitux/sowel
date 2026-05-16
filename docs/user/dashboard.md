@@ -6,6 +6,8 @@ The Dashboard is your personalized home screen -- a customizable grid of widgets
 
 Unlike the Home view (which is organized by zones), the Dashboard lets you pick exactly what you want to see, regardless of room or equipment type. You might put your living room lights next to your outdoor temperature and your garage gate, all on one screen.
 
+![Dashboard with a mix of equipment and zone widgets](../screenshots/dashboard-overview-en.png)
+
 ## Widget types
 
 ### Equipment widget
@@ -67,6 +69,8 @@ Edit mode is toggled with the pencil icon in the dashboard header. When active:
 - Each widget shows a **delete** button
 - Widgets can be **dragged** to reorder
 - Click the **checkmark** to exit edit mode and save
+
+![Dashboard in edit mode — drag handles, delete buttons, Add widget action](../screenshots/dashboard-edit-en.png)
 
 !!! tip
 The dashboard is personal -- each user has their own widget layout. Admin and regular users see their own dashboards.

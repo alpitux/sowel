@@ -4,6 +4,8 @@ Les équipements sont le concept central de Sowel. Un équipement est une **unit
 
 **Un device est ce qui est sur le réseau, un équipement est ce qui est dans la pièce.** Vous ne pensez jamais au module variateur Zigbee installé derrière le mur, vous pensez aux lumières de votre cuisine.
 
+![Page admin Équipements regroupée par zone et par type](../screenshots/equipments-fr.png)
+
 ## Créer un équipement
 
 Allez dans **Administration > Équipements** et cliquez sur **Ajouter un équipement**.
