@@ -4,14 +4,35 @@ import { getActivity } from "../api";
 
 const CAPACITY = 50;
 const COALESCE_WINDOW_MS = 500;
+const PREF_KEY = "sowel_activity_include_descendants";
 
 type Status = "idle" | "loading" | "ready" | "error";
+
+function loadPref(): boolean {
+  try {
+    return localStorage.getItem(PREF_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function savePref(v: boolean): void {
+  try {
+    localStorage.setItem(PREF_KEY, String(v));
+  } catch {
+    // ignore
+  }
+}
 
 interface ActivityState {
   items: ActivityItem[];
   status: Status;
   zoneId: string | null;
-  loadForZone: (zoneId: string) => Promise<void>;
+  /** Zone IDs whose items are accepted (current zone + descendants if toggle ON). Global items (zoneId=null) always accepted. */
+  scopeZoneIds: Set<string>;
+  includeDescendants: boolean;
+  loadForZone: (zoneId: string, descendantIds: string[]) => Promise<void>;
+  setIncludeDescendants: (v: boolean, descendantIds: string[]) => Promise<void>;
   addItem: (item: ActivityItem) => void;
   reset: () => void;
 }
@@ -20,11 +41,16 @@ export const useActivity = create<ActivityState>((set, get) => ({
   items: [],
   status: "idle",
   zoneId: null,
+  scopeZoneIds: new Set(),
+  includeDescendants: loadPref(),
 
-  loadForZone: async (zoneId: string) => {
-    set({ status: "loading", zoneId, items: [] });
+  loadForZone: async (zoneId: string, descendantIds: string[]) => {
+    const includeDescendants = get().includeDescendants;
+    const scope = new Set<string>([zoneId]);
+    if (includeDescendants) for (const id of descendantIds) scope.add(id);
+    set({ status: "loading", zoneId, items: [], scopeZoneIds: scope });
     try {
-      const data = await getActivity(zoneId, CAPACITY);
+      const data = await getActivity(zoneId, { includeDescendants, limit: CAPACITY });
       set({ items: data.items.slice(0, CAPACITY), status: "ready" });
     } catch (err) {
       console.error("Failed to load activity", err);
@@ -32,15 +58,21 @@ export const useActivity = create<ActivityState>((set, get) => ({
     }
   },
 
+  setIncludeDescendants: async (v: boolean, descendantIds: string[]) => {
+    savePref(v);
+    set({ includeDescendants: v });
+    const { zoneId } = get();
+    if (zoneId) await get().loadForZone(zoneId, descendantIds);
+  },
+
   addItem: (item: ActivityItem) => {
     const state = get();
-    // Only keep items relevant to the current zone scope (descendants resolved server-side
-    // when subscribed via topic; but the WS broadcasts every activity.added to all subscribers
-    // because the server doesn't know the client's selected zone). We filter client-side
-    // by checking zoneId: keep if null (global) or matches the loaded zone (handled by the
-    // server-side bootstrap already filtering by zone+descendants). Since live items don't
-    // carry descendant info, we keep all globals + items matching exact zoneId; the server-side
-    // bootstrap remains authoritative for descendants on the initial fetch.
+    // Live items pushed by the WS are broadcast to all subscribers — we filter
+    // client-side to keep only items relevant to the current zone scope.
+    // Global items (zoneId=null) are always kept; otherwise the item's zone
+    // must be in the active scope.
+    if (item.zoneId !== null && !state.scopeZoneIds.has(item.zoneId)) return;
+
     const items = state.items;
     const merged = coalesce(items[0], item);
     if (merged) {
@@ -50,7 +82,8 @@ export const useActivity = create<ActivityState>((set, get) => ({
     }
   },
 
-  reset: () => set({ items: [], status: "idle", zoneId: null }),
+  reset: () =>
+    set({ items: [], status: "idle", zoneId: null, scopeZoneIds: new Set() }),
 }));
 
 /**

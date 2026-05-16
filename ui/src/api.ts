@@ -1287,9 +1287,10 @@ export async function saveTariffConfig(config: TariffConfig): Promise<void> {
 
 export async function getActivity(
   zoneId: string,
-  limit = 50,
+  options: { includeDescendants?: boolean; limit?: number } = {},
 ): Promise<{ items: ActivityItem[] }> {
+  const { includeDescendants = false, limit = 50 } = options;
   return fetchJSON<{ items: ActivityItem[] }>(
-    `${API_BASE}/activity?zoneId=${encodeURIComponent(zoneId)}&includeDescendants=true&limit=${limit}`,
+    `${API_BASE}/activity?zoneId=${encodeURIComponent(zoneId)}&includeDescendants=${includeDescendants}&limit=${limit}`,
   );
 }

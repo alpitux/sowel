@@ -22,6 +22,7 @@ function mkEquipment(id: string, name: string, zoneId: string | null): Equipment
 function buildHarness() {
   const bus = new EventBus(logger);
   const equipments = new Map<string, Equipment>();
+  const bindings = new Map<string, { alias: string; category: string }[]>();
   const instances = new Map<
     string,
     { recipeId: string; recipeName: string; zoneId: string | null }
@@ -31,6 +32,7 @@ function buildHarness() {
 
   const equipmentManager = {
     getById: (id: string) => equipments.get(id) ?? null,
+    getDataBindingsWithValues: (id: string) => bindings.get(id) ?? [],
   } as unknown as Parameters<typeof ActivityBuffer.prototype.constructor>[1];
 
   const recipeManager = {
@@ -59,6 +61,8 @@ function buildHarness() {
     bus,
     buffer,
     addEquipment: (eq: Equipment) => equipments.set(eq.id, eq),
+    setBindings: (eqId: string, bs: { alias: string; category: string }[]) =>
+      bindings.set(eqId, bs),
     addInstance: (
       id: string,
       meta: { recipeId: string; recipeName: string; zoneId: string | null },
@@ -122,12 +126,13 @@ describe("ActivityBuffer", () => {
     });
   });
 
-  describe("motion filter", () => {
+  describe("motion filter (by category, not alias)", () => {
     beforeEach(() => {
       h.addEquipment(mkEquipment("pir-1", "PIR_00", "zone-living"));
     });
 
-    it("records motion=true rising edge", () => {
+    it("records motion rising edge when binding category is 'motion'", () => {
+      h.setBindings("pir-1", [{ alias: "motion", category: "motion" }]);
       h.bus.emit({
         type: "equipment.data.changed",
         equipmentId: "pir-1",
@@ -139,7 +144,36 @@ describe("ActivityBuffer", () => {
       expect(h.buffer.getItems()[0].category).toBe("motion");
     });
 
+    it("records motion even when alias is custom (e.g. 'presence')", () => {
+      h.setBindings("pir-1", [{ alias: "presence", category: "motion" }]);
+      h.bus.emit({
+        type: "equipment.data.changed",
+        equipmentId: "pir-1",
+        alias: "presence",
+        value: true,
+        previous: false,
+      });
+      expect(h.buffer.getItems()).toHaveLength(1);
+      expect(h.buffer.getItems()[0].category).toBe("motion");
+    });
+
+    it("accepts string rising values like 'ON', 'DETECTED', '1'", () => {
+      h.setBindings("pir-1", [{ alias: "motion", category: "motion" }]);
+      for (const v of ["ON", "detected", "1", "true"]) {
+        h.buffer.clear();
+        h.bus.emit({
+          type: "equipment.data.changed",
+          equipmentId: "pir-1",
+          alias: "motion",
+          value: v,
+          previous: null,
+        });
+        expect(h.buffer.size()).toBe(1);
+      }
+    });
+
     it("ignores motion=false (falling edge)", () => {
+      h.setBindings("pir-1", [{ alias: "motion", category: "motion" }]);
       h.bus.emit({
         type: "equipment.data.changed",
         equipmentId: "pir-1",
@@ -150,13 +184,71 @@ describe("ActivityBuffer", () => {
       expect(h.buffer.getItems()).toHaveLength(0);
     });
 
-    it("ignores temperature changes", () => {
+    it("ignores changes whose binding category is not motion/water_leak/smoke", () => {
+      h.setBindings("pir-1", [{ alias: "temperature", category: "temperature" }]);
       h.bus.emit({
         type: "equipment.data.changed",
         equipmentId: "pir-1",
         alias: "temperature",
         value: 21.5,
         previous: 21,
+      });
+      expect(h.buffer.getItems()).toHaveLength(0);
+    });
+
+    it("ignores when no binding matches the alias", () => {
+      h.setBindings("pir-1", [{ alias: "other", category: "motion" }]);
+      h.bus.emit({
+        type: "equipment.data.changed",
+        equipmentId: "pir-1",
+        alias: "ghost",
+        value: true,
+        previous: false,
+      });
+      expect(h.buffer.getItems()).toHaveLength(0);
+    });
+  });
+
+  describe("water_leak & smoke (alarm category)", () => {
+    it("records water_leak rising edge as alarm", () => {
+      h.addEquipment(mkEquipment("leak-1", "Détecteur Cuisine", "zone-kitchen"));
+      h.setBindings("leak-1", [{ alias: "leak", category: "water_leak" }]);
+      h.bus.emit({
+        type: "equipment.data.changed",
+        equipmentId: "leak-1",
+        alias: "leak",
+        value: true,
+        previous: false,
+      });
+      const items = h.buffer.getItems();
+      expect(items).toHaveLength(1);
+      expect(items[0].category).toBe("alarm");
+      expect(items[0].zoneId).toBe("zone-kitchen");
+      expect(items[0].message.template).toBe("alarm.raised");
+    });
+
+    it("records smoke rising edge as alarm", () => {
+      h.addEquipment(mkEquipment("smoke-1", "Détecteur Salon", "zone-living"));
+      h.setBindings("smoke-1", [{ alias: "smoke", category: "smoke" }]);
+      h.bus.emit({
+        type: "equipment.data.changed",
+        equipmentId: "smoke-1",
+        alias: "smoke",
+        value: true,
+        previous: false,
+      });
+      expect(h.buffer.getItems()[0].category).toBe("alarm");
+    });
+
+    it("ignores leak/smoke falling edge", () => {
+      h.addEquipment(mkEquipment("leak-1", "L", "z"));
+      h.setBindings("leak-1", [{ alias: "leak", category: "water_leak" }]);
+      h.bus.emit({
+        type: "equipment.data.changed",
+        equipmentId: "leak-1",
+        alias: "leak",
+        value: false,
+        previous: true,
       });
       expect(h.buffer.getItems()).toHaveLength(0);
     });

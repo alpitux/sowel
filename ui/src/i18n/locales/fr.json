@@ -1029,5 +1029,8 @@
   "activity.source.mode": "par le mode {{modeName}}",
   "activity.source.manual": "manuel",
   "activity.source.button": "via {{buttonLabel}}",
-  "activity.source.external": "via {{channel}}"
+  "activity.source.external": "via {{channel}}",
+
+  "activity.toggleDescendants.on": "Masquer l'activité des sous-zones",
+  "activity.toggleDescendants.off": "Inclure l'activité des sous-zones"
 }
