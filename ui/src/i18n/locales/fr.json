@@ -1003,5 +1003,36 @@
   "settings.version.updating": "Mise à jour en cours...",
   "settings.version.updateStarted": "Mise à jour lancée — Sowel va redémarrer...",
   "settings.version.upToDate": "Sowel est à jour",
-  "settings.version.noDocker": "Docker non disponible. Mettez à jour manuellement :"
+  "settings.version.noDocker": "Docker non disponible. Mettez à jour manuellement :",
+
+  "activity.title": "Activité",
+  "activity.subtitle": "dernières 24 h",
+  "activity.live": "live",
+  "activity.offline": "offline",
+  "activity.empty": "Aucune activité dans les dernières 24 h",
+  "activity.loading": "Chargement de l'activité…",
+  "activity.loadError": "Impossible de charger l'activité",
+
+  "activity.templates.order.executed": "<b>{{equipmentName}}</b> → {{value}}",
+  "activity.templates.order.executed.multi": "<b>{{firstName}}</b> ×{{count}} → {{value}}",
+  "activity.templates.motion.detected": "Mouvement détecté sur <b>{{equipmentName}}</b>",
+  "activity.templates.recipe.started": "Recette <b>{{recipeName}}</b> démarrée",
+  "activity.templates.recipe.stopped": "Recette <b>{{recipeName}}</b> arrêtée",
+  "activity.templates.recipe.error": "Recette <b>{{recipeName}}</b> en erreur",
+  "activity.templates.mode.activated": "Mode <b>{{modeName}}</b> activé",
+  "activity.templates.mode.deactivated": "Mode <b>{{modeName}}</b> désactivé",
+  "activity.templates.sunlight.sunrise": "<b>Lever du soleil</b>",
+  "activity.templates.sunlight.sunset": "<b>Coucher du soleil</b>",
+  "activity.templates.alarm.raised": "<b>{{source}}</b> : {{message}}",
+
+  "activity.source.recipe": "par {{recipeName}}",
+  "activity.source.mode": "par le mode {{modeName}}",
+  "activity.source.manual": "manuel",
+  "activity.source.button": "via {{buttonLabel}}",
+  "activity.source.external": "via {{channel}}",
+
+  "activity.toggleDescendants.on": "Masquer l'activité des sous-zones",
+  "activity.toggleDescendants.off": "Inclure l'activité des sous-zones",
+
+  "activity.bucket.now": "maintenant"
 }

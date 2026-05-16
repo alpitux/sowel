@@ -84,22 +84,23 @@ Le bus d'événements est un `EventEmitter` typé qui utilise les unions discrim
 
 ### Types d'événements
 
-| Event                             | Payload                                              | Quand                    |
-| --------------------------------- | ---------------------------------------------------- | ------------------------ |
-| `device.discovered`               | `device: Device`                                     | Nouveau device trouvé    |
-| `device.removed`                  | `deviceId, deviceName`                               | Device supprimé          |
-| `device.status_changed`           | `deviceId, deviceName, status`                       | Online/offline           |
-| `device.data.updated`             | `deviceId, deviceName, dataId, key, value, previous` | Changement de propriété  |
-| `equipment.data.changed`          | `equipmentId, key, value, previous`                  | Donnée liée modifiée     |
-| `equipment.order.executed`        | `equipmentId, orderAlias, value`                     | Ordre dispatché          |
-| `zone.data.changed`               | `zoneId, key, value, previous`                       | Donnée agrégée modifiée  |
-| `system.started`                  | --                                                   | Démarrage moteur terminé |
-| `system.integration.connected`    | `integrationId`                                      | Intégration connectée    |
-| `system.integration.disconnected` | `integrationId`                                      | Intégration déconnectée  |
-| `settings.changed`                | `keys`                                               | Réglages mis à jour      |
-| `mode.activated`                  | mode details                                         | Mode activé              |
-| `mode.deactivated`                | mode details                                         | Mode désactivé           |
-| `recipe.state_changed`            | instance details                                     | État de recette modifié  |
+| Event                             | Payload                                              | Quand                                       |
+| --------------------------------- | ---------------------------------------------------- | ------------------------------------------- |
+| `device.discovered`               | `device: Device`                                     | Nouveau device trouvé                       |
+| `device.removed`                  | `deviceId, deviceName`                               | Device supprimé                             |
+| `device.status_changed`           | `deviceId, deviceName, status`                       | Online/offline                              |
+| `device.data.updated`             | `deviceId, deviceName, dataId, key, value, previous` | Changement de propriété                     |
+| `equipment.data.changed`          | `equipmentId, key, value, previous`                  | Donnée liée modifiée                        |
+| `equipment.order.executed`        | `equipmentId, orderAlias, value, source?`            | Ordre dispatché                             |
+| `zone.data.changed`               | `zoneId, key, value, previous`                       | Donnée agrégée modifiée                     |
+| `system.started`                  | --                                                   | Démarrage moteur terminé                    |
+| `system.integration.connected`    | `integrationId`                                      | Intégration connectée                       |
+| `system.integration.disconnected` | `integrationId`                                      | Intégration déconnectée                     |
+| `settings.changed`                | `keys`                                               | Réglages mis à jour                         |
+| `mode.activated`                  | mode details                                         | Mode activé                                 |
+| `mode.deactivated`                | mode details                                         | Mode désactivé                              |
+| `recipe.state_changed`            | instance details                                     | État de recette modifié                     |
+| `activity.added`                  | `item: ActivityItem`                                 | Nouvel item d'activité bufferisé (spec 101) |
 
 ---
 
@@ -420,6 +421,27 @@ Build multi-étages :
 3. **runtime** : Debian Trixie (pour Python 3.13), Node 20 installé via NodeSource, Python 3.13 + venv pour les plugins qui en ont besoin (par ex. Panasonic CC), `better-sqlite3` recompilé pour la plateforme
 
 L'image runtime fait environ 950 Mo non compressée (environ 210 Mo de contenu). L'exigence Python 3.13 vient du plugin Panasonic CC qui a besoin d'une syntaxe f-string indisponible en Python 3.11.
+
+---
+
+## Activity Buffer (spec 101)
+
+`src/activity/activity-buffer.ts` garde les **dernières 24 heures** d'événements moteur (filtrés et enrichis pour la vue zone) dans un ring buffer en mémoire unique (plafonné à 2000 items). Il alimente le panneau **Activité** dans la vue zone ([guide utilisateur](../user/zones.md#fil-dactivite)).
+
+### Flux d'événements
+
+1. Le buffer souscrit à un sous-ensemble curé d'`EngineEvent`s : `equipment.order.executed`, `equipment.data.changed` (filtré sur la catégorie de binding `motion`, `water_leak`, `smoke`), `recipe.instance.started/stopped/error`, `mode.activated/deactivated`, `sunlight.changed`, `system.alarm.raised`.
+2. Pour chaque événement, il résout le nom d'équipement / de recette et le `zoneId` pertinent via les managers (equipment, recipe, zone, sunlight), puis construit un `ActivityItem`.
+3. Il pousse l'item dans le ring buffer (cap par count, purge des entrées dépassant le TTL) et émet un événement `activity.added` sur le bus.
+4. La couche WebSocket diffuse cet événement aux clients abonnés au topic `activity`. Les clients bootstrapent également via `GET /api/v1/activity` au montage.
+
+### Attribution des sources
+
+`executeOrder()` accepte un 4e argument optionnel `source` de type `OrderSource`. Le SDK des recettes expose un closure `ctx.dispatchOrder()` par instance qui pré-lie le `source` de la recette, ce qui évite aux helpers internes d'avoir à threader `source` eux-mêmes. Les modes, les bindings de boutons et les routes API passent le source inline. Les plugins de recettes externes continuent de fonctionner sans attribution (dégradation gracieuse).
+
+### Empreinte mémoire
+
+À environ 400 octets par item, 2000 items représentent environ 800 Ko, soit moins de 0,3 % du RSS d'un conteneur Sowel typique. Le buffer est perdu au redémarrage du conteneur, comme le ring buffer des logs.
 
 ---
 

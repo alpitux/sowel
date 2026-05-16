@@ -15,6 +15,7 @@ import type {
   RecipeSlotDef,
   RecipeActionDef,
   RecipeLangPack,
+  OrderSource,
 } from "../../shared/types.js";
 import { Recipe, type RecipeContext } from "./recipe.js";
 import { toISOUtc } from "../../core/database.js";
@@ -195,6 +196,30 @@ export class RecipeManager {
       ...rowToInstance(row),
       state: this.getInstanceState(row.id),
     }));
+  }
+
+  /**
+   * Lightweight metadata resolver for the activity buffer (spec 101).
+   * Returns recipe name + zoneId (from a slot of type "zone", if any).
+   */
+  getInstanceMeta(
+    instanceId: string,
+  ): { recipeId: string; recipeName: string; zoneId: string | null } | null {
+    const row = this.stmts.getInstanceById.get(instanceId) as InstanceRow | undefined;
+    if (!row) return null;
+    const registered = this.registry.get(row.recipe_id);
+    const recipeName = registered?.info.name ?? row.recipe_id;
+    let zoneId: string | null = null;
+    if (registered) {
+      const params = JSON.parse(row.params) as Record<string, unknown>;
+      const zoneSlot = registered.info.slots.find(
+        (s) => s.type === "zone" && !s.constraints?.crossZone,
+      );
+      if (zoneSlot && typeof params[zoneSlot.id] === "string") {
+        zoneId = params[zoneSlot.id] as string;
+      }
+    }
+    return { recipeId: row.recipe_id, recipeName, zoneId };
   }
 
   getInstanceState(instanceId: string): Record<string, unknown> {
@@ -480,6 +505,8 @@ export class RecipeManager {
       this.eventBus.emit({ type: "recipe.instance.state.changed", instanceId, recipeId });
     };
     const stateStore = new RecipeStateStore(this.db, instanceId, onChanged);
+    const recipeName = this.registry.get(recipeId)?.info.name ?? recipeId;
+    const orderSource: OrderSource = { kind: "recipe", instanceId, recipeName };
     return {
       eventBus: this.eventBus,
       equipmentManager: this.equipmentManager,
@@ -489,11 +516,12 @@ export class RecipeManager {
       state: stateStore,
       log: (message: string, level: "info" | "warn" | "error" = "info") => {
         this.writeLog(instanceId, message, level);
-        const recipeName = this.registry.get(recipeId)?.info.name;
         const childLogger = this.logger.child({ instanceId, recipeId, recipeName });
         childLogger[level]({ instanceId, recipeId, recipeName }, message);
       },
       helpers: this.helpers,
+      dispatchOrder: (equipmentId, alias, value) =>
+        this.equipmentManager.executeOrder(equipmentId, alias, value, orderSource),
     };
   }
 
