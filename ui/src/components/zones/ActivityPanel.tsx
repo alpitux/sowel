@@ -4,8 +4,12 @@ import { Network } from "lucide-react";
 import { useActivity } from "../../store/useActivity";
 import { useWebSocket } from "../../store/useWebSocket";
 import { useZones } from "../../store/useZones";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import type { ActivityItem, ZoneWithChildren } from "../../types";
 import { ActivityItemRow } from "./ActivityItemRow";
+
+const MOBILE_CAP = 10;
+const DESKTOP_MAX_HEIGHT_PX = 480;
 
 interface Props {
   zoneId: string;
@@ -22,6 +26,7 @@ export function ActivityPanel({ zoneId }: Props) {
   const tree = useZones((s) => s.tree);
   const wsStatus = useWebSocket((s) => s.status);
   const isLive = wsStatus === "connected";
+  const isMobile = useIsMobile();
 
   // Compute descendant zone IDs for the current zone (excluding the zone itself).
   // Updated whenever the tree or zoneId changes; passed to the store on load + toggle.
@@ -43,7 +48,13 @@ export function ActivityPanel({ zoneId }: Props) {
     void loadForZone(zoneId, descendantIds);
   }, [zoneId, loadForZone, reset, descendantIds]);
 
-  const groups = useMemo(() => groupByHour(items, new Date()), [items]);
+  // Mobile is glance-only: hard cap at 10 most-recent items.
+  // Desktop scrolls internally through the full buffered window (up to CAPACITY in the store).
+  const visibleItems = useMemo(
+    () => (isMobile ? items.slice(0, MOBILE_CAP) : items),
+    [items, isMobile],
+  );
+  const groups = useMemo(() => groupByHour(visibleItems, new Date()), [visibleItems]);
 
   return (
     <section className="bg-surface border border-border-light rounded-lg overflow-hidden">
@@ -86,8 +97,11 @@ export function ActivityPanel({ zoneId }: Props) {
         </span>
       </div>
 
-      {/* Body */}
-      <div className="py-[0.35rem]">
+      {/* Body — desktop scrolls internally; mobile lets the page scroll the (small) list. */}
+      <div
+        className="py-[0.35rem] md:overflow-y-auto"
+        style={isMobile ? undefined : { maxHeight: DESKTOP_MAX_HEIGHT_PX }}
+      >
         {status === "loading" && items.length === 0 && (
           <div className="px-[1.1rem] py-3 text-[0.78rem] text-text-tertiary">
             {t("activity.loading")}

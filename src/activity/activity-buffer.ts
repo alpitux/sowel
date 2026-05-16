@@ -13,8 +13,8 @@ interface GetItemsOptions {
   limit?: number;
 }
 
-const MAX_ITEMS = 200;
-const TTL_MS = 60 * 60 * 1000;
+const MAX_ITEMS = 2000;
+const TTL_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Ring buffer of activity items fed by the engine event bus (spec 101).

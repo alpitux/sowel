@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { ActivityItem, ActivityMessage } from "../types";
 import { getActivity } from "../api";
 
-const CAPACITY = 50;
+const CAPACITY = 100;
 const COALESCE_WINDOW_MS = 500;
 const PREF_KEY = "sowel_activity_include_descendants";
 
