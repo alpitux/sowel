@@ -89,6 +89,53 @@ In the **Home** view, each zone displays a **status header** with aggregated dat
 
 Below the header, equipments are grouped by type (Lights, Shutters, Sensors) with inline controls.
 
+## Activity feed
+
+Each zone has a live **Activity** panel on the right side of the Home view. It is a glance widget that shows what just happened in the zone: orders dispatched, motion detected, recipes started, mode changes, sunrise/sunset, alarms.
+
+The panel groups events by hour. The most recent bucket is labeled `HH:00 → now`, older buckets are labeled `HH:00`.
+
+![Activity panel showing zone-only events](../screenshots/activity-zone-only-en.png)
+
+### What is tracked
+
+| Category     | Triggered by                                                              | Example                                                 |
+| ------------ | ------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Order**    | Any equipment order dispatched by a recipe, mode, button, manual API call | `Lumière → ON manuel`, `Lumière → OFF par Motion Light` |
+| **Motion**   | Motion sensor rising edge (binding category `motion`)                     | `Motion detected on PIR Living Room`                    |
+| **Recipe**   | Recipe instance start / stop                                              | `Recipe Motion Light started`                           |
+| **Mode**     | Mode activation / deactivation                                            | `Mode Night activated`                                  |
+| **Sunlight** | Sunrise or sunset transition                                              | `Sunset`                                                |
+| **Alarm**    | System alarm raised, recipe errors, water leak, smoke detection           | `Smoke detector Kitchen: Smoke detected`                |
+
+Each item shows **who triggered it**: a recipe name, a mode name, "manual" for direct UI actions, the button id, or "external" for inbound MQTT.
+
+### Coalescing
+
+When a recipe dispatches multiple identical orders in a quick burst (e.g., Motion Light turns off three appliques at the same time), the feed merges them into a single row with a count: `Applique x 1 ×3 → OFF par Motion Light`. The window is 500 ms; the same alias, value, and source are required for merging.
+
+### Sub-zones toggle
+
+By default, the panel only shows events whose zone matches the one you are viewing, plus events that apply globally (mode changes, sunrise/sunset, system alarms). When you are on a parent zone (for example "Home"), enable the toggle in the panel header to also include events from all sub-zones.
+
+![Activity panel with the sub-zones toggle on](../screenshots/activity-with-descendants-en.png)
+
+The toggle appears only on zones that have children. Your choice is remembered across navigation (stored in the browser).
+
+### Mobile
+
+On mobile, the panel sits below the **Behaviors** section and shows only the 10 most recent items. It is a glance, not a history. To investigate further, use the **Logs** page.
+
+![Activity panel on mobile (10 items cap)](../screenshots/activity-mobile-en.png)
+
+### Live status
+
+The pill in the top right shows `● live` when the app is connected to Sowel via WebSocket. If you lose connection it switches to `○ offline` and the panel stops receiving new items until reconnection.
+
+### Memory window
+
+The Sowel engine keeps the last **24 hours** of events in memory (capped at 2000 entries). The buffer is reset when the container restarts, the same way the logs ring buffer works. For deeper or older investigation, use the Logs page.
+
 ## Zone orders
 
 Each zone exposes automatic orders that you can use from the UI or in automations:

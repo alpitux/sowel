@@ -17,6 +17,7 @@ import type {
   DataType,
   DataCategory,
   OrderCategory,
+  OrderSource,
 } from "../shared/types.js";
 import { inferBindingCategory } from "./binding-candidates.js";
 
@@ -616,6 +617,7 @@ export class EquipmentManager {
     equipmentId: string,
     alias: string,
     value: unknown,
+    source?: OrderSource,
   ): Promise<{ success: boolean; error?: string }> {
     const equipment = this.getById(equipmentId);
     if (!equipment) {
@@ -771,6 +773,7 @@ export class EquipmentManager {
         equipmentId,
         orderAlias: alias,
         value: resolvedValue,
+        source,
       });
     } else if (lastError) {
       this.eventBus.emit({
@@ -779,6 +782,7 @@ export class EquipmentManager {
         orderAlias: alias,
         value: resolvedValue,
         error: lastError,
+        source,
       });
     }
 
@@ -855,6 +859,7 @@ export class EquipmentManager {
     zoneIds: string[],
     orderKey: string,
     bodyValue?: unknown,
+    source?: OrderSource,
   ): Promise<{ executed: number; errors: number }> {
     const mapping = EquipmentManager.ZONE_ORDERS[orderKey];
     if (!mapping) {
@@ -900,7 +905,7 @@ export class EquipmentManager {
         }
 
         try {
-          const result = await this.executeOrder(eq.id, orderBinding.alias, resolvedValue);
+          const result = await this.executeOrder(eq.id, orderBinding.alias, resolvedValue, source);
           if (result.success) {
             executed++;
           } else {

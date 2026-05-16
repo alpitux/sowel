@@ -316,6 +316,54 @@ export interface RetentionStatus {
 }
 
 // ============================================================
+// Order source attribution (spec 101)
+// ============================================================
+
+export type OrderSource =
+  | { kind: "recipe"; instanceId: string; recipeName: string }
+  | { kind: "mode"; modeId: string; modeName: string }
+  | { kind: "manual"; userId: string; userName?: string }
+  | { kind: "button"; buttonId: string; buttonLabel?: string }
+  | { kind: "external"; channel: string };
+
+// ============================================================
+// Activity feed (spec 101)
+// ============================================================
+
+export type ActivityCategory =
+  | "recipe"
+  | "mode"
+  | "motion"
+  | "order"
+  | "sunlight"
+  | "alarm";
+
+export type ActivityMessage =
+  | { template: "order.executed"; params: { equipmentName: string; alias: string; value: string } }
+  | {
+      template: "order.executed.multi";
+      params: { equipmentNames: string[]; count: number; alias: string; value: string };
+    }
+  | { template: "motion.detected"; params: { equipmentName: string } }
+  | { template: "recipe.started"; params: { recipeName: string } }
+  | { template: "recipe.stopped"; params: { recipeName: string } }
+  | { template: "recipe.error"; params: { recipeName: string; error: string } }
+  | { template: "mode.activated"; params: { modeName: string } }
+  | { template: "mode.deactivated"; params: { modeName: string } }
+  | { template: "sunlight.sunrise"; params: Record<string, never> }
+  | { template: "sunlight.sunset"; params: Record<string, never> }
+  | { template: "alarm.raised"; params: { source: string; message: string } };
+
+export interface ActivityItem {
+  id: string;
+  timestamp: number;
+  category: ActivityCategory;
+  zoneId: string | null;
+  message: ActivityMessage;
+  source?: OrderSource;
+}
+
+// ============================================================
 // Engine Events (received via WebSocket)
 // ============================================================
 
@@ -358,6 +406,7 @@ export type EngineEvent =
       equipmentId: string;
       orderAlias: string;
       value: unknown;
+      source?: OrderSource;
     }
   // Recipe events
   | { type: "recipe.instance.created"; instanceId: string; recipeId: string }
@@ -385,7 +434,8 @@ export type EngineEvent =
   | { type: "system.update.progress"; step: string; message: string }
   | { type: "system.update.error"; error: string }
   | { type: "system.restart_required"; reason: string }
-  | { type: "equipment.order.failed"; equipmentId: string; orderAlias: string; value: unknown; error: string }
+  | { type: "equipment.order.failed"; equipmentId: string; orderAlias: string; value: unknown; error: string; source?: OrderSource }
+  | { type: "activity.added"; item: ActivityItem }
   | { type: "connected"; message: string; version: string };
 
 // ============================================================

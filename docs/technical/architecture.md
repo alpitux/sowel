@@ -84,22 +84,23 @@ The Event Bus is a typed `EventEmitter` using TypeScript discriminated unions (`
 
 ### Event Types
 
-| Event                             | Payload                                              | When                     |
-| --------------------------------- | ---------------------------------------------------- | ------------------------ |
-| `device.discovered`               | `device: Device`                                     | New device found         |
-| `device.removed`                  | `deviceId, deviceName`                               | Device deleted           |
-| `device.status_changed`           | `deviceId, deviceName, status`                       | Online/offline           |
-| `device.data.updated`             | `deviceId, deviceName, dataId, key, value, previous` | Property change          |
-| `equipment.data.changed`          | `equipmentId, key, value, previous`                  | Bound data changed       |
-| `equipment.order.executed`        | `equipmentId, orderAlias, value`                     | Order dispatched         |
-| `zone.data.changed`               | `zoneId, key, value, previous`                       | Aggregated data changed  |
-| `system.started`                  | --                                                   | Engine boot complete     |
-| `system.integration.connected`    | `integrationId`                                      | Integration connected    |
-| `system.integration.disconnected` | `integrationId`                                      | Integration disconnected |
-| `settings.changed`                | `keys`                                               | Settings updated         |
-| `mode.activated`                  | mode details                                         | Mode activated           |
-| `mode.deactivated`                | mode details                                         | Mode deactivated         |
-| `recipe.state_changed`            | instance details                                     | Recipe state changed     |
+| Event                             | Payload                                              | When                                  |
+| --------------------------------- | ---------------------------------------------------- | ------------------------------------- |
+| `device.discovered`               | `device: Device`                                     | New device found                      |
+| `device.removed`                  | `deviceId, deviceName`                               | Device deleted                        |
+| `device.status_changed`           | `deviceId, deviceName, status`                       | Online/offline                        |
+| `device.data.updated`             | `deviceId, deviceName, dataId, key, value, previous` | Property change                       |
+| `equipment.data.changed`          | `equipmentId, key, value, previous`                  | Bound data changed                    |
+| `equipment.order.executed`        | `equipmentId, orderAlias, value, source?`            | Order dispatched                      |
+| `zone.data.changed`               | `zoneId, key, value, previous`                       | Aggregated data changed               |
+| `system.started`                  | --                                                   | Engine boot complete                  |
+| `system.integration.connected`    | `integrationId`                                      | Integration connected                 |
+| `system.integration.disconnected` | `integrationId`                                      | Integration disconnected              |
+| `settings.changed`                | `keys`                                               | Settings updated                      |
+| `mode.activated`                  | mode details                                         | Mode activated                        |
+| `mode.deactivated`                | mode details                                         | Mode deactivated                      |
+| `recipe.state_changed`            | instance details                                     | Recipe state changed                  |
+| `activity.added`                  | `item: ActivityItem`                                 | New activity item buffered (spec 101) |
 
 ---
 
@@ -432,6 +433,27 @@ Multi-stage build:
 3. **runtime** — Debian Trixie (for Python 3.13), Node 20 installed via NodeSource, Python 3.13 + venv for plugins that need it (e.g. Panasonic CC), `better-sqlite3` rebuilt for the platform
 
 Runtime image is ~950 MB uncompressed (~210 MB content). The Python 3.13 requirement dates from the Panasonic CC plugin needing f-string syntax unavailable in Python 3.11.
+
+---
+
+## Activity Buffer (spec 101)
+
+`src/activity/activity-buffer.ts` keeps the last **24 hours** of zone-scoped engine events in a single in-memory ring buffer (capped at 2000 items). It powers the **Activity** panel in the zone view ([user guide](../user/zones.md#activity-feed)).
+
+### Event flow
+
+1. The buffer subscribes to a curated set of `EngineEvent`s: `equipment.order.executed`, `equipment.data.changed` (filtered by binding category to `motion`, `water_leak`, `smoke`), `recipe.instance.started/stopped/error`, `mode.activated/deactivated`, `sunlight.changed`, `system.alarm.raised`.
+2. For each event it resolves equipment / recipe names and the relevant `zoneId` via the equipment, recipe, zone and sunlight managers, then builds an `ActivityItem`.
+3. It pushes the item to the ring buffer (capping by count, purging stale entries past the TTL) and emits an `activity.added` event on the bus.
+4. The WebSocket layer broadcasts that event to clients subscribed to the `activity` topic. Clients also bootstrap from `GET /api/v1/activity` on mount.
+
+### Source attribution
+
+`executeOrder()` accepts an optional 4th `source` argument of type `OrderSource`. The recipe SDK exposes a per-instance `ctx.dispatchOrder()` closure that pre-binds the recipe's source, so internal helpers never have to thread `source` themselves. Modes, button bindings and API routes pass source inline. External recipe plugins keep working without attribution (graceful degradation).
+
+### Memory footprint
+
+At ~400 bytes per item, 2000 items = ~800 KB — under 0.3 % of a typical Sowel container's RSS. Buffer is lost on container restart, same as the logs ring buffer.
 
 ---
 

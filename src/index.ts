@@ -14,6 +14,7 @@ import { PoolWaterTempTracker } from "./equipments/pool-water-temp-tracker.js";
 import { ZoneAggregator } from "./zones/zone-aggregator.js";
 import { SunlightManager } from "./zones/sunlight-manager.js";
 import { RecipeManager } from "./recipes/engine/recipe-manager.js";
+import { ActivityBuffer } from "./activity/activity-buffer.js";
 import { RecipeLoader } from "./recipes/recipe-loader.js";
 import { VersionChecker } from "./core/version-checker.js";
 import { UpdateManager } from "./core/update-manager.js";
@@ -250,6 +251,16 @@ async function main() {
   const modeManager = new ModeManager(db, eventBus, equipmentManager, recipeManager, logger);
   const calendarManager = new CalendarManager(db, eventBus, settingsManager, modeManager, logger);
 
+  // 13b. Create Activity Buffer (spec 101) — depends on equipment / recipe / zone / sunlight managers
+  const activityBuffer = new ActivityBuffer(
+    eventBus,
+    equipmentManager,
+    recipeManager,
+    zoneManager,
+    sunlightManager,
+    logger,
+  );
+
   // 12b. Create Button Action Manager
   const buttonActionManager = new ButtonActionManager(
     db,
@@ -328,6 +339,7 @@ async function main() {
     eventBus,
     integrationRegistry,
     logBuffer,
+    activityBuffer,
     logger,
     corsOrigins: config.cors.origins,
   });
@@ -340,6 +352,9 @@ async function main() {
 
   // 16. Start Sunlight Manager (before system.started so aggregation has sunlight data)
   sunlightManager.start();
+
+  // 16a. Start Activity Buffer (after sunlightManager so it can read initial isDaylight)
+  activityBuffer.start();
 
   // 16b. Start version checker (polls GitHub releases for updates)
   versionChecker.start();

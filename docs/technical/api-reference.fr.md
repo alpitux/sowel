@@ -30,6 +30,7 @@ Sowel expose une API REST sous `/api/v1/` et un endpoint WebSocket à `/ws`. Tou
 - [MQTT Publishers](#mqtt-publishers)
 - [Notification Publishers](#notification-publishers)
 - [Button Actions](#button-actions)
+- [Activité](#activite)
 - [Logs (Admin)](#logs-admin)
 - [Backup (Admin)](#backup-admin)
 - [Health](#health)
@@ -358,6 +359,42 @@ Mappe les appuis sur des boutons physiques (boutons Zigbee, etc.) à des actions
 
 ---
 
+## Activité
+
+Événements moteur récents pour le panneau d'activité de la vue Zone. Lit depuis le ring buffer en mémoire (rétention 24 h, plafonné à 2000 entrées, remis à zéro au redémarrage). Voir [Zones — Fil d'activité](../user/zones.md#fil-dactivite) pour la description côté utilisateur.
+
+| Method | Path               | Description                                                                                                                       |
+| ------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/v1/activity` | Liste les items d'activité. Query : `?zoneId=<uuid>&includeDescendants=true&limit=100`. `limit` est borné à [1, 200], défaut 100. |
+
+Filtrage : les items dont le `zoneId` correspond au paramètre de query sont retournés, plus les items dont le `zoneId` vaut `null` (événements globaux : changements de mode, lever/coucher de soleil, alarmes système). Quand `includeDescendants=true` (défaut), les items des zones enfants sont aussi retournés.
+
+Format de réponse :
+
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "timestamp": 1715864400000,
+      "category": "order",
+      "zoneId": "uuid-du-salon",
+      "message": {
+        "template": "order.executed",
+        "params": { "equipmentName": "Lumière", "alias": "state", "value": "ON" }
+      },
+      "source": { "kind": "recipe", "instanceId": "...", "recipeName": "Motion Light" }
+    }
+  ]
+}
+```
+
+Catégories : `order`, `motion`, `recipe`, `mode`, `sunlight`, `alarm`.
+
+Sources : `recipe`, `mode`, `manual`, `button`, `external`. Le champ `source` n'est présent que sur les items `category=order`.
+
+---
+
 ## Logs (Admin)
 
 Accès aux logs admin uniquement depuis le ring buffer en mémoire.
@@ -415,7 +452,7 @@ Envoyez un message JSON pour vous abonner à des topics supplémentaires :
 { "type": "subscribe", "topics": ["devices", "equipments", "zones", "modes", "recipes"] }
 ```
 
-**Topics disponibles** : `devices`, `equipments`, `zones`, `modes`, `recipes`, `calendar`, `mqtt-publishers`, `system`, `logs`.
+**Topics disponibles** : `devices`, `equipments`, `zones`, `modes`, `recipes`, `calendar`, `mqtt-publishers`, `system`, `logs`, `activity`.
 
 Le topic `system` est toujours inclus, indépendamment de l'abonnement.
 
@@ -430,6 +467,25 @@ Les événements sont batchés toutes les 200 ms et envoyés sous forme de table
   { "type": "zone.data.changed", "zoneId": "...", "key": "temperature", "value": 21.8 }
 ]
 ```
+
+### Flux d'activité
+
+Quand on est abonné au topic `activity`, le serveur pousse chaque nouvel item au fil de l'eau. Chaque envoi est un événement unitaire (non batché), avec le même format que les items retournés par `GET /api/v1/activity` :
+
+```json
+{
+  "type": "activity.added",
+  "item": {
+    "id": "uuid",
+    "timestamp": 1715864400000,
+    "category": "motion",
+    "zoneId": "uuid-de-zone",
+    "message": { "template": "motion.detected", "params": { "equipmentName": "PIR Salon" } }
+  }
+}
+```
+
+Les clients doivent filtrer le flux live par leur scope de zone courant (le serveur diffuse tous les items aux abonnés, sans filtrage par client).
 
 ### Streaming de logs
 

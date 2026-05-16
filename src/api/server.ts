@@ -10,6 +10,7 @@ import fastifyStatic from "@fastify/static";
 import websocket from "@fastify/websocket";
 import type { Logger } from "../core/logger.js";
 import type { LogRingBuffer } from "../core/log-buffer.js";
+import type { ActivityBuffer } from "../activity/activity-buffer.js";
 import type { DeviceManager } from "../devices/device-manager.js";
 import type { ZoneManager } from "../zones/zone-manager.js";
 import type { ZoneAggregator } from "../zones/zone-aggregator.js";
@@ -51,6 +52,7 @@ import { registerCalendarRoutes } from "./routes/calendar.js";
 import { registerIntegrationRoutes } from "./routes/integrations.js";
 import { registerButtonActionRoutes } from "./routes/button-actions.js";
 import { registerLogRoutes } from "./routes/logs.js";
+import { registerActivityRoutes } from "./routes/activity.js";
 import { registerHistoryRoutes } from "./routes/history.js";
 import { registerEnergyRoutes } from "./routes/energy.js";
 import { registerChartRoutes } from "./routes/charts.js";
@@ -97,6 +99,7 @@ interface ServerDeps {
   eventBus: EventBus;
   integrationRegistry: IntegrationRegistry;
   logBuffer: LogRingBuffer;
+  activityBuffer: ActivityBuffer;
   logger: Logger;
   corsOrigins: string[];
 }
@@ -133,6 +136,7 @@ export async function createServer(deps: ServerDeps) {
     eventBus,
     integrationRegistry,
     logBuffer,
+    activityBuffer,
     logger,
     corsOrigins,
   } = deps;
@@ -275,6 +279,7 @@ export async function createServer(deps: ServerDeps) {
   });
   registerSystemRoutes(app, { versionChecker, updateManager, tzInfo, logger });
   registerLogRoutes(app, { logBuffer, logger });
+  registerActivityRoutes(app, { activityBuffer, logger });
   registerWebSocket(app, { eventBus, authService, logBuffer, logger, corsOrigins });
 
   // Serve UI static files from project root ui-dist/

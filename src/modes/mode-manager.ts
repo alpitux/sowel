@@ -10,6 +10,7 @@ import type {
   ModeWithDetails,
   ZoneModeImpact,
   ZoneModeImpactAction,
+  OrderSource,
 } from "../shared/types.js";
 
 export class ModeManager {
@@ -145,8 +146,9 @@ export class ModeManager {
 
     // Execute all zone impacts
     const impacts = this.getImpactsByMode(id);
+    const source: OrderSource = { kind: "mode", modeId: id, modeName: mode.name };
     for (const impact of impacts) {
-      this.executeImpact(impact, mode.name);
+      this.executeImpact(impact, mode.name, source);
     }
 
     this.eventBus.emit({ type: "mode.activated", modeId: id, modeName: mode.name });
@@ -166,7 +168,8 @@ export class ModeManager {
       throw new ModeError(`No impacts configured for mode ${modeId} on zone ${zoneId}`, 404);
     }
 
-    this.executeImpact(zoneImpact, mode.name);
+    const source: OrderSource = { kind: "mode", modeId, modeName: mode.name };
+    this.executeImpact(zoneImpact, mode.name, source);
     this.logger.info(
       { modeId, zoneId, actionCount: zoneImpact.actions.length, modeName: mode.name },
       "Mode applied to zone (local)",
@@ -187,10 +190,10 @@ export class ModeManager {
     this.logger.info({ modeId: id, name: mode.name }, "Mode deactivated");
   }
 
-  private executeImpact(impact: ZoneModeImpact, modeName: string): void {
+  private executeImpact(impact: ZoneModeImpact, modeName: string, source: OrderSource): void {
     for (const action of impact.actions) {
       try {
-        this.executeAction(action, modeName);
+        this.executeAction(action, modeName, source);
       } catch (err) {
         this.logger.warn(
           { err, action, zoneId: impact.zoneId, modeName },
@@ -200,12 +203,12 @@ export class ModeManager {
     }
   }
 
-  private executeAction(action: ZoneModeImpactAction, modeName: string): void {
+  private executeAction(action: ZoneModeImpactAction, modeName: string, source: OrderSource): void {
     switch (action.type) {
       case "order": {
         const eq = this.equipmentManager.getById(action.equipmentId);
         this.equipmentManager
-          .executeOrder(action.equipmentId, action.orderAlias, action.value)
+          .executeOrder(action.equipmentId, action.orderAlias, action.value, source)
           .then((result) => {
             if (!result.success) {
               this.logger.warn(
