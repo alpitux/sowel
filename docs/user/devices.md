@@ -6,6 +6,8 @@ Devices are everything wired to Sowel: a Zigbee bulb, a Shelly relay, a Netatmo 
 
 You will rarely manipulate devices directly -- they are the technical layer that everything else in Sowel sits on top of. But understanding what Sowel does to them is what explains why the rest works without glue code.
 
+![Devices admin page — auto-discovered hardware across integrations](../screenshots/devices-en.png)
+
 ---
 
 ## One data model for the whole house

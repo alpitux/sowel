@@ -6,6 +6,8 @@ Le Tableau de bord est votre écran d'accueil personnalisé : une grille de widg
 
 Contrairement à la vue Accueil (organisée par zones), le Tableau de bord vous laisse choisir exactement ce que vous voulez voir, peu importe la pièce ou le type d'équipement. Vous pouvez placer les lumières de votre cuisine à côté de la température extérieure et du portail de garage, le tout sur un même écran.
 
+![Tableau de bord avec un mélange de widgets équipement et zone](../screenshots/dashboard-overview-fr.png)
+
 ## Types de widgets
 
 ### Widget d'équipement
@@ -67,6 +69,8 @@ Le mode édition se bascule avec l'icône crayon dans l'en-tête du tableau de b
 - Chaque widget affiche un bouton **suppression**
 - Les widgets peuvent être **glissés** pour être réordonnés
 - Cliquez sur la **coche** pour quitter le mode édition et enregistrer
+
+![Tableau de bord en mode édition : poignées de glisser-déposer, boutons supprimer, action Ajouter](../screenshots/dashboard-edit-fr.png)
 
 !!! tip
 Le tableau de bord est personnel : chaque utilisateur a sa propre disposition de widgets. Les utilisateurs admin et les utilisateurs réguliers voient leur propre tableau de bord.

@@ -54,7 +54,51 @@ Screenshots live under `docs/screenshots/` and are referenced from `.md` files v
 2. **Show the surrounding context.** A reader landing on the page should understand where the feature lives in the UI. Capture the full zone view, not just one panel.
 3. **For mobile**, use a 390×844 viewport (iPhone 13) with `fullPage: true`. The page is allowed to be tall (a scrollshot is fine).
 4. **Hide live noise** before shooting: pause polling tasks, dismiss toasts, ensure the WS connection pill reads `● live` (not `○ offline`).
-5. **Use the demo fixture** (`./scripts/run-swap.sh local` + showroom fixture) so zone/equipment names are neutral and the same across languages.
+5. **Never shoot on prod** (`sowelox` / `192.168.0.230:3000`) and **never use `./scripts/run-swap.sh local`** for screenshots:
+   - Prod data leaks family names (PIR Marc, Chambre Victor, etc.) and the actual home topology into public docs.
+   - `run-swap.sh local` does `ssh sowelox 'docker stop sowel'` over SSH, which crashes the user's real home automation.
+   - Use the demo instance and the anonymized showroom fixture instead — see "Screenshot pipeline" below.
+
+### Screenshot pipeline (anonymized via demo instance)
+
+The demo instance lives on `domopi.local:3001` (Raspberry Pi). Two stages:
+
+**1. Build anonymized fixtures from a fresh prod backup**
+
+```bash
+# (a) Download a prod backup
+python3 -c "
+import urllib.request, json
+req = urllib.request.Request('http://192.168.0.230:3000/api/v1/auth/login',
+  data=json.dumps({'username':'admin','password':'<see reference_sowel_access memory>'}).encode(),
+  headers={'Content-Type':'application/json'}, method='POST')
+tok = json.loads(urllib.request.urlopen(req).read())['accessToken']
+req = urllib.request.Request('http://192.168.0.230:3000/api/v1/backup',
+  headers={'Authorization':'Bearer '+tok})
+open('/tmp/prod-backup.zip','wb').write(urllib.request.urlopen(req).read())
+"
+
+# (b) Run the anonymization pipeline
+python3 scripts/doc/build-fixtures.py /tmp/prod-backup.zip
+# Outputs /tmp/showroom-fr.zip and /tmp/showroom-en.zip with rename + translate maps applied
+```
+
+The script uses `ZONE_RENAME_FR`, `EQUIPMENT_RENAME_FR`, and the FR→EN `ZONE_TRANSLATE` / `EQUIPMENT_TRANSLATE` maps in `scripts/doc/build-fixtures.py`. If a new name appears that needs anonymization or translation, add it to the maps in the script first.
+
+**2. Deploy fixture to demo + shoot (per language)**
+
+```bash
+# Full reset of demo
+ssh mchacher@domopi.local 'cd /home/mchacher/sowel-demo && docker compose down -v && docker compose pull && docker compose up -d'
+# Wait for /api/v1/auth/status to respond
+# Setup first admin via POST /api/v1/auth/setup
+# Restore showroom-fr.zip via POST /api/v1/backup (multipart) — for FR shoot
+# Take FR screenshots on http://domopi.local:3001 (set localStorage sowel_language=fr, reload)
+# Restore showroom-en.zip via POST /api/v1/backup — for EN shoot
+# Take EN screenshots
+```
+
+Demo compose file: `/home/mchacher/sowel-demo/docker-compose.yml`. Keep `image: ghcr.io/mchacher/sowel:<version>` aligned with the prod release. Demo port 3001 maps to container 3000.
 
 ### Playwright MCP recipe (preferred)
 
