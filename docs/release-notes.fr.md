@@ -11,6 +11,16 @@ Cette page résume toutes les versions publiées, de la plus récente à la plus
 
 ---
 
+## 1.10.x — Le changelog à portée de clic
+
+### v1.10.0 — 2026-05-17 { #v1-10-0 }
+
+- Chaque ligne de la feuille des mises à jour expose désormais une icône changelog discrète à côté du bouton Mettre à jour. Cliquez pour ouvrir les notes de version correspondantes (cette page pour le cœur Sowel, la page GitHub release pour les plugins) dans un nouvel onglet. Fini les mises à jour à l'aveugle (spec 107).
+- Les notes de version sont désormais dans la table des matières du Guide utilisateur.
+- La CI refuse maintenant de publier une release sans entrée correspondante sur cette page, en EN et FR (spec 108). Conséquence : chaque lien « Voir les changements » de l'application tombe sur une section remplie.
+
+---
+
 ## 1.9.x — Pastille de mise à jour actionnable
 
 ### v1.9.0 — 2026-05-17 { #v1-9-0 }

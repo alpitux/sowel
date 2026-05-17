@@ -11,6 +11,16 @@ This page summarises every published version, newest first. For the full diff be
 
 ---
 
+## 1.10.x — Changelog at your fingertips
+
+### v1.10.0 — 2026-05-17 { #v1-10-0 }
+
+- Each row of the topbar updates sheet now exposes a discreet changelog icon next to the Update button. Click it to open the matching release notes (this page for Sowel core, the plugin's GitHub release page for plugins) in a new tab. No more clicking blindly through versions (spec 107).
+- Release Notes moved into the User Guide table of contents.
+- CI now refuses to publish a release unless this page has an entry for the new version in both EN and FR (spec 108). Side effect: every in-app "View changes" link is guaranteed to land on a populated section.
+
+---
+
 ## 1.9.x — Actionable updates pill
 
 ### v1.9.0 — 2026-05-17 { #v1-9-0 }
