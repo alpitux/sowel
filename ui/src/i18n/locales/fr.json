@@ -89,6 +89,7 @@
   "updates.sheet.empty": "Tout est à jour.",
   "updates.sheet.versions": "v{{from}} → v{{to}}",
   "updates.action.update": "Mettre à jour",
+  "updates.action.viewChangelog": "Voir les changements (v{{from}} → v{{to}})",
   "updates.badge.integration": "Intégration",
   "updates.badge.recipe": "Recette",
   "updates.error.generic": "Échec de la mise à jour",
