@@ -19,6 +19,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X, Palette, SlidersHorizontal } from "lucide-react";
 import type { DashboardWidget, EquipmentWithDetails, ZoneWithChildren } from "../../types";
 import { EquipmentWidget } from "./EquipmentWidget";
+import { findOrderByCategory } from "../equipments/bindingUtils";
 import { ZoneWidget } from "./ZoneWidget";
 import { IconPicker } from "./IconPicker";
 import { BindingsPicker } from "./BindingsPicker";
@@ -535,10 +536,14 @@ function getMobileClickAction(
 
   // Gate: single action = direct toggle, multiple = detail sheet
   if (type === "gate") {
-    const commandBinding = equipment.orderBindings.find((ob) => ob.alias === "command");
+    const commandBinding = findOrderByCategory(
+      equipment.orderBindings,
+      ["gate_trigger"],
+      ["command"],
+    );
     const enumValues = commandBinding?.enumValues ?? [];
     if (commandBinding && enumValues.length <= 1) {
-      return () => { onExecuteOrder(equipment.id, "command", null); };
+      return () => { onExecuteOrder(equipment.id, commandBinding.alias, null); };
     }
     return onOpenDetail;
   }
@@ -550,9 +555,16 @@ function getMobileClickAction(
     type === "pool_pump" ||
     type === "water_valve"
   ) {
-    const stateBinding = equipment.orderBindings.find(
-      (ob) => ob.alias === "state" && (ob.type === "enum" || ob.type === "boolean"),
+    const stateBindingRaw = findOrderByCategory(
+      equipment.orderBindings,
+      ["light_toggle", "pool_pump_toggle", "valve_toggle", "toggle_power"],
+      ["state"],
     );
+    const stateBinding =
+      stateBindingRaw &&
+      (stateBindingRaw.type === "enum" || stateBindingRaw.type === "boolean")
+        ? stateBindingRaw
+        : undefined;
     if (stateBinding) {
       const dataBinding = equipment.dataBindings.find((db) => db.category === "light_state");
       const isOn = dataBinding
@@ -561,7 +573,7 @@ function getMobileClickAction(
       return () => {
         const onVal = stateBinding.enumValues?.find((v) => /^on$/i.test(v)) ?? "ON";
         const offVal = stateBinding.enumValues?.find((v) => /^off$/i.test(v)) ?? "OFF";
-        onExecuteOrder(equipment.id, "state", isOn ? offVal : onVal);
+        onExecuteOrder(equipment.id, stateBinding.alias, isOn ? offVal : onVal);
       };
     }
   }

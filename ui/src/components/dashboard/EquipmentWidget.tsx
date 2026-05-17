@@ -18,6 +18,7 @@ import {
 import type { EquipmentWithDetails } from "../../types";
 import type { DashboardWidget } from "../../types";
 import { useEquipmentState, formatValue } from "../equipments/useEquipmentState";
+import { findOrderByCategory } from "../equipments/bindingUtils";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
 import { SensorValues } from "../equipments/SensorValues";
 import { createElement } from "react";
@@ -227,14 +228,24 @@ function ShutterEquipmentWidget({
     : null;
   const position = slider.displayValue(devicePosition);
 
-  const hasState = equipment.orderBindings.some((ob) => ob.alias === "state");
+  // Category-first resolver — mirrors the detail variant below (spec 110).
+  // Without this, manually re-bound shutters (alias = device key) lose the
+  // command buttons.
+  const moveBinding = findOrderByCategory(
+    equipment.orderBindings,
+    ["pool_cover_move", "shutter_move"],
+    ["state"],
+    [/^shutter\d*_state$/],
+  );
+  const hasState = !!moveBinding;
   const level = position !== null ? shutterLevel(position) : null;
 
   const handleCommand = async (command: "OPEN" | "STOP" | "CLOSE") => {
-    if (executing || !hasState) return;
+    if (executing || !moveBinding) return;
     setExecuting(true);
     try {
-      await onExecuteOrder("state", command);
+      const enumMatch = moveBinding.enumValues?.find((v) => v.toUpperCase() === command);
+      await onExecuteOrder(moveBinding.alias, enumMatch ?? command);
     } finally {
       setExecuting(false);
     }

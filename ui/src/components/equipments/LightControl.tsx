@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Power } from "lucide-react";
 import type { EquipmentWithDetails } from "../../types";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
+import { findOrderByCategory } from "./bindingUtils";
 
 interface LightControlProps {
   equipment: EquipmentWithDetails;
@@ -34,13 +35,21 @@ export function LightControl({ equipment, onExecuteOrder, compact }: LightContro
 
   const brightness = slider.displayValue(deviceBrightness);
 
-  const toggleBinding = equipment.orderBindings.find(
-    (ob) => ob.type === "boolean" || (ob.alias === "state" && ob.type === "enum")
-  );
+  // Category-first resolver (spec 110). Falls back to the boolean type / alias
+  // heuristic used by lights bound before category typing existed.
+  const toggleBinding =
+    findOrderByCategory(equipment.orderBindings, ["light_toggle", "toggle_power"], ["state"]) ??
+    equipment.orderBindings.find(
+      (ob) => ob.type === "boolean" || (ob.alias === "state" && ob.type === "enum"),
+    );
   const hasToggle = !!toggleBinding;
-  const hasBrightness = equipment.orderBindings.some(
-    (ob) => ob.type === "number" && (ob.alias === "brightness" || ob.key === "brightness")
+  const brightnessOrderBinding = findOrderByCategory(
+    equipment.orderBindings,
+    ["set_brightness"],
+    ["brightness"],
   );
+  const hasBrightness =
+    !!brightnessOrderBinding && brightnessOrderBinding.type === "number";
 
   const handleToggle = async (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -61,8 +70,10 @@ export function LightControl({ equipment, onExecuteOrder, compact }: LightContro
     }
   };
 
-  const handleBrightnessCommit = () =>
-    slider.onCommit((v) => onExecuteOrder("brightness", v));
+  const handleBrightnessCommit = () => {
+    if (!brightnessOrderBinding) return;
+    slider.onCommit((v) => onExecuteOrder(brightnessOrderBinding.alias, v));
+  };
 
   if (compact) {
     return (
