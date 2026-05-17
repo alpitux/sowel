@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, RefreshCw } from "lucide-react";
 import { BottomSheet } from "../dashboard/BottomSheet";
@@ -30,15 +30,30 @@ export function UpdatesSheet({ open, onClose }: UpdatesSheetProps) {
   const [plugins, setPlugins] = useState<PluginInfo[] | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Tracks whether the sheet is currently open, so async handlers (whose
+  // 1.5 s wait can outlive the close) can bail out before applying stale
+  // state writes. Synced from `open` via the effect below.
+  const openRef = useRef(open);
 
   useEffect(() => {
+    openRef.current = open;
     if (!open) return;
+    let cancelled = false;
     setError(null);
     setUpdatingId(null);
     setPlugins(null);
     getPlugins()
-      .then((all) => setPlugins(all.filter((p) => p.latestVersion)))
-      .catch(() => setPlugins([]));
+      .then((all) => {
+        if (cancelled) return;
+        setPlugins(all.filter((p) => p.latestVersion));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPlugins([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   const outdated = plugins ?? [];
@@ -67,12 +82,16 @@ export function UpdatesSheet({ open, onClose }: UpdatesSheetProps) {
       await updatePlugin(id);
       // Plugin restart takes a moment — let the backend settle before refreshing the badge.
       await new Promise((r) => setTimeout(r, 1500));
-      setPlugins((prev) => (prev ?? []).filter((p) => p.manifest.id !== id));
+      // Refresh the pill counter regardless of whether the sheet is still open —
+      // the user closed the sheet but the update still happened.
       refreshPluginUpdateCount();
+      if (!openRef.current) return;
+      setPlugins((prev) => (prev ?? []).filter((p) => p.manifest.id !== id));
     } catch (err) {
+      if (!openRef.current) return;
       setError(err instanceof Error ? err.message : t("updates.error.generic"));
     } finally {
-      setUpdatingId(null);
+      if (openRef.current) setUpdatingId(null);
     }
   }
 
@@ -92,7 +111,7 @@ export function UpdatesSheet({ open, onClose }: UpdatesSheetProps) {
           {t("updates.sheet.empty")}
         </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2" aria-busy={updatingId !== null}>
           {showCore && coreUpdate && (
             <UpdateRow
               title="Sowel"
@@ -100,6 +119,7 @@ export function UpdatesSheet({ open, onClose }: UpdatesSheetProps) {
               from={coreUpdate.current}
               to={coreUpdate.latest}
               loading={updatingId === CORE_ROW_ID}
+              disabled={updatingId !== null && updatingId !== CORE_ROW_ID}
               onUpdate={handleCoreUpdate}
             />
           )}
@@ -111,12 +131,17 @@ export function UpdatesSheet({ open, onClose }: UpdatesSheetProps) {
               from={p.manifest.version}
               to={p.latestVersion ?? ""}
               loading={updatingId === p.manifest.id}
+              disabled={updatingId !== null && updatingId !== p.manifest.id}
               onUpdate={() => handlePluginUpdate(p.manifest.id)}
             />
           ))}
         </ul>
       )}
-      {error && <div className="mt-3 text-[12px] text-error text-center">{error}</div>}
+      {error && (
+        <div role="alert" className="mt-3 text-[12px] text-error text-center">
+          {error}
+        </div>
+      )}
     </BottomSheet>
   );
 }
@@ -127,10 +152,11 @@ interface UpdateRowProps {
   from: string;
   to: string;
   loading: boolean;
+  disabled: boolean;
   onUpdate: () => void;
 }
 
-function UpdateRow({ title, kind, from, to, loading, onUpdate }: UpdateRowProps) {
+function UpdateRow({ title, kind, from, to, loading, disabled, onUpdate }: UpdateRowProps) {
   const { t } = useTranslation();
   const badge =
     kind === "core"
@@ -155,8 +181,9 @@ function UpdateRow({ title, kind, from, to, loading, onUpdate }: UpdateRowProps)
         </div>
       </div>
       <button
+        type="button"
         onClick={onUpdate}
-        disabled={loading}
+        disabled={loading || disabled}
         className="px-3 py-1.5 rounded-[6px] bg-primary text-white text-[12px] font-medium hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 cursor-pointer flex-shrink-0"
       >
         {loading && <Loader2 size={12} strokeWidth={1.5} className="animate-spin" />}
