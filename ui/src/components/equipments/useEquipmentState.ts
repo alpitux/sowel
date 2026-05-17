@@ -7,7 +7,7 @@ import {
   getSensorBindings,
   getAllBatteryBindings,
 } from "./sensorUtils";
-import { findOrderByCategory } from "./bindingUtils";
+import { findDataByCategory, findOrderByCategory } from "./bindingUtils";
 
 export function useEquipmentState(equipment: EquipmentWithDetails) {
   // Classification
@@ -29,9 +29,15 @@ export function useEquipmentState(equipment: EquipmentWithDetails) {
   const isPoolCover = equipment.type === "pool_cover";
   const isPoolHeatPump = equipment.type === "pool_heat_pump";
 
-  // State binding
-  const stateBinding = equipment.dataBindings.find(
-    (db) => db.alias === "state" || db.category === "light_state",
+  // State binding — `light_state` is the canonical ON/OFF data category
+  // used by lights, heaters, switches, valves and pool pumps (plugins emit
+  // it for any "relay-style" data). Gate and cover have their own dedicated
+  // lookups below because their value space is "open"/"closed" rather than
+  // ON/OFF. Spec 110.
+  const stateBinding = findDataByCategory(
+    equipment.dataBindings,
+    ["light_state"],
+    ["state"],
   );
   const powerBinding = isThermostat
     ? equipment.dataBindings.find((db) => db.alias === "power")
