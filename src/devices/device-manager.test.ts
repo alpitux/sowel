@@ -148,6 +148,90 @@ describe("DeviceManager", () => {
       manager.upsertFromDiscovery("zigbee2mqtt", "zigbee2mqtt", sampleDevice);
       expect(manager.getById(device.id)?.name).toBe("PIR Salon");
     });
+
+    // Regression for the pool_cover incident: a partial discovery announcement
+    // must not destroy device data/order rows that an equipment still binds to,
+    // because the FK CASCADE on data_bindings/order_bindings would wipe the
+    // equipment binding silently. See specs/109-device-discovery-preserve-bound.
+    it("keeps device_order rows that are bound to an equipment when the key is missing from a re-discovery", () => {
+      manager.upsertFromDiscovery("zigbee2mqtt", "zigbee2mqtt", sampleLight);
+      const device = manager.getAll()[0];
+      const stateOrder = manager.getDeviceOrders(device.id).find((o) => o.key === "state");
+      expect(stateOrder).toBeDefined();
+
+      // Bind the `state` order to an equipment (directly via SQL — DeviceManager
+      // does not own the equipment tables).
+      db.prepare("INSERT INTO zones (id, name) VALUES ('zone-1', 'Salon')").run();
+      db.prepare(
+        "INSERT INTO equipments (id, name, zone_id, type) VALUES ('eq-1', 'Lampe', 'zone-1', 'light')",
+      ).run();
+      db.prepare(
+        "INSERT INTO order_bindings (id, equipment_id, device_order_id, alias) VALUES (?, 'eq-1', ?, 'state')",
+      ).run("ob-1", stateOrder!.id);
+
+      // Partial re-discovery: `state` is omitted, only `brightness` is reported.
+      manager.upsertFromDiscovery("zigbee2mqtt", "zigbee2mqtt", {
+        ...sampleLight,
+        orders: sampleLight.orders.filter((o) => o.key === "brightness"),
+      });
+
+      // The order row must survive (binding kept it alive).
+      const orders = manager.getDeviceOrders(device.id);
+      expect(orders.map((o) => o.key).sort()).toContain("state");
+      // Binding still references the same device_order id.
+      const binding = db.prepare("SELECT * FROM order_bindings WHERE id = 'ob-1'").get() as
+        | { device_order_id: string }
+        | undefined;
+      expect(binding?.device_order_id).toBe(stateOrder!.id);
+    });
+
+    it("keeps device_data rows that are bound to an equipment when the key is missing from a re-discovery", () => {
+      manager.upsertFromDiscovery("zigbee2mqtt", "zigbee2mqtt", sampleLight);
+      const device = manager.getAll()[0];
+      const stateData = manager.getDeviceData(device.id).find((d) => d.key === "state");
+      expect(stateData).toBeDefined();
+
+      db.prepare("INSERT INTO zones (id, name) VALUES ('zone-1', 'Salon')").run();
+      db.prepare(
+        "INSERT INTO equipments (id, name, zone_id, type) VALUES ('eq-1', 'Lampe', 'zone-1', 'light')",
+      ).run();
+      db.prepare(
+        "INSERT INTO data_bindings (id, equipment_id, device_data_id, alias) VALUES (?, 'eq-1', ?, 'state')",
+      ).run("db-1", stateData!.id);
+
+      manager.upsertFromDiscovery("zigbee2mqtt", "zigbee2mqtt", {
+        ...sampleLight,
+        data: sampleLight.data.filter((d) => d.key === "brightness"),
+      });
+
+      const data = manager.getDeviceData(device.id);
+      expect(data.map((d) => d.key).sort()).toContain("state");
+      const binding = db.prepare("SELECT * FROM data_bindings WHERE id = 'db-1'").get() as
+        | { device_data_id: string }
+        | undefined;
+      expect(binding?.device_data_id).toBe(stateData!.id);
+    });
+
+    it("still removes unbound stale entries on re-discovery", () => {
+      manager.upsertFromDiscovery("zigbee2mqtt", "zigbee2mqtt", sampleLight);
+      const device = manager.getAll()[0];
+      expect(
+        manager
+          .getDeviceOrders(device.id)
+          .map((o) => o.key)
+          .sort(),
+      ).toEqual(["brightness", "state"]);
+
+      // No binding on `brightness` — it must still be cleaned up when missing.
+      manager.upsertFromDiscovery("zigbee2mqtt", "zigbee2mqtt", {
+        ...sampleLight,
+        orders: sampleLight.orders.filter((o) => o.key === "state"),
+        data: sampleLight.data.filter((d) => d.key === "state"),
+      });
+
+      expect(manager.getDeviceOrders(device.id).map((o) => o.key)).toEqual(["state"]);
+      expect(manager.getDeviceData(device.id).map((d) => d.key)).toEqual(["state"]);
+    });
   });
 
   describe("updateDeviceData", () => {
