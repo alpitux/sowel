@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Loader2, RefreshCw } from "lucide-react";
+import { FileText, Loader2, RefreshCw } from "lucide-react";
 import { BottomSheet } from "../dashboard/BottomSheet";
 import { getPlugins, triggerSystemUpdate, updatePlugin } from "../../api";
 import { useWebSocket } from "../../store/useWebSocket";
@@ -20,6 +20,18 @@ function getManifestType(manifest: PluginManifest): PackageType {
 
 function getLocalizedName(manifest: PluginManifest, lang: string): string {
   return manifest.i18n?.[lang]?.name ?? manifest.name;
+}
+
+function changelogUrl(
+  kind: "core" | PackageType,
+  repo: string | undefined,
+  to: string,
+): string | null {
+  if (kind === "core") {
+    return `https://docs.sowel.org/release-notes/#v${to.replaceAll(".", "-")}`;
+  }
+  if (!repo) return null;
+  return `https://github.com/${repo}/releases/tag/v${to}`;
 }
 
 export function UpdatesSheet({ open, onClose }: UpdatesSheetProps) {
@@ -118,23 +130,28 @@ export function UpdatesSheet({ open, onClose }: UpdatesSheetProps) {
               kind="core"
               from={coreUpdate.current}
               to={coreUpdate.latest}
+              changelogHref={changelogUrl("core", undefined, coreUpdate.latest)}
               loading={updatingId === CORE_ROW_ID}
               disabled={updatingId !== null && updatingId !== CORE_ROW_ID}
               onUpdate={handleCoreUpdate}
             />
           )}
-          {outdated.map((p) => (
-            <UpdateRow
-              key={p.manifest.id}
-              title={getLocalizedName(p.manifest, lang)}
-              kind={getManifestType(p.manifest)}
-              from={p.manifest.version}
-              to={p.latestVersion ?? ""}
-              loading={updatingId === p.manifest.id}
-              disabled={updatingId !== null && updatingId !== p.manifest.id}
-              onUpdate={() => handlePluginUpdate(p.manifest.id)}
-            />
-          ))}
+          {outdated.map((p) => {
+            const to = p.latestVersion ?? "";
+            return (
+              <UpdateRow
+                key={p.manifest.id}
+                title={getLocalizedName(p.manifest, lang)}
+                kind={getManifestType(p.manifest)}
+                from={p.manifest.version}
+                to={to}
+                changelogHref={changelogUrl(getManifestType(p.manifest), p.manifest.repo, to)}
+                loading={updatingId === p.manifest.id}
+                disabled={updatingId !== null && updatingId !== p.manifest.id}
+                onUpdate={() => handlePluginUpdate(p.manifest.id)}
+              />
+            );
+          })}
         </ul>
       )}
       {error && (
@@ -151,12 +168,22 @@ interface UpdateRowProps {
   kind: "core" | PackageType;
   from: string;
   to: string;
+  changelogHref: string | null;
   loading: boolean;
   disabled: boolean;
   onUpdate: () => void;
 }
 
-function UpdateRow({ title, kind, from, to, loading, disabled, onUpdate }: UpdateRowProps) {
+function UpdateRow({
+  title,
+  kind,
+  from,
+  to,
+  changelogHref,
+  loading,
+  disabled,
+  onUpdate,
+}: UpdateRowProps) {
   const { t } = useTranslation();
   const badge =
     kind === "core"
@@ -164,6 +191,7 @@ function UpdateRow({ title, kind, from, to, loading, disabled, onUpdate }: Updat
       : kind === "recipe"
         ? t("updates.badge.recipe")
         : t("updates.badge.integration");
+  const changelogTitle = t("updates.action.viewChangelog", { from, to });
 
   return (
     <li className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] bg-border-light/50">
@@ -180,6 +208,29 @@ function UpdateRow({ title, kind, from, to, loading, disabled, onUpdate }: Updat
           {t("updates.sheet.versions", { from, to })}
         </div>
       </div>
+      {changelogHref &&
+        (loading ? (
+          <button
+            type="button"
+            disabled
+            aria-label={changelogTitle}
+            title={changelogTitle}
+            className="p-1.5 rounded-[6px] text-text-tertiary opacity-50 cursor-not-allowed flex-shrink-0"
+          >
+            <FileText size={14} strokeWidth={1.5} />
+          </button>
+        ) : (
+          <a
+            href={changelogHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={changelogTitle}
+            title={changelogTitle}
+            className="p-1.5 rounded-[6px] text-text-tertiary hover:text-text-secondary hover:bg-border-light transition-colors cursor-pointer flex-shrink-0"
+          >
+            <FileText size={14} strokeWidth={1.5} />
+          </a>
+        ))}
       <button
         type="button"
         onClick={onUpdate}
