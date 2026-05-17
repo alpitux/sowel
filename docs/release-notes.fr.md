@@ -13,6 +13,10 @@ Cette page résume toutes les versions publiées, de la plus récente à la plus
 
 ## 1.10.x — Le changelog à portée de clic
 
+### v1.10.3 — 2026-05-17 { #v1-10-3 }
+
+- Refactor : toutes les résolutions de bindings côté UI et moteur de recettes passent désormais par un résolveur partagé catégorie-d'abord. Les équipements re-bindés manuellement (avec l'alias = clé device) fonctionnent partout : vue zone, détail équipement, feuille mobile, toggle mobile direct, fermer-toutes-vannes, et dispatch piloté par recette (motion-light, switch-light, presence-heater, state-trigger-light). Ferme la classe de bug latent qui avait causé l'incident pool-cover de v1.10.2. Spec 110.
+
 ### v1.10.2 — 2026-05-17 { #v1-10-2 }
 
 - Correctif : le bouton ON/OFF de la pompe piscine ne passe plus à la ligne sous l'icône dans la vue compacte de zone.

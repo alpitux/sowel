@@ -13,6 +13,10 @@ This page summarises every published version, newest first. For the full diff be
 
 ## 1.10.x — Changelog at your fingertips
 
+### v1.10.3 — 2026-05-17 { #v1-10-3 }
+
+- Refactor: every binding resolution across the UI and the recipe engine now goes through a shared category-first resolver. Manually re-bound equipments (where the alias defaults to the device key) keep working everywhere: zone view, equipment detail, mobile dashboard sheet, mobile direct toggle, close-all-valves, and recipe-driven dispatch (motion-light, switch-light, presence-heater, state-trigger-light). Closes the latent bug class behind the v1.10.2 pool-cover incident. Spec 110.
+
 ### v1.10.2 — 2026-05-17 { #v1-10-2 }
 
 - Fix: the pool pump's ON/OFF toggle no longer wraps to a second line under the icon in the compact zone view.
