@@ -13,6 +13,11 @@ This page summarises every published version, newest first. For the full diff be
 
 ## 1.10.x — Changelog at your fingertips
 
+### v1.10.2 — 2026-05-17 { #v1-10-2 }
+
+- Fix: the pool pump's ON/OFF toggle no longer wraps to a second line under the icon in the compact zone view.
+- Fix: pool cover (and any shutter) OPEN/STOP/CLOSE buttons reappear in the zone compact view, the mobile dashboard sheet, and the equipment detail page when the binding was created with the device key as alias (e.g. after a manual re-bind through the UI). The controls now resolve the move/position bindings by category, mirroring the dashboard widget's existing logic.
+
 ### v1.10.1 — 2026-05-17 { #v1-10-1 }
 
 - Fix: a partial discovery announcement from an integration plugin no longer silently destroys equipment bindings. Before, if a Tasmota / Zigbee2MQTT / etc. device temporarily failed to advertise one of its keys on reconnect, the `device_data` / `device_orders` row was deleted and the FK CASCADE wiped any equipment binding to it. The pool cover lost its open/close command this way after the v1.10.0 restart. Bound rows are now preserved across partial re-discoveries; only truly orphaned rows are still cleaned up (spec 109).
