@@ -13,6 +13,10 @@ Cette page résume toutes les versions publiées, de la plus récente à la plus
 
 ## 1.10.x — Le changelog à portée de clic
 
+### v1.10.1 — 2026-05-17 { #v1-10-1 }
+
+- Correctif : une annonce de découverte partielle envoyée par un plugin d'intégration ne détruit plus silencieusement les bindings d'équipement. Avant ce correctif, si un device Tasmota / Zigbee2MQTT / etc. omettait temporairement une de ses clés lors d'une reconnexion, la ligne `device_data` / `device_orders` était supprimée et le CASCADE FK effaçait le binding d'équipement correspondant. C'est ce qui avait fait disparaître la commande du volet piscine après le restart de v1.10.0. Les lignes bound sont désormais préservées à travers les re-découvertes partielles ; seules les vraies lignes orphelines continuent d'être nettoyées (spec 109).
+
 ### v1.10.0 — 2026-05-17 { #v1-10-0 }
 
 - Chaque ligne de la feuille des mises à jour expose désormais une icône changelog discrète à côté du bouton Mettre à jour. Cliquez pour ouvrir les notes de version correspondantes (cette page pour le cœur Sowel, la page GitHub release pour les plugins) dans un nouvel onglet. Fini les mises à jour à l'aveugle (spec 107).

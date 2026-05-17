@@ -13,6 +13,10 @@ This page summarises every published version, newest first. For the full diff be
 
 ## 1.10.x — Changelog at your fingertips
 
+### v1.10.1 — 2026-05-17 { #v1-10-1 }
+
+- Fix: a partial discovery announcement from an integration plugin no longer silently destroys equipment bindings. Before, if a Tasmota / Zigbee2MQTT / etc. device temporarily failed to advertise one of its keys on reconnect, the `device_data` / `device_orders` row was deleted and the FK CASCADE wiped any equipment binding to it. The pool cover lost its open/close command this way after the v1.10.0 restart. Bound rows are now preserved across partial re-discoveries; only truly orphaned rows are still cleaned up (spec 109).
+
 ### v1.10.0 — 2026-05-17 { #v1-10-0 }
 
 - Each row of the topbar updates sheet now exposes a discreet changelog icon next to the Update button. Click it to open the matching release notes (this page for Sowel core, the plugin's GitHub release page for plugins) in a new tab. No more clicking blindly through versions (spec 107).
