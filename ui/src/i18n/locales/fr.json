@@ -85,6 +85,13 @@
   "alarms.integration.disconnected": "Plugin déconnecté",
   "updates.pill.title_one": "{{count}} mise à jour disponible",
   "updates.pill.title_other": "{{count}} mises à jour disponibles",
+  "updates.sheet.title": "Mises à jour disponibles",
+  "updates.sheet.empty": "Tout est à jour.",
+  "updates.sheet.versions": "v{{from}} → v{{to}}",
+  "updates.action.update": "Mettre à jour",
+  "updates.badge.integration": "Intégration",
+  "updates.badge.recipe": "Recette",
+  "updates.error.generic": "Échec de la mise à jour",
   "restart.pill.title": "Redémarrage requis",
 
   "devices.title": "Appareils",

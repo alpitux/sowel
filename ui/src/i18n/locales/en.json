@@ -85,6 +85,13 @@
   "alarms.integration.disconnected": "Plugin disconnected",
   "updates.pill.title_one": "{{count}} update available",
   "updates.pill.title_other": "{{count}} updates available",
+  "updates.sheet.title": "Available updates",
+  "updates.sheet.empty": "Everything's up to date.",
+  "updates.sheet.versions": "v{{from}} → v{{to}}",
+  "updates.action.update": "Update",
+  "updates.badge.integration": "Integration",
+  "updates.badge.recipe": "Recipe",
+  "updates.error.generic": "Update failed",
   "restart.pill.title": "Restart required",
 
   "devices.title": "Devices",
