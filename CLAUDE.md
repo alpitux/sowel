@@ -178,6 +178,20 @@ Every entry in `plugins/registry.json` MUST carry `sha256` (64 hex chars) and `o
 
 If the registry CI fails on SHA256 mismatch, the fix is always to re-run `backfill-registry-sha256.mjs`, never to remove the field or bypass the check.
 
+### Release notes are mandatory (spec 108 — MANDATORY for AI agents)
+
+Every Sowel release MUST have a matching entry in **both** `docs/release-notes.md` and `docs/release-notes.fr.md` before the version tag is pushed. The in-app `UpdatesSheet` (spec 107) links to `https://docs.sowel.org/release-notes/#v<x>-<y>-<z>` from the core update row — missing entries break that link.
+
+Workflow when cutting a release (`vX.Y.Z`):
+
+1. Add a `### vX.Y.Z — YYYY-MM-DD { #vX-Y-Z }` block under the matching minor section in **both** `docs/release-notes.md` and `docs/release-notes.fr.md`. The explicit `{ #vX-Y-Z }` anchor is required — without it, MkDocs slugifies the heading into `vXYZ-YYYY-MM-DD` and the in-app link 404s.
+2. Stage and commit the docs together with the version bump in `package.json` / `ui/package.json` (single `release: vX.Y.Z` commit).
+3. Tag and push as usual via `scripts/release.sh`.
+
+The `verify-release-notes` job in `.github/workflows/release.yml` greps the tagged commit for `{ #vX-Y-Z }` in both files and fails the workflow (before any Docker layer is built) if either is missing. Recovery: add the entries, amend the commit, `git tag -f vX.Y.Z && git push --force origin vX.Y.Z`.
+
+**Do NOT bypass this check** by editing the workflow or skipping the grep — it is the contract that keeps `docs.sowel.org/release-notes` aligned with what is actually shipped.
+
 ### Event Bus
 
 - Typed `EventEmitter` with TypeScript discriminated union (`EngineEvent`)
