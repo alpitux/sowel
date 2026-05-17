@@ -1027,12 +1027,18 @@ function GateDetailContent({
   const [executing, setExecuting] = useState<string | null>(null);
 
   const stateBinding = equipment.dataBindings.find(
-    (db) => db.alias === "state" && db.category === "gate_state",
+    (db) => db.category === "gate_state",
   );
   const gateState = (stateBinding?.value as string) ?? "unknown";
   const isOpen = gateState === "open";
 
-  const commandBinding = equipment.orderBindings.find((ob) => ob.alias === "command");
+  // Category-first resolver (spec 110). Aligns with WidgetGrid and
+  // GateEquipmentWidget so all three gate code paths agree.
+  const commandBinding = findOrderByCategory(
+    equipment.orderBindings,
+    ["gate_trigger"],
+    ["command"],
+  );
   const enumValues = commandBinding?.enumValues ?? [];
 
   const handleCommand = async (value: string | null) => {
@@ -1040,7 +1046,7 @@ function GateDetailContent({
     const key = value ?? "command";
     setExecuting(key);
     try {
-      await onExecuteOrder("command", value);
+      await onExecuteOrder(commandBinding.alias, value);
     } finally {
       setExecuting(null);
     }

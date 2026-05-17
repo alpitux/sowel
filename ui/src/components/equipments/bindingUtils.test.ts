@@ -77,6 +77,17 @@ describe("findOrderByCategory", () => {
     const bindings = [{ alias: "state", category: undefined }];
     expect(findOrderByCategory(bindings, ["light_toggle"])).toBeUndefined();
   });
+
+  it("when multiple bindings match the category list, the first one wins (Array.find order)", () => {
+    const bindings = [
+      { alias: "first", category: "light_toggle" as const },
+      { alias: "second", category: "toggle_power" as const },
+      { alias: "third", category: "light_toggle" as const },
+    ];
+    expect(
+      findOrderByCategory(bindings, ["toggle_power", "light_toggle"]),
+    ).toEqual(bindings[0]);
+  });
 });
 
 describe("findDataByCategory", () => {

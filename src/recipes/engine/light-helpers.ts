@@ -46,6 +46,15 @@ function resolveEnumValue(
   return match ?? target.toUpperCase();
 }
 
+// NOTE: ctx.dispatchOrder returns a rejecting Promise, never throws
+// synchronously. The returned errors[] therefore only captures
+// equipment-not-found / no-binding-resolved cases — async dispatch failures
+// are logged by the dispatcher and best-effort fire-and-forget here.
+// Promoting the helpers to async + Promise<string[]> would surface real
+// dispatch errors but breaks the public RecipeHelpers contract (see
+// src/shared/types.ts:410) consumed by external recipe plugins. Tracked as
+// a spec 110 follow-up.
+
 /**
  * Turn on all lights via their toggle order binding.
  * Returns an array of error messages (empty if all succeeded).
@@ -54,12 +63,11 @@ export function turnOnLights(lightIds: string[], ctx: RecipeContext): string[] {
   const errors: string[] = [];
   for (const lightId of lightIds) {
     const order = resolveToggleOrder(lightId, ctx);
-    if (!order) continue;
-    try {
-      ctx.dispatchOrder(lightId, order.alias, resolveEnumValue(order, "on")).catch(() => {});
-    } catch (err) {
-      errors.push(`${lightId}: ${err instanceof Error ? err.message : String(err)}`);
+    if (!order) {
+      errors.push(`${lightId}: no toggle order binding`);
+      continue;
     }
+    ctx.dispatchOrder(lightId, order.alias, resolveEnumValue(order, "on")).catch(() => {});
   }
   return errors;
 }
@@ -72,12 +80,11 @@ export function turnOffLights(lightIds: string[], ctx: RecipeContext): string[] 
   const errors: string[] = [];
   for (const lightId of lightIds) {
     const order = resolveToggleOrder(lightId, ctx);
-    if (!order) continue;
-    try {
-      ctx.dispatchOrder(lightId, order.alias, resolveEnumValue(order, "off")).catch(() => {});
-    } catch (err) {
-      errors.push(`${lightId}: ${err instanceof Error ? err.message : String(err)}`);
+    if (!order) {
+      errors.push(`${lightId}: no toggle order binding`);
+      continue;
     }
+    ctx.dispatchOrder(lightId, order.alias, resolveEnumValue(order, "off")).catch(() => {});
   }
   return errors;
 }
@@ -102,11 +109,7 @@ export function setLightsBrightness(
       ["brightness"],
     );
     if (!brightnessOrder) continue;
-    try {
-      ctx.dispatchOrder(lightId, brightnessOrder.alias, brightness).catch(() => {});
-    } catch (err) {
-      errors.push(`${lightId}: ${err instanceof Error ? err.message : String(err)}`);
-    }
+    ctx.dispatchOrder(lightId, brightnessOrder.alias, brightness).catch(() => {});
   }
   return errors;
 }

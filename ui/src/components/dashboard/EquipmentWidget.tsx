@@ -457,21 +457,27 @@ function GateEquipmentWidget({
   const [executing, setExecuting] = useState(false);
 
   const stateBinding = equipment.dataBindings.find(
-    (db) => db.alias === "state" && db.category === "gate_state",
+    (db) => db.category === "gate_state",
   );
   const gateState = (stateBinding?.value as string) ?? "unknown";
   const isOpen = gateState === "open";
 
-  const commandBinding = equipment.orderBindings.find((ob) => ob.alias === "command");
+  // Category-first resolver (spec 110). Matches WidgetGrid's mobile-direct
+  // path so all three gate code paths agree on the same binding.
+  const commandBinding = findOrderByCategory(
+    equipment.orderBindings,
+    ["gate_trigger"],
+    ["command"],
+  );
   const hasCommand = !!commandBinding;
   const enumValues = commandBinding?.enumValues ?? [];
   const hasSingleAction = hasCommand && enumValues.length <= 1;
 
   const handleCommand = async () => {
-    if (executing || !hasCommand || !hasSingleAction) return;
+    if (executing || !commandBinding || !hasSingleAction) return;
     setExecuting(true);
     try {
-      await onExecuteOrder("command", null);
+      await onExecuteOrder(commandBinding.alias, null);
     } finally {
       setExecuting(false);
     }
@@ -901,9 +907,18 @@ function PoolPumpEquipmentWidget({
   const runtime = equipment.computedData?.find((c) => c.alias === "runtime_daily");
   const runtimeSeconds = typeof runtime?.value === "number" ? runtime.value : 0;
 
-  const toggleBinding = equipment.orderBindings.find(
-    (ob) => ob.type === "boolean" || (ob.alias === "state" && ob.type === "enum") || ob.category === "pool_pump_toggle",
-  );
+  // Category-first resolver (spec 110). Putting category last in a hybrid
+  // chain would let an unrelated boolean order on multi-relay pool pumps
+  // (e.g. `auto_mode`) win over the real toggle.
+  const toggleBinding =
+    findOrderByCategory(
+      equipment.orderBindings,
+      ["pool_pump_toggle", "light_toggle", "toggle_power"],
+      ["state"],
+    ) ??
+    equipment.orderBindings.find(
+      (ob) => ob.type === "boolean" || (ob.alias === "state" && ob.type === "enum"),
+    );
   const hasToggle = !!toggleBinding;
 
   const handleToggle = async () => {
