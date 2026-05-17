@@ -129,7 +129,7 @@ nav:
     - Recipes: user/recipes.md
     - Energy Monitoring: user/energy.md
     - Remote Access: user/remote-access.md
-  - Release Notes: release-notes.md
+    - Release Notes: release-notes.md
 
 extra:
   alternate:
