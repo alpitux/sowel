@@ -13,6 +13,11 @@ Cette page résume toutes les versions publiées, de la plus récente à la plus
 
 ## 1.10.x — Le changelog à portée de clic
 
+### v1.10.2 — 2026-05-17 { #v1-10-2 }
+
+- Correctif : le bouton ON/OFF de la pompe piscine ne passe plus à la ligne sous l'icône dans la vue compacte de zone.
+- Correctif : les boutons OUVRIR/STOP/FERMER du volet piscine (et de tout volet) réapparaissent dans la vue compacte de zone, dans la feuille mobile du tableau de bord, et dans la page de détail équipement quand le binding a été créé avec la clé du device comme alias (ex : après un re-binding manuel via l'UI). Les contrôles résolvent désormais les bindings move/position par catégorie, comme le widget du tableau de bord le faisait déjà.
+
 ### v1.10.1 — 2026-05-17 { #v1-10-1 }
 
 - Correctif : une annonce de découverte partielle envoyée par un plugin d'intégration ne détruit plus silencieusement les bindings d'équipement. Avant ce correctif, si un device Tasmota / Zigbee2MQTT / etc. omettait temporairement une de ses clés lors d'une reconnexion, la ligne `device_data` / `device_orders` était supprimée et le CASCADE FK effaçait le binding d'équipement correspondant. C'est ce qui avait fait disparaître la commande du volet piscine après le restart de v1.10.0. Les lignes bound sont désormais préservées à travers les re-découvertes partielles ; seules les vraies lignes orphelines continuent d'être nettoyées (spec 109).
