@@ -7,6 +7,7 @@ import {
   getSensorBindings,
   getAllBatteryBindings,
 } from "./sensorUtils";
+import { findOrderByCategory } from "./bindingUtils";
 
 export function useEquipmentState(equipment: EquipmentWithDetails) {
   // Classification
@@ -54,8 +55,17 @@ export function useEquipmentState(equipment: EquipmentWithDetails) {
     shutterPositionBinding && typeof shutterPositionBinding.value === "number"
       ? shutterPositionBinding.value
       : null;
+  // Category-first so manually-rebound shutters (alias = device key) keep
+  // their controls visible across compact zone view, equipment card and
+  // detail page (spec 110).
   const hasShutterState =
-    isShutter && equipment.orderBindings.some((ob) => ob.alias === "state");
+    isShutter &&
+    !!findOrderByCategory(
+      equipment.orderBindings,
+      ["shutter_move", "pool_cover_move"],
+      ["state"],
+      [/^shutter\d*_state$/],
+    );
   const shutterIsOpen = shutterPosition !== null && shutterPosition > 0;
 
   // Sensor / Button

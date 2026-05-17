@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { DashboardWidget, EquipmentWithDetails, ZoneWithChildren, WidgetFamily } from "../../types";
 import { executeZoneOrder, executeEquipmentOrder } from "../../api";
+import { findOrderByCategory } from "../equipments/bindingUtils";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
 import {
   LightBulbIcon,
@@ -597,12 +598,20 @@ function ZoneWaterWidget({
           const stateBinding = eq.dataBindings.find((b) => b.alias === "state");
           const isOpen =
             stateBinding?.value === true || stateBinding?.value === "ON";
-          if (isOpen) {
-            try {
-              await executeEquipmentOrder(eq.id, "state", false);
-            } catch {
-              // Silent — UI updates via WebSocket
-            }
+          if (!isOpen) return;
+          // Category-first resolver so close-all works on manually-bound
+          // valves whose alias defaults to the device key (spec 110).
+          const order = findOrderByCategory(
+            eq.orderBindings,
+            ["valve_toggle", "light_toggle"],
+            ["state"],
+          );
+          if (!order) return;
+          try {
+            const offVal = order.enumValues?.find((v) => /^off$/i.test(v)) ?? false;
+            await executeEquipmentOrder(eq.id, order.alias, offVal);
+          } catch {
+            // Silent — UI updates via WebSocket
           }
         }),
       );

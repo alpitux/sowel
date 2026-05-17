@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import type { EquipmentWithDetails } from "../../types";
+import { findDataByCategory, findOrderByCategory } from "./bindingUtils";
 
 interface Props {
   equipment: EquipmentWithDetails;
@@ -22,13 +23,32 @@ export function PoolHeatPumpControl({ equipment, onExecuteOrder, compact }: Prop
   const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const tempBinding = equipment.dataBindings.find((b) => b.alias === "temperature");
+  // Category-first resolvers (spec 110). The pool heat pump exposes its water
+  // temperature and setpoint under domain-specific categories; older bindings
+  // fall back to the conventional aliases.
+  const tempBinding = findDataByCategory(
+    equipment.dataBindings,
+    ["pool_water_temperature", "temperature"],
+    ["temperature"],
+  );
   const computedWater = equipment.computedData?.find(
     (c) => c.alias === "effective_water_temperature",
   );
-  const setpointBinding = equipment.dataBindings.find((b) => b.alias === "setpoint");
-  const modeBinding = equipment.dataBindings.find((b) => b.alias === "mode");
-  const setpointOrder = equipment.orderBindings.find((o) => o.alias === "setpoint");
+  const setpointBinding = findDataByCategory(
+    equipment.dataBindings,
+    ["pool_temperature_setpoint", "setpoint"],
+    ["setpoint"],
+  );
+  const modeBinding = findDataByCategory(
+    equipment.dataBindings,
+    ["appliance_state"],
+    ["mode"],
+  );
+  const setpointOrder = findOrderByCategory(
+    equipment.orderBindings,
+    ["set_pool_temperature_setpoint", "set_setpoint"],
+    ["setpoint"],
+  );
 
   const water =
     typeof computedWater?.value === "number"
@@ -65,7 +85,7 @@ export function PoolHeatPumpControl({ equipment, onExecuteOrder, compact }: Prop
       const value = pendingRef.current;
       commitTimerRef.current = null;
       if (value === null) return;
-      onExecuteOrder("setpoint", value).catch(() => {
+      onExecuteOrder(setpointOrder.alias, value).catch(() => {
         /* surfaced upstream */
       });
       // Failsafe: clear the override if the device never echoes back.
