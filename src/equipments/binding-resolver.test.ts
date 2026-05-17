@@ -46,6 +46,18 @@ describe("findOrderByCategory", () => {
   it("returns undefined for an empty bindings array", () => {
     expect(findOrderByCategory([], ["light_toggle"], ["state"])).toBeUndefined();
   });
+
+  it("when multiple bindings match the category list, the first one wins (Array.find order)", () => {
+    const bindings = [
+      { alias: "first", category: "light_toggle" as const },
+      { alias: "second", category: "toggle_power" as const },
+      { alias: "third", category: "light_toggle" as const },
+    ];
+    // Both `first` and `third` carry light_toggle; `second` carries toggle_power.
+    // The resolver scans bindings in array order regardless of the categories
+    // argument order, so `first` wins.
+    expect(findOrderByCategory(bindings, ["toggle_power", "light_toggle"])).toEqual(bindings[0]);
+  });
 });
 
 describe("findDataByCategory", () => {
