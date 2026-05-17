@@ -114,6 +114,9 @@ export class DeviceManager {
       ),
       deleteDeviceDataById: this.db.prepare("DELETE FROM device_data WHERE id = ?"),
       getDeviceDataIds: this.db.prepare("SELECT id, key FROM device_data WHERE device_id = ?"),
+      countDataBindingsForDeviceData: this.db.prepare<[string]>(
+        "SELECT COUNT(*) AS c FROM data_bindings WHERE device_data_id = ?",
+      ),
       findDeviceOrderByDeviceAndKey: this.db.prepare<[string, string]>(
         "SELECT * FROM device_orders WHERE device_id = ? AND key = ?",
       ),
@@ -126,6 +129,9 @@ export class DeviceManager {
       ),
       deleteDeviceOrderById: this.db.prepare("DELETE FROM device_orders WHERE id = ?"),
       getDeviceOrderIds: this.db.prepare("SELECT id, key FROM device_orders WHERE device_id = ?"),
+      countOrderBindingsForDeviceOrder: this.db.prepare<[string]>(
+        "SELECT COUNT(*) AS c FROM order_bindings WHERE device_order_id = ?",
+      ),
       countDevices: this.db.prepare("SELECT COUNT(*) as count FROM devices"),
       countByStatus: this.db.prepare(
         "SELECT status, COUNT(*) as count FROM devices GROUP BY status",
@@ -203,15 +209,27 @@ export class DeviceManager {
           });
         }
       }
-      // Remove stale data entries no longer exposed by the device
+      // Remove stale data entries no longer exposed by the device — but keep
+      // rows currently bound to an equipment, otherwise a transient or partial
+      // discovery announcement (e.g. plugin reconnect mid-boot) would cascade-
+      // delete equipment data bindings and leave equipments orphaned.
       const existingDataRows = this.stmts.getDeviceDataIds.all(deviceId) as {
         id: string;
         key: string;
       }[];
       for (const row of existingDataRows) {
-        if (!discoveredDataKeys.has(row.key)) {
-          this.stmts.deleteDeviceDataById.run(row.id);
+        if (discoveredDataKeys.has(row.key)) continue;
+        const bound = this.stmts.countDataBindingsForDeviceData.get(row.id) as
+          | { c: number }
+          | undefined;
+        if (bound && bound.c > 0) {
+          this.logger.info(
+            { deviceId, dataId: row.id, key: row.key },
+            "Stale device data kept (bound to equipment)",
+          );
+          continue;
         }
+        this.stmts.deleteDeviceDataById.run(row.id);
       }
 
       // Sync Orders definitions: upsert by (device_id, key) to preserve stable IDs
@@ -244,15 +262,26 @@ export class DeviceManager {
           });
         }
       }
-      // Remove stale order entries no longer exposed by the device
+      // Remove stale order entries no longer exposed by the device — but keep
+      // rows currently bound to an equipment (same rationale as for data
+      // bindings above; see spec 109 for the pool-cover incident).
       const existingOrderRows = this.stmts.getDeviceOrderIds.all(deviceId) as {
         id: string;
         key: string;
       }[];
       for (const row of existingOrderRows) {
-        if (!discoveredOrderKeys.has(row.key)) {
-          this.stmts.deleteDeviceOrderById.run(row.id);
+        if (discoveredOrderKeys.has(row.key)) continue;
+        const bound = this.stmts.countOrderBindingsForDeviceOrder.get(row.id) as
+          | { c: number }
+          | undefined;
+        if (bound && bound.c > 0) {
+          this.logger.info(
+            { deviceId, orderId: row.id, key: row.key },
+            "Stale device order kept (bound to equipment)",
+          );
+          continue;
         }
+        this.stmts.deleteDeviceOrderById.run(row.id);
       }
     });
 
