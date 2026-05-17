@@ -11,7 +11,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import type { HistoryPoint } from "../../types";
-import type { TimeRange } from "./history-utils";
+import { rangeToDurationMs, type TimeRange } from "./history-utils";
 
 interface TimeSeriesChartProps {
   points: HistoryPoint[];
@@ -90,33 +90,40 @@ export function TimeSeriesChart({ points, range, resolution, unit, height = 200,
   const isDiscrete = dataType === "boolean" || dataType === "enum";
   const isPower = category === "power";
 
-  const { data, lastRealTime } = useMemo(() => {
+  const { data, lastRealTime, domain } = useMemo(() => {
     const mapped = points.map((p) => ({
       time: p.time,
-      label: formatTime(p.time, range),
+      ts: new Date(p.time).getTime(),
       value: p.value,
       min: p.min,
       max: p.max,
     }));
 
-    if (mapped.length === 0 || !fetchTime) return { data: mapped, lastRealTime: null as string | null };
+    if (mapped.length === 0) {
+      return { data: mapped, lastRealTime: null as string | null, domain: undefined };
+    }
 
     const lastPoint = mapped[mapped.length - 1];
-    const lastTime = new Date(lastPoint.time).getTime();
+    const lastRealTimeIso = lastPoint.time;
 
-    // Extend chart line to current time with a synthetic point
-    if (fetchTime - lastTime > 60_000) {
-      const nowIso = new Date(fetchTime).toISOString();
+    // Extend chart line to current time with a synthetic point (only when fetchTime is known)
+    if (fetchTime && fetchTime - lastPoint.ts > 60_000) {
       mapped.push({
-        time: nowIso,
-        label: formatTime(nowIso, range),
+        time: new Date(fetchTime).toISOString(),
+        ts: fetchTime,
         value: lastPoint.value,
         min: undefined,
         max: undefined,
       });
     }
 
-    return { data: mapped, lastRealTime: lastPoint.time };
+    // Anchor the X-axis to the requested window [now - range, now] so spacing is linear in time,
+    // not in data-point index. Without an explicit numeric domain Recharts would otherwise treat
+    // the axis as categorical and squash long gaps between irregular samples.
+    const to = fetchTime ?? mapped[mapped.length - 1].ts;
+    const from = to - rangeToDurationMs(range);
+
+    return { data: mapped, lastRealTime: lastRealTimeIso, domain: [from, to] as [number, number] };
   }, [points, range, fetchTime]);
 
   if (data.length === 0) {
@@ -153,11 +160,14 @@ export function TimeSeriesChart({ points, range, resolution, unit, height = 200,
 
         <CartesianGrid strokeDasharray="3 3" stroke={borderColor} />
         <XAxis
-          dataKey="label"
+          dataKey="ts"
+          type="number"
+          scale="time"
+          domain={domain ?? ["dataMin", "dataMax"]}
+          tickFormatter={(ts: number) => formatTime(new Date(ts).toISOString(), range)}
           tick={{ fontSize: 10, fill: textTertiary }}
           tickLine={false}
           axisLine={{ stroke: borderColor }}
-          interval="preserveStartEnd"
           minTickGap={40}
         />
         <YAxis
