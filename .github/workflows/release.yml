@@ -43,9 +43,42 @@ jobs:
         run: |
           docker buildx imagetools create --tag ${REPO}:latest ${REPO}:${FROM}
 
+  # ── Verify release-notes entry exists (spec 108) ─────────
+  # Greps both EN and FR release-notes pages for the version anchor that
+  # the in-app UpdatesSheet (spec 107) links to. Skipped on workflow_dispatch
+  # because the test_tag / restore_latest_from paths do not publish a new
+  # public version. On tag push, downstream jobs (ci → docker → release)
+  # depend on this job, so a missing entry fails the workflow BEFORE any
+  # Docker layer is built or a GitHub release is created.
+  verify-release-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check release-notes entry
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Skipping release-notes check on workflow_dispatch event"
+            exit 0
+          fi
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          ANCHOR="v$(echo "$VERSION" | tr . -)"
+          missing=0
+          for f in docs/release-notes.md docs/release-notes.fr.md; do
+            if ! grep -qF "{ #${ANCHOR} }" "$f"; then
+              echo "::error file=$f::Missing release-notes entry for v$VERSION (expected anchor: { #${ANCHOR} })"
+              missing=1
+            fi
+          done
+          if [ "$missing" = "1" ]; then
+            echo "Add a '### v$VERSION — YYYY-MM-DD { #${ANCHOR} }' block under the matching minor section in both EN and FR files, then re-tag (git tag -f v$VERSION && git push --force origin v$VERSION)."
+            exit 1
+          fi
+          echo "Release notes present for v$VERSION ✓"
+
   # ── CI checks ─────────────────────────────────────────────
   ci:
     if: github.event_name != 'workflow_dispatch' || inputs.restore_latest_from == ''
+    needs: verify-release-notes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
