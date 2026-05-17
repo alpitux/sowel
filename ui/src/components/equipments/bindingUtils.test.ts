@@ -1,0 +1,108 @@
+import { describe, it, expect } from "vitest";
+import { findDataByCategory, findOrderByCategory } from "./bindingUtils";
+
+describe("findOrderByCategory", () => {
+  it("matches the first binding by category", () => {
+    const bindings = [
+      { alias: "state", category: "light_toggle" as const },
+      { alias: "brightness", category: "set_brightness" as const },
+    ];
+    expect(findOrderByCategory(bindings, ["light_toggle"])).toEqual(bindings[0]);
+  });
+
+  it("matches any of several categories (covers pool_cover_move + shutter_move)", () => {
+    const bindings = [
+      { alias: "shutter_state", category: "pool_cover_move" as const },
+    ];
+    expect(
+      findOrderByCategory(bindings, ["pool_cover_move", "shutter_move"]),
+    ).toEqual(bindings[0]);
+  });
+
+  it("returns the binding regardless of its alias when category matches", () => {
+    // The exact scenario from the v1.10.2 production incident: user re-bound the
+    // shutter order manually so alias defaulted to the device key.
+    const bindings = [{ alias: "shutter_state", category: "pool_cover_move" as const }];
+    const match = findOrderByCategory(bindings, ["pool_cover_move", "shutter_move"]);
+    expect(match?.alias).toBe("shutter_state");
+  });
+
+  it("falls back to aliasFallbacks when no category matches", () => {
+    const bindings = [
+      { alias: "state", category: undefined },
+      { alias: "brightness", category: undefined },
+    ];
+    expect(
+      findOrderByCategory(bindings, ["pool_cover_move"], ["state"]),
+    ).toEqual(bindings[0]);
+  });
+
+  it("falls back to aliasPatterns when no category nor alias matches", () => {
+    const bindings = [
+      { alias: "shutter2_state", category: undefined },
+      { alias: "brightness", category: undefined },
+    ];
+    expect(
+      findOrderByCategory(
+        bindings,
+        ["pool_cover_move"],
+        ["state"],
+        [/^shutter\d*_state$/],
+      ),
+    ).toEqual(bindings[0]);
+  });
+
+  it("prefers category over alias when both match", () => {
+    const bindings = [
+      { alias: "state", category: undefined },
+      { alias: "shutter_state", category: "shutter_move" as const },
+    ];
+    expect(
+      findOrderByCategory(bindings, ["shutter_move"], ["state"]),
+    ).toEqual(bindings[1]);
+  });
+
+  it("returns undefined when nothing matches", () => {
+    const bindings = [
+      { alias: "brightness", category: "set_brightness" as const },
+    ];
+    expect(findOrderByCategory(bindings, ["pool_cover_move"], ["state"])).toBeUndefined();
+  });
+
+  it("returns undefined for an empty bindings array", () => {
+    expect(findOrderByCategory([], ["light_toggle"], ["state"])).toBeUndefined();
+  });
+
+  it("does not match a binding whose category is undefined when only category is provided", () => {
+    const bindings = [{ alias: "state", category: undefined }];
+    expect(findOrderByCategory(bindings, ["light_toggle"])).toBeUndefined();
+  });
+});
+
+describe("findDataByCategory", () => {
+  it("matches by data category", () => {
+    const bindings = [
+      { alias: "temperature", category: "temperature" as const },
+      { alias: "humidity", category: "humidity" as const },
+    ];
+    expect(findDataByCategory(bindings, ["humidity"])).toEqual(bindings[1]);
+  });
+
+  it("falls back to alias when category is missing", () => {
+    const bindings = [
+      { alias: "position", category: undefined },
+    ];
+    expect(
+      findDataByCategory(bindings, ["shutter_position"], ["position"]),
+    ).toEqual(bindings[0]);
+  });
+
+  it("returns the right binding when alias differs from convention but category matches", () => {
+    // E.g. a manually re-bound pool_cover position data.
+    const bindings = [
+      { alias: "shutter_position", category: "shutter_position" as const },
+    ];
+    const match = findDataByCategory(bindings, ["shutter_position"], ["position"]);
+    expect(match?.alias).toBe("shutter_position");
+  });
+});

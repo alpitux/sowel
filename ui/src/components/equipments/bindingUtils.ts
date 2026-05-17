@@ -7,10 +7,94 @@ import {
 } from "../../api";
 import type {
   DataBindingWithValue,
+  DataCategory,
   EquipmentType,
   OrderBindingWithDetails,
+  OrderCategory,
 } from "../../types";
 import { computeBindingCandidates } from "../../lib/binding-candidates";
+
+// ============================================================
+// Read-side resolvers (category-first, alias fallback)
+// ============================================================
+
+/** Minimal binding shape the resolvers need. */
+interface MinimalOrderBinding {
+  alias: string;
+  category?: OrderCategory;
+}
+interface MinimalDataBinding {
+  alias: string;
+  category?: DataCategory;
+}
+
+/**
+ * Find an order binding by category, with optional alias and regex fallbacks.
+ *
+ * Resolution order:
+ *   1. First binding whose `category` is in `categories`.
+ *   2. First binding whose `alias` is in `aliasFallbacks` (legacy
+ *      compatibility for bindings that pre-date category typing).
+ *   3. First binding whose `alias` matches any of `aliasPatterns` (e.g.
+ *      `^shutter\d*_state$` for indexed channels).
+ *
+ * Always pass at least one category. The fallbacks are for migration —
+ * once every plugin emits a category and every binding carries one,
+ * fallbacks can be dropped.
+ *
+ * @example
+ * const move = findOrderByCategory(
+ *   eq.orderBindings,
+ *   ["pool_cover_move", "shutter_move"],
+ *   ["state"],
+ *   [/^shutter\d*_state$/],
+ * );
+ * if (move) await onExecuteOrder(move.alias, "OPEN");
+ */
+export function findOrderByCategory<T extends MinimalOrderBinding>(
+  bindings: readonly T[],
+  categories: readonly OrderCategory[],
+  aliasFallbacks?: readonly string[],
+  aliasPatterns?: readonly RegExp[],
+): T | undefined {
+  const byCategory = bindings.find(
+    (b) => b.category !== undefined && categories.includes(b.category),
+  );
+  if (byCategory) return byCategory;
+  if (aliasFallbacks && aliasFallbacks.length > 0) {
+    const byAlias = bindings.find((b) => aliasFallbacks.includes(b.alias));
+    if (byAlias) return byAlias;
+  }
+  if (aliasPatterns && aliasPatterns.length > 0) {
+    return bindings.find((b) => aliasPatterns.some((re) => re.test(b.alias)));
+  }
+  return undefined;
+}
+
+/** Find a data binding by category, with the same fallback semantics. */
+export function findDataByCategory<T extends MinimalDataBinding>(
+  bindings: readonly T[],
+  categories: readonly DataCategory[],
+  aliasFallbacks?: readonly string[],
+  aliasPatterns?: readonly RegExp[],
+): T | undefined {
+  const byCategory = bindings.find(
+    (b) => b.category !== undefined && categories.includes(b.category),
+  );
+  if (byCategory) return byCategory;
+  if (aliasFallbacks && aliasFallbacks.length > 0) {
+    const byAlias = bindings.find((b) => aliasFallbacks.includes(b.alias));
+    if (byAlias) return byAlias;
+  }
+  if (aliasPatterns && aliasPatterns.length > 0) {
+    return bindings.find((b) => aliasPatterns.some((re) => re.test(b.alias)));
+  }
+  return undefined;
+}
+
+// ============================================================
+// Write-side auto-binding (existing)
+// ============================================================
 
 /** Maps equipment types to relevant data categories for auto-binding. */
 const RELEVANT_DATA: Record<string, string[]> = {
