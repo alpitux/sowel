@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Flame, Snowflake, Loader2 } from "lucide-react";
 import type { EquipmentWithDetails } from "../../types";
+import { findOrderByCategory } from "./bindingUtils";
 
 interface HeaterControlProps {
   equipment: EquipmentWithDetails;
@@ -23,10 +24,16 @@ export function HeaterControl({ equipment, onExecuteOrder, compact }: HeaterCont
   // Fil pilote convention: relay ON = éco, relay OFF = confort
   const isComfort = !isOn;
 
-  const toggleBinding = equipment.orderBindings.find(
-    (ob) => ob.alias === "state" && (ob.type === "enum" || ob.type === "boolean"),
+  // Category-first resolver: heater toggle is `toggle_power` / `light_toggle`
+  // depending on the underlying device, with alias fallback for older
+  // bindings (spec 110).
+  const toggleBinding = findOrderByCategory(
+    equipment.orderBindings,
+    ["toggle_power", "light_toggle"],
+    ["state"],
   );
-  const hasToggle = !!toggleBinding;
+  const hasToggle =
+    !!toggleBinding && (toggleBinding.type === "enum" || toggleBinding.type === "boolean");
 
   const handleToggle = async (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -37,7 +44,7 @@ export function HeaterControl({ equipment, onExecuteOrder, compact }: HeaterCont
       const onVal = toggleBinding.enumValues?.find((v) => /^on$/i.test(v)) ?? "ON";
       const offVal = toggleBinding.enumValues?.find((v) => /^off$/i.test(v)) ?? "OFF";
       const value = isOn ? offVal : onVal;
-      await onExecuteOrder("state", value);
+      await onExecuteOrder(toggleBinding.alias, value);
     } finally {
       setExecuting(false);
     }
