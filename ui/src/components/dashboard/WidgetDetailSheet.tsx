@@ -672,21 +672,40 @@ function ShutterDetailContent({
   const position = slider.displayValue(devicePosition);
   const level = position !== null ? shutterLevel(position) : null;
 
-  const hasState = equipment.orderBindings.some((ob) => ob.alias === "state");
-  const hasPosition = equipment.orderBindings.some((ob) => ob.alias === "position");
+  // Resolve the move + position-set bindings by category first, falling back
+  // to the conventional alias (`state`, `position`) and finally to any
+  // shutter-flavoured key. Matches EquipmentWidget's resolver so manually-
+  // rebound shutters (alias defaulting to the device key) keep working here.
+  const moveBinding =
+    equipment.orderBindings.find(
+      (ob) => ob.category === "pool_cover_move" || ob.category === "shutter_move",
+    ) ??
+    equipment.orderBindings.find(
+      (ob) => ob.alias === "state" || /shutter\d*_state/.test(ob.alias),
+    );
+  const positionOrderBinding =
+    equipment.orderBindings.find((ob) => ob.category === "set_shutter_position") ??
+    equipment.orderBindings.find(
+      (ob) => ob.alias === "position" || /shutter\d*_position/.test(ob.alias),
+    );
+  const hasState = !!moveBinding;
+  const hasPosition = !!positionOrderBinding;
 
   const handleCommand = async (command: "OPEN" | "STOP" | "CLOSE") => {
-    if (executing || !hasState) return;
+    if (executing || !moveBinding) return;
     setExecuting(true);
     try {
-      await onExecuteOrder("state", command);
+      const enumMatch = moveBinding.enumValues?.find((v) => v.toUpperCase() === command);
+      await onExecuteOrder(moveBinding.alias, enumMatch ?? command);
     } finally {
       setExecuting(false);
     }
   };
 
-  const handlePositionCommit = () =>
-    slider.onCommit((v) => onExecuteOrder("position", v));
+  const handlePositionCommit = () => {
+    if (!positionOrderBinding) return;
+    slider.onCommit((v) => onExecuteOrder(positionOrderBinding.alias, v));
+  };
 
   return (
     <div className="flex flex-col gap-6">

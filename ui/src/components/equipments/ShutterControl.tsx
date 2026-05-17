@@ -24,8 +24,26 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
 
   const position = slider.displayValue(devicePosition);
 
-  const hasState = equipment.orderBindings.some((ob) => ob.alias === "state");
-  const hasPositionOrder = equipment.orderBindings.some((ob) => ob.alias === "position");
+  // Resolve the move + position-set bindings by category first, falling back
+  // to the conventional alias (`state`, `position`) and finally to any
+  // shutter-flavoured key. This matches EquipmentWidget's resolver and lets
+  // manually-rebound shutters (where alias defaults to the device key like
+  // `shutter_state`) keep working in the compact zone view and detail page.
+  const moveBinding =
+    equipment.orderBindings.find(
+      (ob) => ob.category === "pool_cover_move" || ob.category === "shutter_move",
+    ) ??
+    equipment.orderBindings.find(
+      (ob) => ob.alias === "state" || /shutter\d*_state/.test(ob.alias),
+    );
+  const positionOrderBinding =
+    equipment.orderBindings.find((ob) => ob.category === "set_shutter_position") ??
+    equipment.orderBindings.find(
+      (ob) => ob.alias === "position" || /shutter\d*_position/.test(ob.alias),
+    );
+
+  const hasState = !!moveBinding;
+  const hasPositionOrder = !!positionOrderBinding;
 
   // Pool covers slide horizontally → ←/→ arrows. Window shutters keep ↑/↓.
   const isHorizontal = equipment.type === "pool_cover";
@@ -35,17 +53,20 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
   const handleCommand = async (command: "OPEN" | "STOP" | "CLOSE", e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
-    if (executing || !hasState) return;
+    if (executing || !moveBinding) return;
     setExecuting(true);
     try {
-      await onExecuteOrder("state", command);
+      const enumMatch = moveBinding.enumValues?.find((v) => v.toUpperCase() === command);
+      await onExecuteOrder(moveBinding.alias, enumMatch ?? command);
     } finally {
       setExecuting(false);
     }
   };
 
-  const handlePositionCommit = () =>
-    slider.onCommit((v) => onExecuteOrder("position", v));
+  const handlePositionCommit = () => {
+    if (!positionOrderBinding) return;
+    slider.onCommit((v) => onExecuteOrder(positionOrderBinding.alias, v));
+  };
 
   if (compact) {
     // Layout: slider (80px) → state pill → 3 bordered 24×24 buttons (.shutter-btn).

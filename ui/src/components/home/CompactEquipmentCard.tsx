@@ -200,9 +200,11 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
         />
       )}
 
-      {/* Pool pump: runtime badge + ON/OFF toggle (reuse LightControl compact) */}
+      {/* Pool pump: runtime badge + ON/OFF toggle (reuse LightControl compact).
+       * Wrapped in a single flex cell so the two children share the row's
+       * auto-sized grid column (otherwise the toggle wraps to a second line). */}
       {isPoolPump && (
-        <>
+        <div className="flex items-center gap-2 flex-shrink-0">
           <PoolPumpRuntime equipment={equipment} />
           {equipment.enabled && (
             <LightControl
@@ -211,7 +213,7 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
               compact
             />
           )}
-        </>
+        </div>
       )}
 
       {/* Pool cover: OPEN/STOP/CLOSE buttons + position slider (reuse ShutterControl compact) */}
