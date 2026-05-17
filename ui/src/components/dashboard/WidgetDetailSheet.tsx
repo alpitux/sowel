@@ -18,6 +18,7 @@ import {
 import type { DashboardWidget, EquipmentWithDetails, ZoneWithChildren } from "../../types";
 import { executeZoneOrder } from "../../api";
 import { useEquipmentState } from "../equipments/useEquipmentState";
+import { findOrderByCategory } from "../equipments/bindingUtils";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
 import { SensorValues } from "../equipments/SensorValues";
 import {
@@ -577,8 +578,16 @@ function LightDetailContent({
   const brightness = slider.displayValue(deviceBrightness);
   const brightnessPct = brightness !== null ? Math.round((brightness / 254) * 100) : null;
 
-  const toggleBinding = equipment.orderBindings.find(
-    (ob) => ob.type === "boolean" || (ob.alias === "state" && ob.type === "enum"),
+  // Category-first resolver — see spec 110.
+  const toggleBinding =
+    findOrderByCategory(equipment.orderBindings, ["light_toggle", "toggle_power"], ["state"]) ??
+    equipment.orderBindings.find(
+      (ob) => ob.type === "boolean" || (ob.alias === "state" && ob.type === "enum"),
+    );
+  const brightnessOrderBinding = findOrderByCategory(
+    equipment.orderBindings,
+    ["set_brightness"],
+    ["brightness"],
   );
 
   const handleToggle = async () => {
@@ -597,8 +606,10 @@ function LightDetailContent({
     }
   };
 
-  const handleBrightnessCommit = () =>
-    slider.onCommit((v) => onExecuteOrder("brightness", v));
+  const handleBrightnessCommit = () => {
+    if (!brightnessOrderBinding) return;
+    slider.onCommit((v) => onExecuteOrder(brightnessOrderBinding.alias, v));
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -923,9 +934,19 @@ function HeaterDetailContent({
     : false;
   const isComfort = !isOn;
 
-  const toggleBinding = equipment.orderBindings.find(
-    (ob) => ob.alias === "state" && (ob.type === "enum" || ob.type === "boolean"),
+  // Category-first resolver (spec 110). Heater toggle is `toggle_power` /
+  // `light_toggle` depending on the underlying device. We keep the
+  // type-must-be-toggleable filter so the button is hidden (not just
+  // disabled) when the binding is a non-togglable type.
+  const toggleBindingRaw = findOrderByCategory(
+    equipment.orderBindings,
+    ["toggle_power", "light_toggle"],
+    ["state"],
   );
+  const toggleBinding =
+    toggleBindingRaw && (toggleBindingRaw.type === "enum" || toggleBindingRaw.type === "boolean")
+      ? toggleBindingRaw
+      : undefined;
 
   const handleToggle = async () => {
     if (executing || !toggleBinding) return;
@@ -934,7 +955,7 @@ function HeaterDetailContent({
       const onVal = toggleBinding.enumValues?.find((v) => /^on$/i.test(v)) ?? "ON";
       const offVal = toggleBinding.enumValues?.find((v) => /^off$/i.test(v)) ?? "OFF";
       const value = isOn ? offVal : onVal;
-      await onExecuteOrder("state", value);
+      await onExecuteOrder(toggleBinding.alias, value);
     } finally {
       setExecuting(false);
     }

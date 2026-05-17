@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Power, Loader2, Droplets, Battery, AlertTriangle, Play } from "lucide-react";
 import type { EquipmentWithDetails } from "../../types";
+import { findDataByCategory, findOrderByCategory } from "./bindingUtils";
 
 interface WaterValveControlProps {
   equipment: EquipmentWithDetails;
@@ -27,9 +28,20 @@ export function WaterValveControl({ equipment, onExecuteOrder, compact }: WaterV
   const [watering, setWatering] = useState(false);
   const [duration, setDuration] = useState(10);
 
-  const stateBinding = equipment.dataBindings.find((b) => b.alias === "state");
+  // Category-first resolvers — alias falls back for legacy / manually-bound
+  // valves (spec 110). SONOFF SWV exposes state under `light_state` due to a
+  // z2m mis-classification; we accept it as fallback.
+  const stateBinding = findDataByCategory(
+    equipment.dataBindings,
+    ["light_state"],
+    ["state"],
+  );
   const flowBinding = equipment.dataBindings.find((b) => b.alias === "flow");
-  const batteryBinding = equipment.dataBindings.find((b) => b.alias === "battery");
+  const batteryBinding = findDataByCategory(
+    equipment.dataBindings,
+    ["battery"],
+    ["battery"],
+  );
   const statusBinding = equipment.dataBindings.find((b) => b.alias === "status");
 
   const isOn = stateBinding?.value === true || stateBinding?.value === "ON";
@@ -47,7 +59,11 @@ export function WaterValveControl({ equipment, onExecuteOrder, compact }: WaterV
     ? t(`water.status.${statusRaw}`, { defaultValue: statusRaw.replace(/_/g, " ") })
     : null;
 
-  const stateOrderBinding = equipment.orderBindings.find((b) => b.alias === "state");
+  const stateOrderBinding = findOrderByCategory(
+    equipment.orderBindings,
+    ["valve_toggle", "light_toggle"],
+    ["state"],
+  );
   const hasStateOrder = !!stateOrderBinding;
   // Timed watering uses z2m's universal "on with timed off" pattern
   // ({"state":"ON","on_time":600}) — published atomically through the
@@ -76,23 +92,23 @@ export function WaterValveControl({ equipment, onExecuteOrder, compact }: WaterV
   const handleToggle = async (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
-    if (executing || !hasStateOrder) return;
+    if (executing || !stateOrderBinding) return;
     setExecuting(true);
     try {
-      await onExecuteOrder("state", stateValue(!isOn));
+      await onExecuteOrder(stateOrderBinding.alias, stateValue(!isOn));
     } finally {
       setExecuting(false);
     }
   };
 
   const handleWaterNow = async () => {
-    if (watering || !hasTimedWatering) return;
+    if (watering || !stateOrderBinding) return;
     setWatering(true);
     try {
       // Composite payload: state + on_time published in a single MQTT
       // message. The z2m plugin (v1.2.0+) detects an object value and
       // publishes it directly instead of wrapping under `payloadKey`.
-      await onExecuteOrder("state", {
+      await onExecuteOrder(stateOrderBinding.alias, {
         state: stateValue(true),
         on_time: duration * 60,
       });
