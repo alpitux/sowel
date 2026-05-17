@@ -46,6 +46,7 @@ import { SowelLogo } from "./SowelLogo";
 import { OfflineBanner } from "./OfflineBanner";
 import { HeaderPill } from "./HeaderPill";
 import { AlarmsSheet } from "./AlarmsSheet";
+import { UpdatesSheet } from "./UpdatesSheet";
 import { useAggregatedIssues } from "./useAggregatedIssues";
 import { useUpdateAvailable } from "../../hooks/useUpdateAvailable";
 import { usePluginUpdates } from "./usePluginUpdates";
@@ -76,6 +77,7 @@ export function AppLayout() {
   const fetchTimezone = useTimezone((s) => s.fetch);
   const issues = useAggregatedIssues();
   const [alarmsOpen, setAlarmsOpen] = useState(false);
+  const [updatesOpen, setUpdatesOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Updates pill: combines Sowel core + plugin updates into a single counter.
@@ -154,7 +156,7 @@ export function AppLayout() {
                 count={totalUpdates}
                 tone="error"
                 title={t("updates.pill.title", { count: totalUpdates })}
-                href="/plugins"
+                onClick={() => setUpdatesOpen(true)}
               />
             )}
             {restartRequired && (
@@ -212,6 +214,9 @@ export function AppLayout() {
 
       {/* Alarms sheet — opened by the header pill */}
       <AlarmsSheet open={alarmsOpen} onClose={() => setAlarmsOpen(false)} />
+
+      {/* Updates sheet — lists Sowel core + outdated plugins with per-row actions */}
+      <UpdatesSheet open={updatesOpen} onClose={() => setUpdatesOpen(false)} />
 
       {/* First-login Home setup wizard — blocks the UI when home.name is empty.
           Rendered BEFORE UpdateOverlay so that an active restart (e.g. the one
