@@ -16,3 +16,17 @@ export function rangeToFrom(range: TimeRange): string {
       return "-720h"; // 30 * 24
   }
 }
+
+/** Convert a TimeRange to its duration in milliseconds. */
+export function rangeToDurationMs(range: TimeRange): number {
+  switch (range) {
+    case "6h":
+      return 6 * 60 * 60 * 1000;
+    case "24h":
+      return 24 * 60 * 60 * 1000;
+    case "7d":
+      return 7 * 24 * 60 * 60 * 1000;
+    case "30d":
+      return 30 * 24 * 60 * 60 * 1000;
+  }
+}
