@@ -24,6 +24,12 @@ function envInt(key: string, fallback: number): number {
   return parsed;
 }
 
+function envBool(key: string, fallback: boolean): boolean {
+  const raw = process.env[key];
+  if (raw === undefined) return fallback;
+  return raw === "true" || raw === "1" || raw === "yes";
+}
+
 /**
  * Resolve or auto-generate the JWT secret.
  * Priority: JWT_SECRET env var > persisted file > generate new.
@@ -98,6 +104,11 @@ export function loadConfig(): AppConfig {
       token: resolveInfluxToken(dataDir),
       org: env("INFLUX_ORG", "sowel"),
       bucket: env("INFLUX_BUCKET", "sowel"),
+    },
+    plugins: {
+      // Spec 111. Default off in this PR — flipped to true after one
+      // beta cycle (see specs/111-plugin-soft-isolation/plan.md).
+      isolation: envBool("SOWEL_PLUGIN_ISOLATION", false),
     },
   };
 }

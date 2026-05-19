@@ -285,6 +285,7 @@ async function main() {
     integrationRegistry,
     { logger, eventBus, settingsManager, deviceManager },
     logger,
+    { isolation: config.plugins.isolation },
   );
   await pluginLoader.loadAll();
 
