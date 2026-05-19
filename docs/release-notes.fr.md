@@ -13,6 +13,10 @@ Cette page résume toutes les versions publiées, de la plus récente à la plus
 
 ## 1.11.x — Isolation soft des plugins
 
+### v1.11.1 — 2026-05-19 { #v1-11-1 }
+
+- Fiabilité : Sowel installe désormais des handlers globaux pour `uncaughtException` et `unhandledRejection` (spec 112). Quand un throw échappe à toutes les autres protections (un callback `setInterval` dans le core, une promesse non awaited dans un publish MQTT, une surprise d'un module natif), les nouveaux handlers loggent une entrée `fatal` avec la stack complète vers stdout et vers `data/logs/sowel.N.log`, puis exit proprement pour que la politique de restart de Docker relance le conteneur. Avant, un crash non rattrapé ne laissait aucune trace et Docker bouclait silencieusement. Désormais, toute investigation post-incident a au minimum une ligne de log par où commencer. Pas de changement de comportement sur le chemin nominal ; les handlers sont du pur filet de sécurité.
+
 ### v1.11.0 — 2026-05-19 { #v1-11-0 }
 
 - Durcissement sécurité : chaque plugin d'intégration tourne désormais avec des Proxies scopés autour de son `PluginDeps` (spec 111). Quatre invariants sont enforces au niveau JavaScript : un plugin ne peut lire ou écrire que les settings sous son propre préfixe `integration.<own-id>.` (plus une petite allowlist de globaux comme `home.latitude`), ne peut émettre que des events d'une whitelist `system.*` (pas d'usurpation d'events de domaine), ne peut muter que les devices appartenant à sa propre intégration, et les erreurs des méthodes lifecycle (`refresh`, `getStatus`, etc.) sont confinées avec des valeurs de repli typées au lieu de faire tomber le core. Validé en local contre les 13 plugins de la registry avec zéro faux positif. Pas de breaking change pour les auteurs de plugins : la forme de `PluginDeps` et les signatures sont bit-pour-bit identiques, donc les plugins existants continuent de tourner sans modification. L'isolation est inconditionnelle dans cette release ; pas de mécanisme d'opt-out. Le rollback se fait par downgrade de l'image Docker.
