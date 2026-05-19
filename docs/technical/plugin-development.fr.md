@@ -203,6 +203,85 @@ const cachePath = resolve(deps.pluginDir, "cache.json");
 
 ---
 
+## Scoping des plugins (spec 111)
+
+Quand Sowel tourne avec `SOWEL_PLUGIN_ISOLATION=true` (default-off en v1.10.x, default-on prévu en v1.11.x), les trois services mutables de votre `PluginDeps` sont enveloppés dans des Proxies scopés. La forme et les signatures de `PluginDeps` sont bit-pour-bit identiques, donc **vous n'avez pas à modifier votre code de plugin**, mais le runtime applique quatre invariants :
+
+### 1. Les settings sont scopés à votre plugin
+
+```ts
+// ✅ Autorisé — votre propre préfixe d'intégration
+const refreshToken = deps.settingsManager.get(`integration.${INTEGRATION_ID}.refresh_token`);
+deps.settingsManager.set(`integration.${INTEGRATION_ID}.refresh_token`, "new-value");
+
+// ✅ Autorisé — clés globales explicites (position du foyer, fuseau)
+const lat = deps.settingsManager.get("home.latitude");
+
+// ❌ Renvoie undefined + log warn — vous ne pouvez pas lire les settings d'un autre plugin
+const stolen = deps.settingsManager.get("integration.another-plugin.refresh_token");
+
+// ❌ Throw — vous ne pouvez pas écrire sur une clé qui ne vous appartient pas
+deps.settingsManager.set("integration.another-plugin.x", "evil");
+
+// ❌ Renvoie vide — les lectures larges sont refusées
+deps.settingsManager.getAll();
+deps.settingsManager.getByPrefix("integration.");
+```
+
+Si votre plugin a besoin de lire légitimement un autre setting global, demandez son ajout à `GLOBAL_READABLE_KEYS` dans `src/plugins/scoped-deps.ts` via une PR sur le repo Sowel core.
+
+### 2. Les events sont limités à une petite whitelist
+
+Vous ne pouvez émettre que ces types :
+
+- `system.integration.connected` / `system.integration.disconnected`
+- `system.alarm.raised` / `system.alarm.resolved`
+
+Tout autre type est silencieusement abandonné avec un log warn. Les events de domaine (`device.data.updated`, `equipment.data.changed`, etc.) sont émis par les managers de Sowel en réaction à vos appels (`deviceManager.updateDeviceData`, etc.) ; vous ne devriez jamais avoir à les émettre directement.
+
+De plus, si vous mettez `integrationId` sur un event `system.integration.*`, il doit matcher votre propre id de plugin. L'usurpation est refusée.
+
+### 3. Les mutations devices sont forcées à votre ownership
+
+```ts
+// ✅ Autorisé — votre propre integration id
+deps.deviceManager.updateDeviceData(INTEGRATION_ID, sourceDeviceId, { state: "on" });
+deps.deviceManager.upsertFromDiscovery(INTEGRATION_ID, "zigbee2mqtt", discovered);
+
+// ❌ Throw — vous ne pouvez pas toucher aux devices d'une autre intégration
+deps.deviceManager.updateDeviceData("another-plugin", "x", { state: "on" });
+deps.deviceManager.migrateIntegrationId("old-id", "another-plugin");
+
+// ❌ Throw — les actions admin ne sont pas disponibles aux plugins
+deps.deviceManager.update(deviceId, { name: "renamed" });
+deps.deviceManager.delete(deviceId);
+```
+
+Les méthodes de lecture (`getAll`, `getById`, `getDeviceData`, `getDeviceDataValue`, `logSummary`) passent inchangées ; lire les devices d'une autre intégration est autorisé (rare mais légitime, par exemple un plugin pool qui lit un équipement météo).
+
+### 4. Les erreurs des méthodes lifecycle sont confinées
+
+Un throw dans `refresh()`, `getStatus()`, `isConfigured()`, `getSettingsSchema()`, `getPollingInfo()`, `getOAuthUrl()` est **loggé avec l'id de votre plugin** et remplacé par une valeur par défaut sûre (`undefined`, `"error"`, `false`, `[]`, `null`). Le core Sowel continue à tourner.
+
+Un throw dans `start()`, `stop()`, `executeOrder()` ou `handleOAuthCallback()` est toujours loggé mais **rethrown** parce que l'appelant (registry, moteur de recettes, route OAuth) doit pouvoir réagir.
+
+Vous êtes libre de throw dans n'importe quelle méthode lifecycle sans craindre de faire tomber Sowel.
+
+### Ce contre quoi le Proxy ne protège pas
+
+Pour transparence totale, l'isolation soft ne bloque pas :
+
+- L'import direct de `better-sqlite3` et la lecture de `data/sowel.db`
+- La lecture de `process.env`
+- Les boucles infinies ou fuites mémoire
+- La pollution de prototype (`Object.prototype.X = ...`)
+- Les appels `fetch()` ou réseau sortants arbitraires
+- `process.exit()`
+
+Ces protections nécessiteraient une hard isolation via worker threads (une future spec Sowel). Pour l'instant, les auteurs de plugins doivent suivre l'esprit du contrat : n'accéder qu'à vos propres settings, n'émettre que vos propres events, ne muter que vos propres devices.
+
+---
+
 ## Interface IntegrationPlugin
 
 La fonction usine `createPlugin` doit retourner un objet qui implémente l'interface `IntegrationPlugin` :

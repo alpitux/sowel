@@ -151,6 +151,12 @@ Les specs sont regroupées par thème et annotées d'un statut :
 | 091 | By-usage consumption chart   | ✅     | Nouvel endpoint `GET /energy/by-usage` et bascule Total / Par usage sur la page Énergie qui rend une ventilation empilée par sous-compteur `energy_meter` + un résidu "Other" (`compteur principal - Σ sous-compteurs`).                                                                                                                   |
 | 092 | State-triggered light recipe | ✅     | Nouveau plugin de recette externe `state-trigger-light` (dans `plugins/registry.json`). Allume les lumières pour une durée fixe quand l'alias `state` d'un équipement surveillé transite vers une valeur cible. Filtre nightOnly optionnel via le sunlight manager. Introduit les contraintes de slot `crossZone` et `includeDescendants`. |
 
+## V1.11 : durcissement runtime des plugins
+
+| #   | Titre                      | Statut | Résumé                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --- | -------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 111 | Isolation soft des plugins | ✅     | Proxies scopés autour des `PluginDeps` de chaque plugin (settings, event bus, device manager). Quatre invariants enforces au niveau JavaScript : settings scopés à `integration.<own-id>.*`, whitelist d'events `system.*`, ownership des devices forcée par `integrationId`, et confinement des erreurs sur les méthodes lifecycle. Opt-in via `SOWEL_PLUGIN_ISOLATION` (default-off en v1.10.x, default-on prévu). Pas de breaking change pour les auteurs de plugins. |
+
 ---
 
 ## Comment utiliser cet index après une perte de contexte

@@ -9,6 +9,17 @@ import type {
 import type { PluginManifest, PluginInfo } from "../shared/types.js";
 import type { PluginDeps, PluginFactory } from "../shared/plugin-api.js";
 import type { PackageManager } from "../packages/package-manager.js";
+import {
+  makeDeviceManagerProxy,
+  makeEventBusProxy,
+  makeSettingsManagerProxy,
+  wrapPluginMethods,
+} from "./scoped-deps.js";
+
+export interface PluginLoaderOptions {
+  /** Spec 111. When true, plugins run with scoped Proxies and wrapped methods. */
+  isolation?: boolean;
+}
 
 /** Simple semver comparison: returns true if a > b */
 function isNewerVersion(a: string, b: string): boolean {
@@ -33,17 +44,23 @@ export class PluginLoader {
   private logger: Logger;
   private loadedPlugins: Map<string, IntegrationPlugin> = new Map();
   private booted = false;
+  private isolation: boolean;
 
   constructor(
     packageManager: PackageManager,
     integrationRegistry: IntegrationRegistry,
     deps: Omit<PluginDeps, "pluginDir">,
     logger: Logger,
+    options: PluginLoaderOptions = {},
   ) {
     this.packageManager = packageManager;
     this.integrationRegistry = integrationRegistry;
     this.coreDeps = deps;
     this.logger = logger.child({ module: "plugin-loader" });
+    this.isolation = options.isolation ?? false;
+    if (this.isolation) {
+      this.logger.info({}, "Plugin soft isolation enabled (spec 111)");
+    }
   }
 
   /**
@@ -242,11 +259,33 @@ export class PluginLoader {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf-8")) as PluginManifest;
 
     // Build deps for this plugin
-    const deps: PluginDeps = {
+    const pluginLogger = this.coreDeps.logger.child({ module: `plugin:${pluginId}` });
+    const rawDeps: PluginDeps = {
       ...this.coreDeps,
-      logger: this.coreDeps.logger.child({ module: `plugin:${pluginId}` }),
+      logger: pluginLogger,
       pluginDir: pkgDir,
     };
+
+    // Spec 111: wrap deps in scoped Proxies when isolation is enabled.
+    // The wrapping is transparent at the API level; plugins do not need
+    // to be modified.
+    const deps: PluginDeps = this.isolation
+      ? {
+          logger: pluginLogger,
+          eventBus: makeEventBusProxy(pluginId, this.coreDeps.eventBus, pluginLogger),
+          settingsManager: makeSettingsManagerProxy(
+            pluginId,
+            this.coreDeps.settingsManager,
+            pluginLogger,
+          ),
+          deviceManager: makeDeviceManagerProxy(
+            pluginId,
+            this.coreDeps.deviceManager,
+            pluginLogger,
+          ),
+          pluginDir: pkgDir,
+        }
+      : rawDeps;
 
     // Dynamic import of the plugin entry point.
     //
@@ -287,7 +326,13 @@ export class PluginLoader {
       throw new Error(`Plugin "${pluginId}" does not export a createPlugin function`);
     }
 
-    const plugin = factory(deps);
+    const rawPlugin = factory(deps);
+
+    // Spec 111: wrap lifecycle methods to confine errors and surface
+    // slow calls. Transparent to callers (same IntegrationPlugin shape).
+    const plugin: IntegrationPlugin = this.isolation
+      ? wrapPluginMethods(rawPlugin, pluginId, pluginLogger)
+      : rawPlugin;
 
     // Register with integration registry
     this.integrationRegistry.register(plugin);
