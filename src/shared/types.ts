@@ -982,10 +982,6 @@ export interface AppConfig {
     org: string;
     bucket: string;
   };
-  plugins: {
-    /** When true, plugins receive scoped Proxies enforcing spec 111 soft isolation. */
-    isolation: boolean;
-  };
 }
 
 // ============================================================

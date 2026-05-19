@@ -4,6 +4,16 @@ Single feature branch `feat/plugin-soft-isolation`. Estimated effort:
 **5.5 days dev** (0.5 recon + 2 core + 1.5 tests + 0.5 observation +
 1 doc). No DB migration, no UI work, no breaking change for plugins.
 
+> **Ship note (2026-05-19, v1.11.0)** : the original plan introduced a
+> `SOWEL_PLUGIN_ISOLATION` env flag, default-off, with a 7-day beta on
+> sowelox before flipping to default-on (Phase 6 task 25). After local
+> validation showed zero false positives across the 13 plugins of the
+> registry, the maintainer chose to drop the flag entirely and ship the
+> isolation as unconditional from v1.11.0. The flag-related steps below
+> (tasks 4, 22-25 and the "Rollback strategy" section) are kept as
+> historical record; the live behavior is "always on, rollback via
+> Docker image downgrade".
+
 ## Tasks
 
 ### Phase 1 — Recon (DONE)

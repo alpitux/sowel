@@ -109,9 +109,12 @@ Add a `wrapPluginMethods()` helper in the same file that wraps the
 returned `IntegrationPlugin`'s async methods so a throw never escapes
 without being logged with `pluginId` context.
 
-Ship behind a feature flag (`SOWEL_PLUGIN_ISOLATION` env var, default
-on after one beta cycle) so we can disable in production within
-minutes if any unforeseen plugin breaks.
+Ship the isolation as unconditional from v1.11.0. The original design
+included a `SOWEL_PLUGIN_ISOLATION` opt-out env var, but local validation
+against the 13 plugins of the registry showed zero false positives, so
+the flag was dropped before release to keep the runtime contract simple.
+A future hardening step (worker-thread isolation, hypothetical spec 111b)
+would be a separate roll-out.
 
 Document the new contract in `docs/technical/plugin-development.md` and
 add a note in CLAUDE.md so future agents and contributors understand
@@ -147,9 +150,8 @@ from the zigbee2mqtt plugin:
 - equivalently, a thrown error if we choose the strict path
 
 All 13 existing integration plugins keep working in their current
-versions without source modification. Validated by booting Sowel with
-`SOWEL_PLUGIN_ISOLATION=true` and reviewing logs for warns over a
-72h period.
+versions without source modification. Validated locally before release
+(zero `Plugin denied` lines observed across the 13 plugins at boot).
 
 ## Out of scope but worth recording
 
