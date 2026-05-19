@@ -13,6 +13,10 @@ This page summarises every published version, newest first. For the full diff be
 
 ## 1.11.x — Plugin soft isolation
 
+### v1.11.1 — 2026-05-19 { #v1-11-1 }
+
+- Reliability: Sowel now installs process-wide handlers for `uncaughtException` and `unhandledRejection` (spec 112). When a throw escapes every other guard (a `setInterval` callback in the core, an unawaited promise in an MQTT publish, a native module surprise), the new handlers log a `fatal` entry with the full stack to stdout and to `data/logs/sowel.N.log`, then exit cleanly so Docker's restart policy reboots the container. Before, an uncaught crash left no trace and Docker just looped silently. After, every post-incident investigation has at minimum one log line to start from. No behavior change in the nominal path; the handlers are pure safety net.
+
 ### v1.11.0 — 2026-05-19 { #v1-11-0 }
 
 - Security hardening: every integration plugin now runs with scoped Proxies on its `PluginDeps` (spec 111). Four invariants are enforced at the JS layer: a plugin can only read or write settings under its own `integration.<own-id>.` prefix (plus a small allowlist of globals like `home.latitude`), can only emit events from a `system.*` whitelist (no domain-event impersonation), can only mutate devices belonging to its own integration, and lifecycle method errors (`refresh`, `getStatus`, etc.) are confined with typed fallbacks instead of crashing the core. Validated locally against the 13 plugins of the registry with zero false positives. No breaking change for plugin authors: the `PluginDeps` shape and method signatures are bit-for-bit identical, so existing plugins keep working without modification. The isolation is unconditional in this release; there is no opt-out. Rollback is via Docker image downgrade.
