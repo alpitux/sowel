@@ -16,6 +16,7 @@ This page summarises every published version, newest first. For the full diff be
 ### v1.11.1 — 2026-05-19 { #v1-11-1 }
 
 - Reliability: Sowel now installs process-wide handlers for `uncaughtException` and `unhandledRejection` (spec 112). When a throw escapes every other guard (a `setInterval` callback in the core, an unawaited promise in an MQTT publish, a native module surprise), the new handlers log a `fatal` entry with the full stack to stdout and to `data/logs/sowel.N.log`, then exit cleanly so Docker's restart policy reboots the container. Before, an uncaught crash left no trace and Docker just looped silently. After, every post-incident investigation has at minimum one log line to start from. No behavior change in the nominal path; the handlers are pure safety net.
+- Security: new audit log persists every security-sensitive action in the new `audit_log` SQLite table (spec 113). Captured events cover authentication (login success/failure, logout, API token create/delete), user management (create/update/delete/password change), settings updates, mode activation/deactivation, backup export/restore, and plugin install/uninstall/update/enable/disable. Each entry records the actor (user id + username + token kind), source IP, action, target, and a JSON `meta` blob with redacted values for sensitive keys (`password`, `token`, `secret`, `apiKey`). A new admin-only endpoint `GET /api/v1/audit` exposes the trail with filters by actor, action prefix, and date range. Retention is 365 days, purged at boot.
 
 ### v1.11.0 — 2026-05-19 { #v1-11-0 }
 

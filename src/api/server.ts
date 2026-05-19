@@ -62,6 +62,8 @@ import { registerNotificationPublisherRoutes } from "./routes/notification-publi
 import { registerDashboardRoutes } from "./routes/dashboard.js";
 import { registerPluginRoutes } from "./routes/plugins.js";
 import { registerSystemRoutes } from "./routes/system.js";
+import { registerAuditRoutes } from "./routes/audit.js";
+import type { AuditLogger } from "../core/audit-logger.js";
 import { registerWebSocket } from "./websocket.js";
 
 interface ServerDeps {
@@ -100,6 +102,7 @@ interface ServerDeps {
   integrationRegistry: IntegrationRegistry;
   logBuffer: LogRingBuffer;
   activityBuffer: ActivityBuffer;
+  auditLogger: AuditLogger;
   logger: Logger;
   corsOrigins: string[];
 }
@@ -137,6 +140,7 @@ export async function createServer(deps: ServerDeps) {
     integrationRegistry,
     logBuffer,
     activityBuffer,
+    auditLogger,
     logger,
     corsOrigins,
   } = deps;
@@ -229,17 +233,23 @@ export async function createServer(deps: ServerDeps) {
 
   // Register routes
   registerHealthRoutes(app, { deviceManager, integrationRegistry, logger });
-  registerAuthRoutes(app, { authService, userManager, logger });
-  registerMeRoutes(app, { authService, userManager, logger });
-  registerUserRoutes(app, { userManager, logger });
+  registerAuthRoutes(app, { authService, userManager, auditLogger, logger });
+  registerMeRoutes(app, { authService, userManager, auditLogger, logger });
+  registerUserRoutes(app, { userManager, auditLogger, logger });
   registerDeviceRoutes(app, { deviceManager, logger });
   registerZoneRoutes(app, { zoneManager, zoneAggregator, equipmentManager, logger });
   registerEquipmentRoutes(app, { equipmentManager, logger });
   registerRecipeRoutes(app, { recipeManager, logger });
-  registerModeRoutes(app, { modeManager, buttonActionManager, logger });
+  registerModeRoutes(app, { modeManager, buttonActionManager, auditLogger, userManager, logger });
   registerCalendarRoutes(app, { calendarManager, logger });
-  registerBackupRoutes(app, { backupManager, logger });
-  registerSettingsRoutes(app, { settingsManager, eventBus, logger });
+  registerBackupRoutes(app, { backupManager, auditLogger, userManager, logger });
+  registerSettingsRoutes(app, {
+    settingsManager,
+    eventBus,
+    auditLogger,
+    userManager,
+    logger,
+  });
   registerIntegrationRoutes(app, {
     integrationRegistry,
     settingsManager,
@@ -275,8 +285,11 @@ export async function createServer(deps: ServerDeps) {
     pluginLoader,
     recipeLoader,
     integrationRegistry,
+    auditLogger,
+    userManager,
     logger,
   });
+  registerAuditRoutes(app, { auditLogger, logger });
   registerSystemRoutes(app, { versionChecker, updateManager, tzInfo, logger });
   registerLogRoutes(app, { logBuffer, logger });
   registerActivityRoutes(app, { activityBuffer, logger });

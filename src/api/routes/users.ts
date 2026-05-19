@@ -1,16 +1,19 @@
 import type { FastifyInstance } from "fastify";
 import type { UserManager } from "../../auth/user-manager.js";
 import type { Logger } from "../../core/logger.js";
+import type { AuditLogger } from "../../core/audit-logger.js";
 import type { UserRole } from "../../shared/types.js";
 import { requireAdmin } from "../../auth/auth-middleware.js";
+import { buildActor } from "../audit-context.js";
 
 interface UsersDeps {
   userManager: UserManager;
+  auditLogger: AuditLogger;
   logger: Logger;
 }
 
 export function registerUserRoutes(app: FastifyInstance, deps: UsersDeps): void {
-  const { userManager } = deps;
+  const { userManager, auditLogger } = deps;
 
   // All user management routes require admin role
   app.addHook("onRequest", async (request, reply) => {
@@ -57,6 +60,15 @@ export function registerUserRoutes(app: FastifyInstance, deps: UsersDeps): void 
       role: role ?? "standard",
     });
 
+    auditLogger.log({
+      ...buildActor(request, userManager),
+      action: "user.create",
+      targetType: "user",
+      targetId: user.id,
+      ip: request.ip,
+      meta: { username, role: role ?? "standard" },
+    });
+
     return reply.code(201).send(user);
   });
 
@@ -89,6 +101,23 @@ export function registerUserRoutes(app: FastifyInstance, deps: UsersDeps): void 
       enabled: enabled ?? existing.enabled,
     });
 
+    auditLogger.log({
+      ...buildActor(request, userManager),
+      action: "user.update",
+      targetType: "user",
+      targetId: request.params.id,
+      ip: request.ip,
+      meta: {
+        username: existing.username,
+        roleChange: role && role !== existing.role ? { from: existing.role, to: role } : undefined,
+        enabledChange:
+          enabled !== undefined && enabled !== existing.enabled
+            ? { from: existing.enabled, to: enabled }
+            : undefined,
+        displayNameChanged: displayName !== undefined && displayName !== existing.displayName,
+      },
+    });
+
     return updated;
   });
 
@@ -114,6 +143,14 @@ export function registerUserRoutes(app: FastifyInstance, deps: UsersDeps): void 
     }
 
     userManager.deleteUser(request.params.id);
+    auditLogger.log({
+      ...buildActor(request, userManager),
+      action: "user.delete",
+      targetType: "user",
+      targetId: request.params.id,
+      ip: request.ip,
+      meta: { username: existing.username, role: existing.role },
+    });
     return reply.code(204).send();
   });
 }

@@ -3,15 +3,17 @@ import type { AuthService } from "../../auth/auth-service.js";
 import { AuthError } from "../../auth/auth-service.js";
 import type { UserManager } from "../../auth/user-manager.js";
 import type { Logger } from "../../core/logger.js";
+import type { AuditLogger } from "../../core/audit-logger.js";
 
 interface AuthDeps {
   authService: AuthService;
   userManager: UserManager;
+  auditLogger: AuditLogger;
   logger: Logger;
 }
 
 export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
-  const { authService, userManager } = deps;
+  const { authService, userManager, auditLogger } = deps;
 
   // GET /api/v1/auth/status — Check if setup is required
   app.get("/api/v1/auth/status", async () => {
@@ -61,8 +63,25 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
 
       try {
         const tokens = await authService.login(username, password);
+        const user = userManager.getByUsername(username);
+        auditLogger.log({
+          actorKind: "user",
+          actorUserId: user?.id ?? null,
+          actorLabel: username,
+          action: "auth.login.success",
+          targetType: "user",
+          targetId: user?.id ?? null,
+          ip: request.ip,
+        });
         return tokens;
       } catch (err) {
+        auditLogger.log({
+          actorKind: "user",
+          actorLabel: username,
+          action: "auth.login.failure",
+          ip: request.ip,
+          meta: { reason: err instanceof Error ? err.message : "unknown" },
+        });
         if (err instanceof AuthError) {
           return reply.code(err.status).send({ error: err.message });
         }
@@ -98,6 +117,16 @@ export function registerAuthRoutes(app: FastifyInstance, deps: AuthDeps): void {
     const { refreshToken } = request.body ?? {};
     if (refreshToken) {
       authService.logout(refreshToken);
+    }
+    if (request.auth) {
+      const user = userManager.getById(request.auth.userId);
+      auditLogger.log({
+        actorKind: request.tokenKind === "api_token" ? "api_token" : "user",
+        actorUserId: request.auth.userId,
+        actorLabel: user?.username ?? request.auth.userId,
+        action: "auth.logout",
+        ip: request.ip,
+      });
     }
     return reply.code(204).send();
   });
