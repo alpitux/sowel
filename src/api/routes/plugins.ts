@@ -4,12 +4,17 @@ import type { PackageManager } from "../../packages/package-manager.js";
 import type { PluginLoader } from "../../plugins/plugin-loader.js";
 import type { RecipeLoader } from "../../recipes/recipe-loader.js";
 import type { IntegrationRegistry } from "../../integrations/integration-registry.js";
+import type { AuditLogger } from "../../core/audit-logger.js";
+import type { UserManager } from "../../auth/user-manager.js";
+import { buildActor } from "../audit-context.js";
 
 interface PluginsDeps {
   packageManager: PackageManager;
   pluginLoader: PluginLoader;
   recipeLoader: RecipeLoader;
   integrationRegistry: IntegrationRegistry;
+  auditLogger: AuditLogger;
+  userManager: UserManager;
   logger: Logger;
 }
 
@@ -19,6 +24,8 @@ export function registerPluginRoutes(app: FastifyInstance, deps: PluginsDeps): v
     pluginLoader,
     recipeLoader,
     integrationRegistry,
+    auditLogger,
+    userManager,
     logger: parentLogger,
   } = deps;
   const logger = parentLogger.child({ module: "plugin-routes" });
@@ -122,10 +129,31 @@ export function registerPluginRoutes(app: FastifyInstance, deps: PluginsDeps): v
         if (registryType === "recipe") {
           await recipeLoader.install(repo, { confirmed });
           logger.info({ repo, type: "recipe" }, "Recipe installed via API");
+          auditLogger.log({
+            ...buildActor(request, userManager),
+            action: "plugin.install",
+            targetType: "plugin",
+            targetId: repo,
+            ip: request.ip,
+            meta: { repo, type: "recipe", isOfficial: entry?.isOfficial ?? null },
+          });
           return { success: true };
         } else {
           const manifest = await pluginLoader.install(repo, { confirmed });
           logger.info({ pluginId: manifest.id, repo }, "Plugin installed via API");
+          auditLogger.log({
+            ...buildActor(request, userManager),
+            action: "plugin.install",
+            targetType: "plugin",
+            targetId: manifest.id,
+            ip: request.ip,
+            meta: {
+              repo,
+              type: "integration",
+              version: manifest.version,
+              isOfficial: entry?.isOfficial ?? null,
+            },
+          });
           return { success: true, manifest };
         }
       } catch (err) {
@@ -164,6 +192,13 @@ export function registerPluginRoutes(app: FastifyInstance, deps: PluginsDeps): v
     try {
       await pluginLoader.uninstall(request.params.id);
       logger.info({ pluginId: request.params.id }, "Plugin uninstalled via API");
+      auditLogger.log({
+        ...buildActor(request, userManager),
+        action: "plugin.uninstall",
+        targetType: "plugin",
+        targetId: request.params.id,
+        ip: request.ip,
+      });
       return { success: true };
     } catch (err) {
       logger.error({ err, pluginId: request.params.id }, "Failed to uninstall plugin");
@@ -183,9 +218,20 @@ export function registerPluginRoutes(app: FastifyInstance, deps: PluginsDeps): v
       const pkg = packageManager.getById(request.params.id);
       const pkgType = pkg?.type ?? "integration";
 
+      const fromVersion = pkg?.manifest.version;
+
       if (pkgType === "recipe") {
         await recipeLoader.update(request.params.id);
         logger.info({ pluginId: request.params.id, type: "recipe" }, "Recipe updated via API");
+        const after = packageManager.getById(request.params.id);
+        auditLogger.log({
+          ...buildActor(request, userManager),
+          action: "plugin.update",
+          targetType: "plugin",
+          targetId: request.params.id,
+          ip: request.ip,
+          meta: { type: "recipe", from: fromVersion ?? null, to: after?.manifest.version ?? null },
+        });
         return { success: true };
       } else {
         const manifest = await pluginLoader.update(request.params.id);
@@ -193,6 +239,14 @@ export function registerPluginRoutes(app: FastifyInstance, deps: PluginsDeps): v
           { pluginId: request.params.id, version: manifest.version },
           "Plugin updated via API",
         );
+        auditLogger.log({
+          ...buildActor(request, userManager),
+          action: "plugin.update",
+          targetType: "plugin",
+          targetId: request.params.id,
+          ip: request.ip,
+          meta: { type: "integration", from: fromVersion ?? null, to: manifest.version },
+        });
         return { success: true, manifest };
       }
     } catch (err) {
@@ -212,6 +266,13 @@ export function registerPluginRoutes(app: FastifyInstance, deps: PluginsDeps): v
     try {
       await pluginLoader.enable(request.params.id);
       logger.info({ pluginId: request.params.id }, "Plugin enabled via API");
+      auditLogger.log({
+        ...buildActor(request, userManager),
+        action: "plugin.enable",
+        targetType: "plugin",
+        targetId: request.params.id,
+        ip: request.ip,
+      });
       return { success: true };
     } catch (err) {
       logger.error({ err, pluginId: request.params.id }, "Failed to enable plugin");
@@ -230,6 +291,13 @@ export function registerPluginRoutes(app: FastifyInstance, deps: PluginsDeps): v
     try {
       await pluginLoader.disable(request.params.id);
       logger.info({ pluginId: request.params.id }, "Plugin disabled via API");
+      auditLogger.log({
+        ...buildActor(request, userManager),
+        action: "plugin.disable",
+        targetType: "plugin",
+        targetId: request.params.id,
+        ip: request.ip,
+      });
       return { success: true };
     } catch (err) {
       logger.error({ err, pluginId: request.params.id }, "Failed to disable plugin");

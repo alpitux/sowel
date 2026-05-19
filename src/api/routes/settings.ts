@@ -2,15 +2,20 @@ import type { FastifyInstance } from "fastify";
 import type { Logger } from "../../core/logger.js";
 import type { EventBus } from "../../core/event-bus.js";
 import type { SettingsManager } from "../../core/settings-manager.js";
+import { AuditLogger } from "../../core/audit-logger.js";
+import type { UserManager } from "../../auth/user-manager.js";
+import { buildActor } from "../audit-context.js";
 
 interface SettingsDeps {
   settingsManager: SettingsManager;
   eventBus: EventBus;
+  auditLogger: AuditLogger;
+  userManager: UserManager;
   logger: Logger;
 }
 
 export function registerSettingsRoutes(app: FastifyInstance, deps: SettingsDeps): void {
-  const { settingsManager, eventBus, logger: parentLogger } = deps;
+  const { settingsManager, eventBus, auditLogger, userManager, logger: parentLogger } = deps;
   const logger = parentLogger.child({ module: "settings-routes" });
 
   // GET /api/v1/settings — Get all settings (admin only)
@@ -40,10 +45,27 @@ export function registerSettingsRoutes(app: FastifyInstance, deps: SettingsDeps)
       }
     }
 
+    // Capture old values BEFORE the write for the audit meta
+    const oldValues: Record<string, string | undefined> = {};
+    for (const k of Object.keys(entries)) oldValues[k] = settingsManager.get(k);
+
     settingsManager.setMany(entries);
     const keys = Object.keys(entries);
     logger.info({ keys }, "Settings updated");
     eventBus.emit({ type: "settings.changed", keys });
+
+    // Audit one entry per changed key (spec 113).
+    const actor = buildActor(request, userManager);
+    for (const [key, newValue] of Object.entries(entries)) {
+      auditLogger.log({
+        ...actor,
+        action: "settings.update",
+        targetType: "settings",
+        targetId: key,
+        ip: request.ip,
+        meta: AuditLogger.redactSettingMeta(key, oldValues[key], newValue),
+      });
+    }
 
     // Home location changed → timezone may need to be re-derived via restart
     if (keys.includes("home.latitude") || keys.includes("home.longitude")) {

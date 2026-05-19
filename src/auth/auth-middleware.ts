@@ -10,6 +10,8 @@ import type { Logger } from "../core/logger.js";
 declare module "fastify" {
   interface FastifyRequest {
     auth?: JwtPayload;
+    /** Spec 113: how the request was authenticated. Used by the audit logger. */
+    tokenKind?: "jwt" | "api_token";
   }
 }
 
@@ -79,9 +81,11 @@ export function registerAuthMiddleware(
           return reply.code(401).send({ error: "Invalid API token" });
         }
         payload = result;
+        request.tokenKind = "api_token";
       } else {
         // JWT
         payload = authService.verifyAccessToken(token);
+        request.tokenKind = "jwt";
       }
 
       request.auth = payload;

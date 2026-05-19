@@ -4,6 +4,7 @@ import { loadConfig } from "./config.js";
 import { createLogger } from "./core/logger.js";
 import { LogRingBuffer } from "./core/log-buffer.js";
 import { installProcessCrashHandlers } from "./core/process-crash-handlers.js";
+import { AuditLogger } from "./core/audit-logger.js";
 import { openDatabase, runMigrations } from "./core/database.js";
 import { detectTimezone, probeTimezone, readHomeCoordinatesRaw } from "./core/timezone.js";
 import { EventBus } from "./core/event-bus.js";
@@ -282,6 +283,13 @@ async function main() {
   const userManager = new UserManager(db, logger);
   const authService = new AuthService(db, userManager, config.jwt, logger);
 
+  // 13b. Audit logger (spec 113) — instantiate and purge entries > 365 days
+  const auditLogger = new AuditLogger(db, logger);
+  const purgedAuditRows = auditLogger.purgeOlderThan();
+  if (purgedAuditRows > 0) {
+    logger.info({ purged: purgedAuditRows }, "Audit log retention purge complete");
+  }
+
   // 14. Create Package Manager + warm registry cache (await remote fetch before loading plugins)
   const packageManager = new PackageManager(db, logger);
   await packageManager.warmRegistryCache();
@@ -346,6 +354,7 @@ async function main() {
     integrationRegistry,
     logBuffer,
     activityBuffer,
+    auditLogger,
     logger,
     corsOrigins: config.cors.origins,
   });
