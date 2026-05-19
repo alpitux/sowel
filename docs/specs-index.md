@@ -157,6 +157,12 @@ Specs are grouped by theme and annotated with status:
 | --- | ------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 105 | WAN hardening | ✅     | Closes WAN-exposure gaps: `@fastify/helmet` (CSP/HSTS/X-Frame-Options), CORS default tightened from `*` to localhost, WebSocket mandatory auth via `Sec-WebSocket-Protocol` subprotocol + `Origin` validation, non-root container via entrypoint+gosu (transparent upgrade from root-owned volumes), `docker.sock` self-update opt-in via override file, auth-by-default invariant on all `/api/v1/*` routes. |
 
+## V1.11 — plugin runtime hardening
+
+| #   | Title                 | Status | Summary                                                                                                                                                                                                                                                                                                                                                                    |
+| --- | --------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 111 | Plugin soft isolation | ✅     | Scoped Proxies wrap each plugin's `PluginDeps` (settings, event bus, device manager). Enforces 4 invariants at the JS layer: settings scoped to `integration.<own-id>.*`, event whitelist of `system.*` types, device ownership forced by `integrationId`, and error confinement on lifecycle methods. Unconditional since v1.11.0. No breaking change for plugin authors. |
+
 ---
 
 ## How to use this index after context loss

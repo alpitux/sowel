@@ -9,6 +9,12 @@ import type {
 import type { PluginManifest, PluginInfo } from "../shared/types.js";
 import type { PluginDeps, PluginFactory } from "../shared/plugin-api.js";
 import type { PackageManager } from "../packages/package-manager.js";
+import {
+  makeDeviceManagerProxy,
+  makeEventBusProxy,
+  makeSettingsManagerProxy,
+  wrapPluginMethods,
+} from "./scoped-deps.js";
 
 /** Simple semver comparison: returns true if a > b */
 function isNewerVersion(a: string, b: string): boolean {
@@ -241,10 +247,20 @@ export class PluginLoader {
 
     const manifest = JSON.parse(readFileSync(manifestPath, "utf-8")) as PluginManifest;
 
-    // Build deps for this plugin
+    // Build deps for this plugin. Spec 111: every plugin runs with
+    // scoped Proxies (settings, event bus, device manager) and a method
+    // wrapper that confines lifecycle errors. The wrapping is transparent
+    // at the API level; plugins do not need to be modified.
+    const pluginLogger = this.coreDeps.logger.child({ module: `plugin:${pluginId}` });
     const deps: PluginDeps = {
-      ...this.coreDeps,
-      logger: this.coreDeps.logger.child({ module: `plugin:${pluginId}` }),
+      logger: pluginLogger,
+      eventBus: makeEventBusProxy(pluginId, this.coreDeps.eventBus, pluginLogger),
+      settingsManager: makeSettingsManagerProxy(
+        pluginId,
+        this.coreDeps.settingsManager,
+        pluginLogger,
+      ),
+      deviceManager: makeDeviceManagerProxy(pluginId, this.coreDeps.deviceManager, pluginLogger),
       pluginDir: pkgDir,
     };
 
@@ -287,7 +303,11 @@ export class PluginLoader {
       throw new Error(`Plugin "${pluginId}" does not export a createPlugin function`);
     }
 
-    const plugin = factory(deps);
+    const rawPlugin = factory(deps);
+
+    // Spec 111: wrap lifecycle methods to confine errors and surface
+    // slow calls. Transparent to callers (same IntegrationPlugin shape).
+    const plugin: IntegrationPlugin = wrapPluginMethods(rawPlugin, pluginId, pluginLogger);
 
     // Register with integration registry
     this.integrationRegistry.register(plugin);

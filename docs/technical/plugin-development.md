@@ -203,6 +203,85 @@ const cachePath = resolve(deps.pluginDir, "cache.json");
 
 ---
 
+## Plugin scoping (spec 111)
+
+Since Sowel v1.11.0, the three mutable services in your `PluginDeps` are unconditionally wrapped in scoped Proxies. The `PluginDeps` shape and method signatures are bit-for-bit identical, so **you do not need to change your plugin code**, but the runtime enforces four invariants:
+
+### 1. Settings are scoped to your plugin
+
+```ts
+// ✅ Allowed — your own integration prefix
+const refreshToken = deps.settingsManager.get(`integration.${INTEGRATION_ID}.refresh_token`);
+deps.settingsManager.set(`integration.${INTEGRATION_ID}.refresh_token`, "new-value");
+
+// ✅ Allowed — explicit global keys (home location, timezone)
+const lat = deps.settingsManager.get("home.latitude");
+
+// ❌ Returns undefined + warn log — you cannot read another plugin's settings
+const stolen = deps.settingsManager.get("integration.another-plugin.refresh_token");
+
+// ❌ Throws — you cannot write to keys you do not own
+deps.settingsManager.set("integration.another-plugin.x", "evil");
+
+// ❌ Returns empty — broad reads are denied
+deps.settingsManager.getAll();
+deps.settingsManager.getByPrefix("integration.");
+```
+
+If your plugin legitimately needs to read another global setting, request its addition to `GLOBAL_READABLE_KEYS` in `src/plugins/scoped-deps.ts` via a PR against the Sowel core repo.
+
+### 2. Events are limited to a small whitelist
+
+You can only emit these types:
+
+- `system.integration.connected` / `system.integration.disconnected`
+- `system.alarm.raised` / `system.alarm.resolved`
+
+Any other type is silently dropped with a `warn` log. Domain events (`device.data.updated`, `equipment.data.changed`, etc.) are emitted by Sowel's managers in reaction to your calls (`deviceManager.updateDeviceData`, etc.); you should never need to emit them directly.
+
+Additionally, if you set `integrationId` on a `system.integration.*` event, it must match your own plugin id. Impersonation is dropped.
+
+### 3. Device mutations are forced to your ownership
+
+```ts
+// ✅ Allowed — your own integration id
+deps.deviceManager.updateDeviceData(INTEGRATION_ID, sourceDeviceId, { state: "on" });
+deps.deviceManager.upsertFromDiscovery(INTEGRATION_ID, "zigbee2mqtt", discovered);
+
+// ❌ Throws — you cannot touch another integration's devices
+deps.deviceManager.updateDeviceData("another-plugin", "x", { state: "on" });
+deps.deviceManager.migrateIntegrationId("old-id", "another-plugin");
+
+// ❌ Throws — admin actions are not available to plugins
+deps.deviceManager.update(deviceId, { name: "renamed" });
+deps.deviceManager.delete(deviceId);
+```
+
+Read methods (`getAll`, `getById`, `getDeviceData`, `getDeviceDataValue`, `logSummary`) pass through unchanged; reading another integration's devices is allowed (rare but legitimate, e.g. a pool plugin reading a weather equipment).
+
+### 4. Errors in lifecycle methods are confined
+
+A throw in `refresh()`, `getStatus()`, `isConfigured()`, `getSettingsSchema()`, `getPollingInfo()`, `getOAuthUrl()` is **logged with your plugin id** and replaced by a safe default (`undefined`, `"error"`, `false`, `[]`, `null`). The Sowel core keeps running.
+
+A throw in `start()`, `stop()`, `executeOrder()` or `handleOAuthCallback()` is still logged but **rethrown** because the caller (registry, recipe engine, OAuth route) needs to react.
+
+You are free to throw inside any lifecycle method without worrying about taking down Sowel.
+
+### What the Proxy does not protect against
+
+For full transparency, the soft isolation does not block:
+
+- Direct `import("better-sqlite3")` and reading `data/sowel.db`
+- Reading `process.env`
+- Infinite loops or memory leaks
+- Prototype pollution (`Object.prototype.X = ...`)
+- Arbitrary `fetch()` / outbound network calls
+- `process.exit()`
+
+These would require hard isolation via worker threads (a future Sowel spec). For now, plugin authors must follow the spirit of the contract: only access your own settings, only emit your own events, only mutate your own devices.
+
+---
+
 ## IntegrationPlugin Interface
 
 The `createPlugin` factory must return an object implementing the `IntegrationPlugin` interface:
