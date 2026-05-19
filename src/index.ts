@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { loadConfig } from "./config.js";
 import { createLogger } from "./core/logger.js";
 import { LogRingBuffer } from "./core/log-buffer.js";
+import { installProcessCrashHandlers } from "./core/process-crash-handlers.js";
 import { openDatabase, runMigrations } from "./core/database.js";
 import { detectTimezone, probeTimezone, readHomeCoordinatesRaw } from "./core/timezone.js";
 import { EventBus } from "./core/event-bus.js";
@@ -95,6 +96,11 @@ async function main() {
   const logBuffer = new LogRingBuffer();
   const logHandle = createLogger(config.log.level, logBuffer);
   const logger = logHandle.logger;
+
+  // Spec 112: install crash handlers as soon as the logger is ready.
+  // Throws before this point are caught by the `main().catch()` block
+  // at the bottom of this file (stderr JSON fallback).
+  installProcessCrashHandlers(logger);
 
   // Flush deferred timezone diagnostics
   const tzLogger = logger.child({ module: "timezone" });
