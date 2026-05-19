@@ -194,7 +194,7 @@ The `verify-release-notes` job in `.github/workflows/release.yml` greps the tagg
 
 ### Plugin soft isolation (spec 111)
 
-When the `SOWEL_PLUGIN_ISOLATION` env var is true (default off in v1.10.x, planned default-on in v1.11.x), each integration plugin runs with scoped Proxies on its `PluginDeps`. The contract is enforced by `src/plugins/scoped-deps.ts`:
+Every integration plugin runs with scoped Proxies on its `PluginDeps`. There is no opt-out: the isolation is unconditional since v1.11.0. The contract is enforced by `src/plugins/scoped-deps.ts`:
 
 - **Settings**: a plugin can only read/write `integration.<own-id>.*`. The exceptions are listed in `GLOBAL_READABLE_KEYS` (currently `home.latitude`, `home.longitude`, `home.timezone`). Reads on foreign keys return `undefined`; writes throw.
 - **Events**: a plugin can only emit types in `ALLOWED_EMIT_TYPES` (`system.integration.{connected,disconnected}`, `system.alarm.{raised,resolved}`). Events with a mismatched `integrationId` are dropped.

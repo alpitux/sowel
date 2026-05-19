@@ -205,7 +205,7 @@ const cachePath = resolve(deps.pluginDir, "cache.json");
 
 ## Plugin scoping (spec 111)
 
-When the host Sowel runs with `SOWEL_PLUGIN_ISOLATION=true` (default-off in v1.10.x, default-on planned in v1.11.x), the three mutable services in your `PluginDeps` are wrapped in scoped Proxies. The `PluginDeps` shape and method signatures are bit-for-bit identical, so **you do not need to change your plugin code**, but the runtime enforces four invariants:
+Since Sowel v1.11.0, the three mutable services in your `PluginDeps` are unconditionally wrapped in scoped Proxies. The `PluginDeps` shape and method signatures are bit-for-bit identical, so **you do not need to change your plugin code**, but the runtime enforces four invariants:
 
 ### 1. Settings are scoped to your plugin
 

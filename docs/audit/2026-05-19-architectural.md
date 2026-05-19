@@ -8,28 +8,28 @@ Date : 2026-05-19. Périmètre : architecture backend, frontend, plugins, tests,
 
 ### 1.1 Findings prioritaires (Top 20)
 
-| #   | Finding                                                                                                                                                  | Sévérité     | Effort | Catégorie ISO 25010 |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------ | ------------------- |
-| F01 | Secrets de plugins (MQTT, API clouds, tokens) stockés en clair dans `settings` _(accepté, voir 1.4)_                                                     | **Critical** | M      | Security            |
-| F02 | Isolation plugin inexistante : un plugin lit les settings des autres et émet tout event _(soft isolation livrée par spec 111, default-off jusqu'à beta)_ | **High**     | L      | Security            |
-| F03 | Aucun handler `uncaughtException` / `unhandledRejection` (process peut mourir sans trace)                                                                | **High**     | S      | Reliability         |
-| F04 | Backup ZIP non chiffré, contient secrets et tokens hachés                                                                                                | **High**     | S      | Security            |
-| F05 | Drift `docs/specs-index.md` : 76 specs sur 111 absentes de l'index (FR uniquement parfois)                                                               | **High**     | M      | Maintainability     |
-| F06 | Pages doc clés non alignées avec spec 089 (sécurité supply chain) et spec 110 (category)                                                                 | **High**     | S      | Maintainability     |
-| F07 | Asymétrie `EquipmentType` vs `DataCategory` : recettes contraintes sur le type technique                                                                 | **High**     | L      | Maintainability     |
-| F08 | God components UI : 4 fichiers > 1000 LOC dont `ZoneRecipesSection.tsx` à 2013 LOC                                                                       | **High**     | L      | Maintainability     |
-| F09 | Couverture de tests UI quasi-nulle (1 test sur 156 fichiers TSX)                                                                                         | **High**     | L      | Reliability         |
-| F10 | `Energy API routes` non migrés vers category-first (8 endroits hardcodent les alias)                                                                     | Medium       | M      | Maintainability     |
-| F11 | EventBus : handlers synchrones et bloquants, pas de timeout ni de monitoring slow handler                                                                | Medium       | M      | Performance         |
-| F12 | Pas de chiffrement at-rest sur SQLite ni rotation des secrets JWT                                                                                        | Medium       | M      | Security            |
-| F13 | Aucun audit trail (login, création tokens, changement settings, changement mode)                                                                         | Medium       | S      | Security            |
-| F14 | 31 specs incomplètes (manque architecture.md ou plan.md) sur 111 au total                                                                                | Medium       | M      | Maintainability     |
-| F15 | InfluxDB write failures silencieusement avalées dans plusieurs catch                                                                                     | Medium       | S      | Reliability         |
-| F16 | Pas de schémas JSON validés pour les blobs JSON en DB (`raw_expose`, `params`, etc.)                                                                     | Medium       | M      | Reliability         |
-| F17 | `Settings.set()` non transactionnel, race condition possible sur écritures concurrentes                                                                  | Medium       | S      | Reliability         |
-| F18 | Pas de glossaire ni d'ADR : décisions et terminologie dispersées dans 80+ specs                                                                          | Medium       | M      | Maintainability     |
-| F19 | Aucun lazy-loading React, bundle UI monolithique, pas de code splitting                                                                                  | Medium       | M      | Performance         |
-| F20 | Plugins ne déclarent pas leurs catégories (extensibilité bloquée par hard-mapping core)                                                                  | Medium       | L      | Scalability         |
+| #   | Finding                                                                                                                                                              | Sévérité     | Effort | Catégorie ISO 25010 |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------ | ------------------- |
+| F01 | Secrets de plugins (MQTT, API clouds, tokens) stockés en clair dans `settings` _(accepté, voir 1.4)_                                                                 | **Critical** | M      | Security            |
+| F02 | Isolation plugin inexistante : un plugin lit les settings des autres et émet tout event _(soft isolation livrée par spec 111, active sans condition depuis v1.11.0)_ | **High**     | L      | Security            |
+| F03 | Aucun handler `uncaughtException` / `unhandledRejection` (process peut mourir sans trace)                                                                            | **High**     | S      | Reliability         |
+| F04 | Backup ZIP non chiffré, contient secrets et tokens hachés                                                                                                            | **High**     | S      | Security            |
+| F05 | Drift `docs/specs-index.md` : 76 specs sur 111 absentes de l'index (FR uniquement parfois)                                                                           | **High**     | M      | Maintainability     |
+| F06 | Pages doc clés non alignées avec spec 089 (sécurité supply chain) et spec 110 (category)                                                                             | **High**     | S      | Maintainability     |
+| F07 | Asymétrie `EquipmentType` vs `DataCategory` : recettes contraintes sur le type technique                                                                             | **High**     | L      | Maintainability     |
+| F08 | God components UI : 4 fichiers > 1000 LOC dont `ZoneRecipesSection.tsx` à 2013 LOC                                                                                   | **High**     | L      | Maintainability     |
+| F09 | Couverture de tests UI quasi-nulle (1 test sur 156 fichiers TSX)                                                                                                     | **High**     | L      | Reliability         |
+| F10 | `Energy API routes` non migrés vers category-first (8 endroits hardcodent les alias)                                                                                 | Medium       | M      | Maintainability     |
+| F11 | EventBus : handlers synchrones et bloquants, pas de timeout ni de monitoring slow handler                                                                            | Medium       | M      | Performance         |
+| F12 | Pas de chiffrement at-rest sur SQLite ni rotation des secrets JWT                                                                                                    | Medium       | M      | Security            |
+| F13 | Aucun audit trail (login, création tokens, changement settings, changement mode)                                                                                     | Medium       | S      | Security            |
+| F14 | 31 specs incomplètes (manque architecture.md ou plan.md) sur 111 au total                                                                                            | Medium       | M      | Maintainability     |
+| F15 | InfluxDB write failures silencieusement avalées dans plusieurs catch                                                                                                 | Medium       | S      | Reliability         |
+| F16 | Pas de schémas JSON validés pour les blobs JSON en DB (`raw_expose`, `params`, etc.)                                                                                 | Medium       | M      | Reliability         |
+| F17 | `Settings.set()` non transactionnel, race condition possible sur écritures concurrentes                                                                              | Medium       | S      | Reliability         |
+| F18 | Pas de glossaire ni d'ADR : décisions et terminologie dispersées dans 80+ specs                                                                                      | Medium       | M      | Maintainability     |
+| F19 | Aucun lazy-loading React, bundle UI monolithique, pas de code splitting                                                                                              | Medium       | M      | Performance         |
+| F20 | Plugins ne déclarent pas leurs catégories (extensibilité bloquée par hard-mapping core)                                                                              | Medium       | L      | Scalability         |
 
 Légende : **Critical** = défaut bloquant ou risque de fuite/incident immédiat. **High** = dégrade fortement la maintenabilité ou expose à un risque structurel. **Medium** = à corriger sur la roadmap, pas urgent en soi. Effort : S < 1 jour, M = quelques jours, L = chantier (semaine+).
 
@@ -55,7 +55,7 @@ Légende : **Critical** = défaut bloquant ou risque de fuite/incident immédiat
 
 ### 1.5 Mitigations livrées depuis l'audit
 
-**F02 (isolation plugin)** : adressée partiellement par la **spec 111 (plugin soft isolation)**, livrée 2026-05-19. Les Proxies enforcent quatre invariants au niveau JavaScript : scoping settings sur `integration.<own-id>.`, whitelist des `system.*` events, ownership devices forcée par `integrationId`, et confinement des erreurs via `wrapPluginMethods`. Le flag `SOWEL_PLUGIN_ISOLATION` est default-off le temps d'une beta, puis sera flippé par défaut. Six vecteurs résiduels restent (lecture directe DB via `better-sqlite3`, `process.env`, boucles infinies, prototype pollution, `fetch` arbitraire, `process.exit`) : ils relèveraient d'une vraie hard isolation (worker_threads) qui imposerait une v2 du contrat plugin et reste hors scope tant que la registry n'accueille que des owners de confiance.
+**F02 (isolation plugin)** : adressée partiellement par la **spec 111 (plugin soft isolation)**, livrée en v1.11.0 (2026-05-19). Les Proxies enforcent quatre invariants au niveau JavaScript : scoping settings sur `integration.<own-id>.`, whitelist des `system.*` events, ownership devices forcée par `integrationId`, et confinement des erreurs via `wrapPluginMethods`. L'isolation est unconditionnelle (pas de flag opt-out) après validation locale sur les 13 plugins de la registry. Six vecteurs résiduels restent (lecture directe DB via `better-sqlite3`, `process.env`, boucles infinies, prototype pollution, `fetch` arbitraire, `process.exit`) : ils relèveraient d'une vraie hard isolation (worker_threads) qui imposerait une v2 du contrat plugin et reste hors scope tant que la registry n'accueille que des owners de confiance.
 
 ---
 

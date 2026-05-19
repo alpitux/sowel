@@ -11,7 +11,7 @@ schema migration, no UI change. Pure runtime hardening.
 | `src/plugins/scoped-deps.ts`                                 | **New**. Three Proxy factories + `wrapPluginMethods` + constants `ALLOWED_EMIT_TYPES`, `GLOBAL_READABLE_KEYS`   |
 | `src/plugins/scoped-deps.test.ts`                            | **New**. Unit tests for the four invariants                                                                     |
 | [src/plugins/plugin-loader.ts](src/plugins/plugin-loader.ts) | `loadPlugin()` builds scoped deps; result of `factory(deps)` goes through `wrapPluginMethods` before `register` |
-| `src/config.ts`                                              | Add `SOWEL_PLUGIN_ISOLATION` env flag (default `true` after beta)                                               |
+| `src/config.ts`                                              | No change. The original design added an env flag; the final shipped behavior is unconditional from v1.11.0      |
 | `docs/technical/plugin-development.md` + `.fr.md`            | New "Plugin scoping" section explaining the invariants                                                          |
 | `CLAUDE.md`                                                  | New "Plugin soft isolation (spec 111)" note for future agents                                                   |
 | `docs/audit/2026-05-19-architectural.md`                     | Mark F02 as mitigated by spec 111 (note in § 1.4 or new § 1.5)                                                  |
@@ -358,34 +358,27 @@ Decisions:
 ```ts
 // src/plugins/plugin-loader.ts (modified excerpt — inside loadPlugin)
 
+const pluginLogger = this.coreDeps.logger.child({ module: `plugin:${pluginId}` });
 const deps: PluginDeps = {
-  ...this.coreDeps,
-  logger: this.coreDeps.logger.child({ module: `plugin:${pluginId}` }),
+  logger: pluginLogger,
+  eventBus: makeEventBusProxy(pluginId, this.coreDeps.eventBus, pluginLogger),
+  settingsManager: makeSettingsManagerProxy(pluginId, this.coreDeps.settingsManager, pluginLogger),
+  deviceManager: makeDeviceManagerProxy(pluginId, this.coreDeps.deviceManager, pluginLogger),
   pluginDir: pkgDir,
 };
 
-const scopedDeps: PluginDeps = config.pluginIsolation
-  ? {
-      logger: deps.logger,
-      eventBus: makeEventBusProxy(pluginId, deps.eventBus, deps.logger),
-      settingsManager: makeSettingsManagerProxy(pluginId, deps.settingsManager, deps.logger),
-      deviceManager: makeDeviceManagerProxy(pluginId, deps.deviceManager, deps.logger),
-      pluginDir: deps.pluginDir,
-    }
-  : deps;
-
 // ... import factory as before ...
-const rawPlugin = factory(scopedDeps);
-const plugin = config.pluginIsolation
-  ? wrapPluginMethods(rawPlugin, pluginId, deps.logger)
-  : rawPlugin;
+const rawPlugin = factory(deps);
+const plugin = wrapPluginMethods(rawPlugin, pluginId, pluginLogger);
 
 this.integrationRegistry.register(plugin);
 ```
 
-The feature flag `config.pluginIsolation` defaults to `true` after one
-beta cycle. The env var `SOWEL_PLUGIN_ISOLATION=false` allows emergency
-disable in production without redeploy.
+The isolation is unconditional since v1.11.0. The earlier design carried
+a `SOWEL_PLUGIN_ISOLATION` env flag for emergency rollback; it was
+removed before release after local validation showed zero false
+positives across the 13 plugins of the registry. Rollback now requires
+deploying the previous Docker image.
 
 ## Logging contract
 
