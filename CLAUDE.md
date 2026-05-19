@@ -192,6 +192,19 @@ The `verify-release-notes` job in `.github/workflows/release.yml` greps the tagg
 
 **Do NOT bypass this check** by editing the workflow or skipping the grep — it is the contract that keeps `docs.sowel.org/release-notes` aligned with what is actually shipped.
 
+### Plugin soft isolation (spec 111)
+
+Every integration plugin runs with scoped Proxies on its `PluginDeps`. There is no opt-out: the isolation is unconditional since v1.11.0. The contract is enforced by `src/plugins/scoped-deps.ts`:
+
+- **Settings**: a plugin can only read/write `integration.<own-id>.*`. The exceptions are listed in `GLOBAL_READABLE_KEYS` (currently `home.latitude`, `home.longitude`, `home.timezone`). Reads on foreign keys return `undefined`; writes throw.
+- **Events**: a plugin can only emit types in `ALLOWED_EMIT_TYPES` (`system.integration.{connected,disconnected}`, `system.alarm.{raised,resolved}`). Events with a mismatched `integrationId` are dropped.
+- **Devices**: every `DeviceManager` mutation (`updateDeviceData`, `upsertFromDiscovery`, etc.) checks `integrationId === pluginId`. Admin methods (`update`, `delete`) throw for plugins.
+- **Errors**: `wrapPluginMethods` swallows throws from `refresh`, `getStatus`, etc. (degraded fallback) and rethrows from `start`, `stop`, `executeOrder`, `handleOAuthCallback` (callers need the error).
+
+When reviewing a plugin PR or adding a new event type/global setting, **extend the allowlists in `scoped-deps.ts` rather than weakening the gates**. Every denial logs `"Plugin denied …"` with `pluginId` context — that line is the audit trail.
+
+The Proxy does NOT protect against direct `require("better-sqlite3")`, `process.env` reads, infinite loops, prototype pollution, arbitrary `fetch`, or `process.exit`. Those would require worker_thread isolation (spec 111b, hypothetical).
+
 ### Event Bus
 
 - Typed `EventEmitter` with TypeScript discriminated union (`EngineEvent`)

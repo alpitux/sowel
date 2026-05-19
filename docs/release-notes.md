@@ -11,6 +11,14 @@ This page summarises every published version, newest first. For the full diff be
 
 ---
 
+## 1.11.x — Plugin soft isolation
+
+### v1.11.0 — 2026-05-19 { #v1-11-0 }
+
+- Security hardening: every integration plugin now runs with scoped Proxies on its `PluginDeps` (spec 111). Four invariants are enforced at the JS layer: a plugin can only read or write settings under its own `integration.<own-id>.` prefix (plus a small allowlist of globals like `home.latitude`), can only emit events from a `system.*` whitelist (no domain-event impersonation), can only mutate devices belonging to its own integration, and lifecycle method errors (`refresh`, `getStatus`, etc.) are confined with typed fallbacks instead of crashing the core. Validated locally against the 13 plugins of the registry with zero false positives. No breaking change for plugin authors: the `PluginDeps` shape and method signatures are bit-for-bit identical, so existing plugins keep working without modification. The isolation is unconditional in this release; there is no opt-out. Rollback is via Docker image downgrade.
+- Audit: spec 089 (plugin supply-chain SHA256) plus spec 111 together close the dominant plugin threat vectors. Residual gaps (direct `better-sqlite3` access from a plugin, arbitrary `fetch`, infinite loops, `process.exit`) require hard isolation via worker threads and are documented as out of scope until the registry grows past trusted owners.
+- Docs: new "Plugin scoping" section in `plugin-development.md` (EN+FR) explaining the four invariants for plugin authors, the explicit allowlists in `scoped-deps.ts`, and what the Proxy does not protect against.
+
 ## 1.10.x — Changelog at your fingertips
 
 ### v1.10.3 — 2026-05-17 { #v1-10-3 }

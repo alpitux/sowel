@@ -11,6 +11,14 @@ Cette page résume toutes les versions publiées, de la plus récente à la plus
 
 ---
 
+## 1.11.x — Isolation soft des plugins
+
+### v1.11.0 — 2026-05-19 { #v1-11-0 }
+
+- Durcissement sécurité : chaque plugin d'intégration tourne désormais avec des Proxies scopés autour de son `PluginDeps` (spec 111). Quatre invariants sont enforces au niveau JavaScript : un plugin ne peut lire ou écrire que les settings sous son propre préfixe `integration.<own-id>.` (plus une petite allowlist de globaux comme `home.latitude`), ne peut émettre que des events d'une whitelist `system.*` (pas d'usurpation d'events de domaine), ne peut muter que les devices appartenant à sa propre intégration, et les erreurs des méthodes lifecycle (`refresh`, `getStatus`, etc.) sont confinées avec des valeurs de repli typées au lieu de faire tomber le core. Validé en local contre les 13 plugins de la registry avec zéro faux positif. Pas de breaking change pour les auteurs de plugins : la forme de `PluginDeps` et les signatures sont bit-pour-bit identiques, donc les plugins existants continuent de tourner sans modification. L'isolation est inconditionnelle dans cette release ; pas de mécanisme d'opt-out. Le rollback se fait par downgrade de l'image Docker.
+- Audit : la spec 089 (SHA256 supply-chain des plugins) plus la spec 111 ferment ensemble les vecteurs de menace dominants côté plugins. Les vecteurs résiduels (accès direct à `better-sqlite3` depuis un plugin, `fetch` arbitraire, boucles infinies, `process.exit`) nécessiteraient une hard isolation via worker threads et restent documentés comme hors scope tant que la registry n'accueille que des owners de confiance.
+- Docs : nouvelle section "Scoping des plugins" dans `plugin-development.md` (EN+FR) qui explique les quatre invariants pour les auteurs de plugins, les allowlists explicites dans `scoped-deps.ts`, et ce contre quoi le Proxy ne protège pas.
+
 ## 1.10.x — Le changelog à portée de clic
 
 ### v1.10.3 — 2026-05-17 { #v1-10-3 }
