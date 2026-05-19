@@ -65,6 +65,9 @@ markdown_extensions:
   - toc:
       permalink: true
 
+exclude_docs: |
+  audit/
+
 plugins:
   - search
   - i18n:
