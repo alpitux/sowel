@@ -3,16 +3,21 @@ import type { ModeManager } from "../../modes/mode-manager.js";
 import { ModeError } from "../../modes/mode-manager.js";
 import type { ButtonActionManager } from "../../buttons/button-action-manager.js";
 import type { Logger } from "../../core/logger.js";
+import type { AuditLogger } from "../../core/audit-logger.js";
+import type { UserManager } from "../../auth/user-manager.js";
 import type { ZoneModeImpactAction } from "../../shared/types.js";
+import { buildActor } from "../audit-context.js";
 
 interface ModesDeps {
   modeManager: ModeManager;
   buttonActionManager?: ButtonActionManager;
+  auditLogger: AuditLogger;
+  userManager: UserManager;
   logger: Logger;
 }
 
 export function registerModeRoutes(app: FastifyInstance, deps: ModesDeps): void {
-  const { modeManager } = deps;
+  const { modeManager, auditLogger, userManager } = deps;
 
   // ── Modes CRUD ──────────────────────────────────────────
 
@@ -75,6 +80,15 @@ export function registerModeRoutes(app: FastifyInstance, deps: ModesDeps): void 
   app.post<{ Params: { id: string } }>("/api/v1/modes/:id/activate", async (request, reply) => {
     try {
       modeManager.activateMode(request.params.id);
+      const mode = modeManager.getMode(request.params.id);
+      auditLogger.log({
+        ...buildActor(request, userManager),
+        action: "mode.activate",
+        targetType: "mode",
+        targetId: request.params.id,
+        ip: request.ip,
+        meta: { modeName: mode?.name ?? null },
+      });
       return { ok: true };
     } catch (err) {
       if (err instanceof ModeError) return reply.code(err.status).send({ error: err.message });
@@ -86,6 +100,15 @@ export function registerModeRoutes(app: FastifyInstance, deps: ModesDeps): void 
   app.post<{ Params: { id: string } }>("/api/v1/modes/:id/deactivate", async (request, reply) => {
     try {
       modeManager.deactivateMode(request.params.id);
+      const mode = modeManager.getMode(request.params.id);
+      auditLogger.log({
+        ...buildActor(request, userManager),
+        action: "mode.deactivate",
+        targetType: "mode",
+        targetId: request.params.id,
+        ip: request.ip,
+        meta: { modeName: mode?.name ?? null },
+      });
       return { ok: true };
     } catch (err) {
       if (err instanceof ModeError) return reply.code(err.status).send({ error: err.message });

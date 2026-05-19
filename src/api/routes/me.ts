@@ -2,16 +2,19 @@ import type { FastifyInstance } from "fastify";
 import type { AuthService } from "../../auth/auth-service.js";
 import type { UserManager } from "../../auth/user-manager.js";
 import type { Logger } from "../../core/logger.js";
+import type { AuditLogger } from "../../core/audit-logger.js";
 import type { UserPreferences } from "../../shared/types.js";
+import { buildActor } from "../audit-context.js";
 
 interface MeDeps {
   authService: AuthService;
   userManager: UserManager;
+  auditLogger: AuditLogger;
   logger: Logger;
 }
 
 export function registerMeRoutes(app: FastifyInstance, deps: MeDeps): void {
-  const { authService, userManager } = deps;
+  const { authService, userManager, auditLogger } = deps;
 
   // GET /api/v1/me — Current user profile
   app.get("/api/v1/me", async (request, reply) => {
@@ -79,6 +82,13 @@ export function registerMeRoutes(app: FastifyInstance, deps: MeDeps): void {
     if (!valid) return reply.code(401).send({ error: "Current password is incorrect" });
 
     await userManager.updatePassword(request.auth.userId, newPassword);
+    auditLogger.log({
+      ...buildActor(request, userManager),
+      action: "user.password_change",
+      targetType: "user",
+      targetId: request.auth.userId,
+      ip: request.ip,
+    });
     return { success: true };
   });
 
@@ -98,6 +108,14 @@ export function registerMeRoutes(app: FastifyInstance, deps: MeDeps): void {
     if (!name) return reply.code(400).send({ error: "name is required" });
 
     const result = authService.createApiToken(request.auth.userId, name, expiresAt ?? null);
+    auditLogger.log({
+      ...buildActor(request, userManager),
+      action: "auth.api_token.create",
+      targetType: "api_token",
+      targetId: result.id ?? null,
+      ip: request.ip,
+      meta: { name, expiresAt: expiresAt ?? null },
+    });
     return reply.code(201).send(result);
   });
 
@@ -109,6 +127,13 @@ export function registerMeRoutes(app: FastifyInstance, deps: MeDeps): void {
 
     const deleted = authService.deleteApiToken(request.params.id, request.auth.userId);
     if (!deleted) return reply.code(404).send({ error: "Token not found" });
+    auditLogger.log({
+      ...buildActor(request, userManager),
+      action: "auth.api_token.delete",
+      targetType: "api_token",
+      targetId: request.params.id,
+      ip: request.ip,
+    });
     return reply.code(204).send();
   });
 }

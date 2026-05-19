@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { ModeManager } from "../../modes/mode-manager.js";
 import { EventBus } from "../../core/event-bus.js";
 import { createLogger } from "../../core/logger.js";
+import { AuditLogger } from "../../core/audit-logger.js";
 import { registerModeRoutes } from "./modes.js";
 
 function createTestDb(): Database.Database {
@@ -18,6 +19,7 @@ function createTestDb(): Database.Database {
     "004_drop_dispatch_config.sql",
     "005_device_data_enum_values.sql",
     "006_pool_runtime_and_category_override.sql",
+    "010_audit_log.sql",
   ]) {
     const sql = readFileSync(
       resolve(import.meta.dirname ?? ".", `../../../migrations/${file}`),
@@ -59,7 +61,12 @@ describe("Mode API routes", () => {
     );
 
     app = Fastify({ logger: false });
-    registerModeRoutes(app, { modeManager, logger });
+    const auditLogger = new AuditLogger(db, logger);
+    const userManager = {
+      getById: () => null,
+      getByUsername: () => null,
+    } as never;
+    registerModeRoutes(app, { modeManager, auditLogger, userManager, logger });
     await app.ready();
   });
 

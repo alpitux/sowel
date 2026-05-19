@@ -957,6 +957,37 @@ export interface DashboardWidget {
 // Config
 // ============================================================
 
+// ============================================================
+// Audit log (spec 113)
+// ============================================================
+
+export type AuditActorKind = "user" | "api_token" | "system";
+
+export interface AuditEntry {
+  actorKind: AuditActorKind;
+  actorUserId?: string | null;
+  actorLabel: string;
+  action: string;
+  targetType?: string | null;
+  targetId?: string | null;
+  ip?: string | null;
+  meta?: Record<string, unknown> | null;
+}
+
+export interface AuditEntryRow extends AuditEntry {
+  id: string;
+  timestamp: string;
+}
+
+export interface AuditQueryParams {
+  actorUserId?: string;
+  actionPrefix?: string;
+  since?: string;
+  until?: string;
+  limit?: number;
+  offset?: number;
+}
+
 export interface AppConfig {
   sqlite: {
     path: string;
