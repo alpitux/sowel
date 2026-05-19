@@ -2,14 +2,19 @@ import archiver from "archiver";
 import type { FastifyInstance } from "fastify";
 import type { Logger } from "../../core/logger.js";
 import type { BackupManager } from "../../backup/backup-manager.js";
+import type { AuditLogger } from "../../core/audit-logger.js";
+import type { UserManager } from "../../auth/user-manager.js";
+import { buildActor } from "../audit-context.js";
 
 interface BackupRouteDeps {
   backupManager: BackupManager;
+  auditLogger: AuditLogger;
+  userManager: UserManager;
   logger: Logger;
 }
 
 export function registerBackupRoutes(app: FastifyInstance, deps: BackupRouteDeps): void {
-  const { backupManager, logger: parentLogger } = deps;
+  const { backupManager, auditLogger, userManager, logger: parentLogger } = deps;
   const logger = parentLogger.child({ module: "backup-routes" });
 
   // ============================================================
@@ -36,6 +41,12 @@ export function registerBackupRoutes(app: FastifyInstance, deps: BackupRouteDeps
       },
     );
 
+    auditLogger.log({
+      ...buildActor(request, userManager),
+      action: "backup.export",
+      ip: request.ip,
+    });
+
     return reply.send(archive);
   });
 
@@ -56,6 +67,12 @@ export function registerBackupRoutes(app: FastifyInstance, deps: BackupRouteDeps
 
     try {
       const result = await backupManager.restoreFromBuffer(buffer);
+      auditLogger.log({
+        ...buildActor(request, userManager),
+        action: "backup.restore",
+        ip: request.ip,
+        meta: { bytes: buffer.length },
+      });
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Restore failed";
@@ -98,6 +115,12 @@ export function registerBackupRoutes(app: FastifyInstance, deps: BackupRouteDeps
 
       try {
         const result = await backupManager.restoreFromFile(filename);
+        auditLogger.log({
+          ...buildActor(request, userManager),
+          action: "backup.restore",
+          ip: request.ip,
+          meta: { filename, source: "local" },
+        });
         return result;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Restore failed";
