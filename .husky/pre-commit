@@ -1,1 +1,6 @@
 npx lint-staged
+
+# Scan staged changes for leaked secrets (gitleaks).
+# Uses the host gitleaks binary or Docker fallback. Skips with a hint
+# if neither is available — CI re-runs the same check on every push.
+./scripts/run-gitleaks.sh protect

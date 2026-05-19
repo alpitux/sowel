@@ -2,10 +2,31 @@ node_modules/
 dist/
 data/
 .env
+.env.*
 *.db
 *.db-wal
 *.db-shm
 .DS_Store
+
+# Secrets and credentials (never commit these)
+*.secret
+*.key
+*.pem
+*.p12
+*.pfx
+credentials*.json
+.netrc
+
+# Sowel backups (contain plaintext integration secrets per audit F01)
+*backup*.zip
+*backup*.json
+backup-*.tar*
+
+# Local test scripts that may carry hardcoded credentials.
+# Use scripts/private/ or similar for any test that needs real secrets.
+scripts/*-test.py
+scripts/test-*.py
+scripts/private/
 
 # Installed plugins (downloaded at runtime, not tracked)
 plugins/*/
