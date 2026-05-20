@@ -182,20 +182,20 @@ function useMobileState(
     const hum = find("humidity");
     const tempStr = typeof temp?.value === "number" ? `${temp.value.toFixed(1)}°` : "—";
     const humStr = typeof hum?.value === "number" ? `${Math.round(hum.value)} %` : "—";
-    // Icon slot is scaled 50% in MobileWidgetCard, so we size the text 2x what we want visible.
+    // We ignore widget.icon on purpose: the configured icon (e.g. a sun) is
+    // less useful than the actual outdoor temperature. Icon slot is scaled 50%
+    // in MobileWidgetCard, so we size the text 2x what we want visible.
     return {
-      icon: customEntry
-        ? createElement(customEntry.component, customEntry.previewProps)
-        : (
-          <div className="flex flex-col items-center gap-1 leading-none whitespace-nowrap">
-            <span className="text-[18px] uppercase tracking-wide text-text-tertiary font-medium">
-              {t("weather.outdoor")}
-            </span>
-            <span className="font-mono font-bold text-[56px] text-text tabular-nums">
-              {tempStr}
-            </span>
-          </div>
-        ),
+      icon: (
+        <div className="flex flex-col items-center gap-1 leading-none whitespace-nowrap">
+          <span className="text-[18px] uppercase tracking-wide text-text-tertiary font-medium">
+            {t("weather.outdoor")}
+          </span>
+          <span className="font-mono font-bold text-[56px] text-text tabular-nums">
+            {tempStr}
+          </span>
+        </div>
+      ),
       stateLines: [`${humStr} ${t("category.humidity").toLowerCase()}`],
     };
   }
