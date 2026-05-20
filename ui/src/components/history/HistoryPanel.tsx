@@ -4,7 +4,7 @@ import { Loader2, BarChart3, ChevronDown, ChevronRight } from "lucide-react";
 import { getHistoryData, getHistoryStatus } from "../../api";
 import type { HistoryPoint, HistoryBindingState } from "../../types";
 import { TimeRangeSelector } from "./TimeRangeSelector";
-import { rangeToFrom, CUMULATIVE_CATEGORIES } from "./history-utils";
+import { rangeToFrom, isCumulativeBarChart } from "./history-utils";
 import type { TimeRange } from "./history-utils";
 import { TimeSeriesChart } from "./TimeSeriesChart";
 import { HistoryBarChart } from "./HistoryBarChart";
@@ -211,7 +211,7 @@ export function HistoryPanel({ equipmentId, bindings }: HistoryPanelProps) {
                       <div className="flex justify-end mb-2">
                         <TimeRangeSelector value={range} onChange={setRange} />
                       </div>
-                      {CUMULATIVE_CATEGORIES.has(chart?.category ?? "") ? (
+                      {isCumulativeBarChart(chart?.category ?? "") ? (
                         <HistoryBarChart
                           points={chart?.points ?? []}
                           range={range}

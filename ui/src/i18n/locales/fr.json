@@ -336,13 +336,14 @@
   "category.value.smoke.alert": "Alerte !",
   "category.value.smoke.ok": "OK",
 
+  "weather.outdoor": "Extérieur",
   "weather.windSpeed": "Vitesse",
   "weather.windDirection": "Direction",
   "weather.gustSpeed": "Rafales",
   "weather.gustDirection": "Dir. rafales",
   "weather.rainCurrent": "Pluie actuelle",
-  "weather.rain1h": "Cumul 1h",
-  "weather.rain24h": "Cumul 24h",
+  "weather.rain1h": "Pluie 1h",
+  "weather.rain24h": "Pluie 24h",
 
   "aggregation.motion": "Mouvement",
   "aggregation.calm": "Calme",
