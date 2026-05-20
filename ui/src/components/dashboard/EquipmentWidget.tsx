@@ -14,6 +14,7 @@ import {
   Snowflake,
   WashingMachine,
   Timer,
+  CloudRain,
 } from "lucide-react";
 import type { EquipmentWithDetails } from "../../types";
 import type { DashboardWidget } from "../../types";
@@ -74,6 +75,7 @@ export function EquipmentWidget({ widget, equipment, onExecuteOrder }: Equipment
   if (isHeater) return <HeaterEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} />;
   if (isEnergyMeter) return <EnergyMeterEquipmentWidget label={label} equipment={equipment} />;
   if (isWeatherForecast) return <WeatherForecastWidget label={label} equipment={equipment} />;
+  if (equipment.type === "weather") return <WeatherStationWidget label={label} equipment={equipment} />;
   if (isAppliance) return <ApplianceEquipmentWidget label={label} equipment={equipment} />;
   if (isWaterValve) return <WaterValveEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} />;
   if (isPoolPump) return <PoolPumpEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} />;
@@ -640,6 +642,70 @@ function SensorEquipmentWidget({
         {sensorIcon}
         <div className="flex flex-col items-start pl-2 overflow-y-auto max-h-full">
           <SensorValues sensorBindings={filteredBindings} batteryBindings={batteryBindings} layout="column" />
+        </div>
+      </div>
+    </WidgetCard>
+  );
+}
+
+// ============================================================
+// Weather station widget (read-only — Netatmo + similar multi-module stations)
+// ============================================================
+
+function WeatherStationWidget({
+  label,
+  equipment,
+}: {
+  label: string;
+  equipment: EquipmentWithDetails;
+}) {
+  const { t } = useTranslation();
+
+  const find = (key: string) => equipment.dataBindings.find((b) => b.key === key);
+  const tempBinding = find("temperature");
+  const humidityBinding = find("humidity");
+  const rainBinding = find("sum_rain_24");
+  const windBinding = find("wind_strength");
+
+  const tempValue =
+    tempBinding && typeof tempBinding.value === "number"
+      ? tempBinding.value.toFixed(1)
+      : "—";
+
+  const renderRow = (
+    labelText: string,
+    binding: typeof tempBinding,
+    formatter: (v: number) => string,
+    unit: string,
+  ) => (
+    <div className="flex items-baseline justify-between text-[12px]">
+      <span className="text-text-secondary">{labelText}</span>
+      <span className="font-mono font-semibold text-text tabular-nums">
+        {binding && typeof binding.value === "number" ? formatter(binding.value) : "—"}
+        <span className="text-text-tertiary font-normal text-[10px] ml-0.5">{unit}</span>
+      </span>
+    </div>
+  );
+
+  return (
+    <WidgetCard label={label}>
+      <div className="flex flex-col h-full">
+        {/* Hero — icon + temperature */}
+        <div className="flex items-center gap-2 mb-2 sm:mb-3 mt-1 sm:mt-2">
+          <div className="w-8 h-8 rounded-[8px] flex items-center justify-center bg-primary-light text-primary flex-shrink-0">
+            <CloudRain size={18} strokeWidth={1.5} />
+          </div>
+          <span className="font-mono font-bold text-[22px] sm:text-[26px] text-text tabular-nums leading-none">
+            {tempValue}
+            <span className="text-text-tertiary font-normal text-[14px] ml-0.5">°</span>
+          </span>
+        </div>
+
+        {/* Secondary rows */}
+        <div className="flex flex-col gap-1 sm:gap-1.5">
+          {renderRow(t("category.humidity"), humidityBinding, (v) => `${Math.round(v)}`, "%")}
+          {renderRow(t("weather.rain24h"), rainBinding, (v) => v.toFixed(1), "mm")}
+          {renderRow(t("weather.windSpeed"), windBinding, (v) => `${Math.round(v)}`, "km/h")}
         </div>
       </div>
     </WidgetCard>

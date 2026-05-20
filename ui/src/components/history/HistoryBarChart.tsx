@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import type { HistoryPoint } from "../../types";
 import type { TimeRange } from "./history-utils";
+import { formatLabel, pickTickInterval } from "./chart-utils";
 
 interface HistoryBarChartProps {
   points: HistoryPoint[];
@@ -22,20 +23,12 @@ interface HistoryBarChartProps {
 const BAR_COLOR = "#4F7BE8";
 
 interface ChartDatum {
+  /** First line of the X tick label. */
   label: string;
+  /** Optional second line (used for 7d to stack weekday + day). */
+  label2?: string;
   time: string;
   value: number;
-}
-
-function formatLabel(iso: string, range: TimeRange): string {
-  const d = new Date(iso);
-  if (range === "6h" || range === "24h") {
-    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-  }
-  if (range === "7d") {
-    return d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" });
-  }
-  return d.toLocaleDateString("fr-FR", { month: "short", day: "numeric" });
 }
 
 function formatTooltipTime(iso: string): string {
@@ -84,13 +77,75 @@ function formatYAxis(value: number, unit?: string): string {
   return "0";
 }
 
+/** Track the current viewport width so the chart can adapt tick density. */
+function useViewportWidth(): number {
+  const [width, setWidth] = useState(() =>
+    typeof window === "undefined" ? 1024 : window.innerWidth,
+  );
+  useEffect(() => {
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return width;
+}
+
+interface RechartsTick {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+}
+
+interface CustomTickProps extends RechartsTick {
+  fontSize: number;
+  multiline: Map<string, string>;
+}
+
+/** Renders the X-axis tick on one or two lines depending on the range. */
+function CustomTick({ x = 0, y = 0, payload, fontSize, multiline }: CustomTickProps) {
+  const line1 = payload?.value ?? "";
+  const line2 = multiline.get(line1);
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dy={12}
+        textAnchor="middle"
+        fill="var(--color-text-tertiary)"
+        fontSize={fontSize}
+      >
+        {line1}
+      </text>
+      {line2 !== undefined && (
+        <text
+          x={0}
+          y={0}
+          dy={12 + fontSize + 1}
+          textAnchor="middle"
+          fill="var(--color-text-secondary)"
+          fontSize={fontSize}
+          fontWeight={600}
+        >
+          {line2}
+        </text>
+      )}
+    </g>
+  );
+}
+
 export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBarChartProps) {
-  const data = useMemo<ChartDatum[]>(() => {
-    return points.map((p) => ({
-      label: formatLabel(p.time, range),
-      time: p.time,
-      value: p.value,
-    }));
+  const viewportWidth = useViewportWidth();
+  const isNarrow = viewportWidth < 360;
+
+  const { data, multiline } = useMemo(() => {
+    const map = new Map<string, string>();
+    const arr: ChartDatum[] = points.map((p) => {
+      const { line1, line2 } = formatLabel(p.time, range);
+      if (line2 !== undefined) map.set(line1, line2);
+      return { label: line1, label2: line2, time: p.time, value: p.value };
+    });
+    return { data: arr, multiline: map };
   }, [points, range]);
 
   if (data.length === 0) {
@@ -101,8 +156,11 @@ export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBa
     );
   }
 
-  // Determine tick interval to avoid label overlap
-  const tickInterval = data.length > 15 ? Math.max(1, Math.floor(data.length / 12)) - 1 : 0;
+  const tickInterval = pickTickInterval(data.length, viewportWidth);
+  const tickFontSize = isNarrow ? 9 : 10;
+  const has2LineLabels = multiline.size > 0;
+  const xAxisHeight = has2LineLabels ? 36 : 20;
+  const chartHeight = has2LineLabels ? height + 16 : height;
 
   // Tooltip label adapts to unit
   const tooltipLabel = unit === "Wh" || unit === "kWh"
@@ -112,22 +170,29 @@ export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBa
       : "Valeur";
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width="100%" height={chartHeight}>
       <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" vertical={false} />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 10, fill: "var(--color-text-tertiary)" }}
           interval={tickInterval}
           tickLine={false}
           axisLine={{ stroke: "var(--color-border)" }}
+          height={xAxisHeight}
+          tick={(tickProps: unknown) => (
+            <CustomTick
+              {...(tickProps as RechartsTick)}
+              fontSize={tickFontSize}
+              multiline={multiline}
+            />
+          )}
         />
         <YAxis
-          tick={{ fontSize: 10, fill: "var(--color-text-tertiary)" }}
+          tick={{ fontSize: tickFontSize, fill: "var(--color-text-tertiary)" }}
           tickLine={false}
           axisLine={false}
           tickFormatter={(v: number) => formatYAxis(v, unit)}
-          width={50}
+          width={isNarrow ? 36 : 50}
         />
         <Tooltip
           cursor={false}
