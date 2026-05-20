@@ -348,7 +348,11 @@ export function EquipmentDetailPage() {
       {equipment.type === "weather_forecast" ? (
         <WeatherForecastPanel bindings={equipment.dataBindings} />
       ) : equipment.type === "weather" ? (
-        <WeatherPanel bindings={equipment.dataBindings} />
+        <WeatherPanel
+          bindings={equipment.dataBindings}
+          equipmentId={equipment.id}
+          computedData={equipment.computedData}
+        />
       ) : isSensor ? (
         <SensorDataPanel bindings={equipment.dataBindings} equipmentId={equipment.id} />
       ) : null}
