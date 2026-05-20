@@ -14,9 +14,7 @@ import {
   Snowflake,
   WashingMachine,
   Timer,
-  CloudRain,
   Droplets,
-  Wind,
 } from "lucide-react";
 import type { EquipmentWithDetails } from "../../types";
 import type { DashboardWidget } from "../../types";
@@ -48,9 +46,11 @@ interface EquipmentWidgetProps {
   widget: DashboardWidget;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (equipmentId: string, alias: string, value: unknown) => Promise<void>;
+  /** Click handler that opens the desktop detail drawer. Currently consumed only by the weather widget. */
+  onOpenDetail?: () => void;
 }
 
-export function EquipmentWidget({ widget, equipment, onExecuteOrder }: EquipmentWidgetProps) {
+export function EquipmentWidget({ widget, equipment, onExecuteOrder, onOpenDetail }: EquipmentWidgetProps) {
   const {
     isLight,
     isShutter,
@@ -77,7 +77,7 @@ export function EquipmentWidget({ widget, equipment, onExecuteOrder }: Equipment
   if (isHeater) return <HeaterEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} />;
   if (isEnergyMeter) return <EnergyMeterEquipmentWidget label={label} equipment={equipment} />;
   if (isWeatherForecast) return <WeatherForecastWidget label={label} equipment={equipment} />;
-  if (equipment.type === "weather") return <WeatherStationWidget label={label} equipment={equipment} />;
+  if (equipment.type === "weather") return <WeatherStationWidget label={label} equipment={equipment} onOpenDetail={onOpenDetail} />;
   if (isAppliance) return <ApplianceEquipmentWidget label={label} equipment={equipment} />;
   if (isWaterValve) return <WaterValveEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} />;
   if (isPoolPump) return <PoolPumpEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} />;
@@ -657,47 +657,36 @@ function SensorEquipmentWidget({
 function WeatherStationWidget({
   label,
   equipment,
+  onOpenDetail,
 }: {
   label: string;
   equipment: EquipmentWithDetails;
+  onOpenDetail?: () => void;
 }) {
   const { t } = useTranslation();
 
   const find = (key: string) => equipment.dataBindings.find((b) => b.key === key);
   const tempBinding = find("temperature");
   const humidityBinding = find("humidity");
-  const rainBinding = find("sum_rain_24");
-  const windBinding = find("wind_strength");
 
   const tempValue =
     tempBinding && typeof tempBinding.value === "number"
       ? tempBinding.value.toFixed(1)
       : "—";
+  const humidityValue =
+    humidityBinding && typeof humidityBinding.value === "number"
+      ? `${Math.round(humidityBinding.value)}`
+      : "—";
 
-  const renderRow = (
-    iconNode: React.ReactNode,
-    labelText: string,
-    binding: typeof tempBinding,
-    formatter: (v: number) => string,
-    unit: string,
-  ) => (
-    <div className="flex items-baseline justify-between gap-2 text-[12px]">
-      <span className="flex items-center gap-1.5 text-text-secondary min-w-0">
-        <span className="text-text-tertiary flex-shrink-0">{iconNode}</span>
-        <span className="truncate">{labelText}</span>
-      </span>
-      <span className="font-mono font-semibold text-text tabular-nums flex-shrink-0">
-        {binding && typeof binding.value === "number" ? formatter(binding.value) : "—"}
-        <span className="text-text-tertiary font-normal text-[10px] ml-0.5">{unit}</span>
-      </span>
-    </div>
-  );
+  const clickClass = onOpenDetail
+    ? "cursor-pointer transition-colors hover:bg-primary-light/30"
+    : "";
 
   return (
-    <WidgetCard label={label}>
-      <div className="flex flex-col h-full">
-        {/* Hero — outdoor temperature, centered, fills upper portion */}
-        <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-1">
+    <WidgetCard label={label} onClick={onOpenDetail} className={clickClass}>
+      <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-3">
+        {/* Outdoor temperature */}
+        <div className="flex flex-col items-center gap-1">
           <span className="text-[11px] uppercase tracking-wide text-text-tertiary font-medium">
             {t("weather.outdoor")}
           </span>
@@ -709,29 +698,13 @@ function WeatherStationWidget({
           </div>
         </div>
 
-        {/* Secondary rows pinned at the bottom */}
-        <div className="flex flex-col gap-1.5 border-t border-border-light pt-2 mt-2">
-          {renderRow(
-            <Droplets size={12} strokeWidth={1.5} />,
-            t("category.humidity"),
-            humidityBinding,
-            (v) => `${Math.round(v)}`,
-            "%",
-          )}
-          {renderRow(
-            <CloudRain size={12} strokeWidth={1.5} />,
-            t("weather.rain24h"),
-            rainBinding,
-            (v) => v.toFixed(1),
-            "mm",
-          )}
-          {renderRow(
-            <Wind size={12} strokeWidth={1.5} />,
-            t("weather.windSpeed"),
-            windBinding,
-            (v) => `${Math.round(v)}`,
-            "km/h",
-          )}
+        {/* Humidity */}
+        <div className="flex items-center gap-1.5">
+          <Droplets size={14} strokeWidth={1.5} className="text-text-tertiary" />
+          <span className="font-mono font-semibold text-[16px] sm:text-[18px] text-text tabular-nums">
+            {humidityValue}
+            <span className="text-text-tertiary font-normal text-[12px] ml-0.5">%</span>
+          </span>
         </div>
       </div>
     </WidgetCard>

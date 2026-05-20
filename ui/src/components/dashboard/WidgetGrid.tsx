@@ -368,6 +368,7 @@ function WidgetRenderer({
         widget={widget}
         equipment={equipment}
         onExecuteOrder={onExecuteOrder}
+        onOpenDetail={editMode ? undefined : onOpenDetail}
       />
     );
   }
