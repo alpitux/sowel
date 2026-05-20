@@ -19,7 +19,7 @@ import {
 } from "./WidgetIcons";
 import { CUSTOM_ICON_REGISTRY, shutterLevel } from "./widget-icons";
 import { parseForecastDays, CONDITION_ICONS, CONDITION_COLORS } from "../equipments/weatherForecastUtils";
-import { Cloud, CloudRain, WashingMachine, Tv } from "lucide-react";
+import { Cloud, WashingMachine, Tv } from "lucide-react";
 
 interface MobileWidgetCardProps {
   widget: DashboardWidget;
@@ -180,16 +180,23 @@ function useMobileState(
     const find = (key: string) => equipment.dataBindings.find((b) => b.key === key);
     const temp = find("temperature");
     const hum = find("humidity");
-    const rain = find("sum_rain_24");
-    const lines: string[] = [];
-    if (typeof temp?.value === "number") lines.push(`${temp.value.toFixed(1)}°`);
-    if (typeof hum?.value === "number") lines.push(`${Math.round(hum.value)}%`);
-    if (typeof rain?.value === "number") lines.push(`${rain.value.toFixed(1)}mm`);
+    const tempStr = typeof temp?.value === "number" ? `${temp.value.toFixed(1)}°` : "—";
+    const humStr = typeof hum?.value === "number" ? `${Math.round(hum.value)} %` : "—";
+    // Icon slot is scaled 50% in MobileWidgetCard, so we size the text 2x what we want visible.
     return {
       icon: customEntry
         ? createElement(customEntry.component, customEntry.previewProps)
-        : <CloudRain size={96} strokeWidth={1.2} className="text-primary" />,
-      stateLines: lines,
+        : (
+          <div className="flex flex-col items-center gap-1 leading-none whitespace-nowrap">
+            <span className="text-[18px] uppercase tracking-wide text-text-tertiary font-medium">
+              {t("weather.outdoor")}
+            </span>
+            <span className="font-mono font-bold text-[56px] text-text tabular-nums">
+              {tempStr}
+            </span>
+          </div>
+        ),
+      stateLines: [`${humStr} ${t("category.humidity").toLowerCase()}`],
     };
   }
 
