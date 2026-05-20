@@ -11,6 +11,14 @@ This page summarises every published version, newest first. For the full diff be
 
 ---
 
+## 1.12.x — Weather station UX
+
+### v1.12.0 — 2026-05-20 { #v1-12-0 }
+
+- UI: weather station rework (spec 114). The "Station Météo" widget now renders a clean 1×1 tile on both PC and mobile — outdoor temperature in big mono font + humidity below, nothing else — and a tap (or click on desktop) opens a drawer with the full reading. The drawer also surfaces the Sowel-computed `rain_24h` / `rain_1h` totals, so users whose Netatmo plugin only auto-bound the bare `rain` (mm/h) device-side still see the actual 24 h rainfall. The compact zone row now shows 4 values (temp / humidity / `mm/24h` rain / wind) with the same computed-data fallback. The equipment detail `WeatherPanel` injects the computed values into the rain module card too, and the wind module gained a small directional arrow + compass abbreviation derived from `wind_angle`.
+- UI: history bar chart readability. On 7 d / 30 d ranges, raw hourly samples are now bucketed into daily totals (so a single rainy afternoon shows as one Thursday bar rather than two detached spikes labelled "jeu. 14" twice). Per-range tick cap (7 d → 7 labels, 30 d → 10), two-line X labels on 7 d (weekday + day), compact `DD/MM` on 30 d, responsive font size on mobile widths. Tooltip switches to "Thursday 14 May" on daily buckets.
+- UI: PWA. Added the standard `mobile-web-app-capable` meta alongside the Apple-specific one to silence the Chrome deprecation warning in DevTools.
+
 ## 1.11.x — Plugin soft isolation
 
 ### v1.11.1 — 2026-05-19 { #v1-11-1 }

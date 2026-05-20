@@ -11,6 +11,14 @@ Cette page résume toutes les versions publiées, de la plus récente à la plus
 
 ---
 
+## 1.12.x — UX station météo
+
+### v1.12.0 — 2026-05-20 { #v1-12-0 }
+
+- UI : refonte de la station météo (spec 114). La vignette "Station Météo" affiche désormais une tuile 1×1 épurée sur PC comme sur mobile — température extérieure en gros mono + humidité en dessous, rien d'autre — et un tap (ou clic sur desktop) ouvre un drawer avec le détail complet. Le drawer surface en plus les valeurs calculées par Sowel `rain_24h` / `rain_1h`, donc les utilisateurs dont le plugin Netatmo n'auto-binde que la pluie instantanée (`rain` mm/h) voient quand même le vrai cumul 24 h. La ligne compacte de zone passe à 4 valeurs (temp / humidité / pluie `mm/24h` / vent) avec le même fallback. Le `WeatherPanel` de la page détail injecte aussi les valeurs calculées dans la carte du module pluviomètre, et le module vent reçoit une petite flèche directionnelle + abréviation boussole dérivées de `wind_angle`.
+- UI : lisibilité de l'histogramme historique. En 7 j / 30 j, les échantillons horaires bruts sont désormais agrégés en totaux journaliers (un seul après-midi pluvieux donne une seule barre du jeudi au lieu de deux pics détachés étiquetés deux fois "jeu. 14"). Plafond de ticks par plage (7 j → 7 labels, 30 j → 10), libellés X sur deux lignes en 7 j (jour de la semaine + numéro), format compact `JJ/MM` en 30 j, taille de police adaptative sur largeur mobile. Le tooltip passe à "Jeudi 14 mai" sur les buckets journaliers.
+- UI : PWA. Ajout de la balise standard `mobile-web-app-capable` à côté de la variante Apple pour faire taire l'avertissement de dépréciation de Chrome dans DevTools.
+
 ## 1.11.x — Isolation soft des plugins
 
 ### v1.11.1 — 2026-05-19 { #v1-11-1 }
