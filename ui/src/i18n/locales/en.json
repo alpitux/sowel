@@ -342,8 +342,8 @@
   "weather.gustSpeed": "Gusts",
   "weather.gustDirection": "Gust dir.",
   "weather.rainCurrent": "Current rain",
-  "weather.rain1h": "1h total",
-  "weather.rain24h": "24h total",
+  "weather.rain1h": "Rain 1h",
+  "weather.rain24h": "Rain 24h",
 
   "aggregation.motion": "Motion",
   "aggregation.calm": "Calm",
