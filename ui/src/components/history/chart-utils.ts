@@ -1,4 +1,38 @@
+import type { HistoryPoint } from "../../types";
 import type { TimeRange } from "./history-utils";
+
+/**
+ * Group raw history points into time buckets sized for the range:
+ *   - 6h / 24h → hourly buckets
+ *   - 7d / 30d → daily buckets
+ *
+ * Within each bucket values are summed (the bar chart is used for cumulative
+ * categories — rain and energy — where sum is the meaningful aggregation).
+ * The returned points are anchored at the start of their bucket and sorted
+ * chronologically. If the input is already at the target resolution the call
+ * is idempotent.
+ */
+export function aggregateToBuckets(points: HistoryPoint[], range: TimeRange): HistoryPoint[] {
+  if (points.length === 0) return [];
+
+  const daily = range === "7d" || range === "30d";
+  const buckets = new Map<number, number>();
+
+  for (const p of points) {
+    const d = new Date(p.time);
+    if (daily) {
+      d.setHours(0, 0, 0, 0);
+    } else {
+      d.setMinutes(0, 0, 0);
+    }
+    const key = d.getTime();
+    buckets.set(key, (buckets.get(key) ?? 0) + p.value);
+  }
+
+  return Array.from(buckets.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([t, value]) => ({ time: new Date(t).toISOString(), value }));
+}
 
 /**
  * Build the tick label(s) for a given timestamp at a given range.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatLabel, pickTickInterval } from "./chart-utils";
+import { aggregateToBuckets, formatLabel, pickTickInterval } from "./chart-utils";
 
 describe("pickTickInterval", () => {
   describe("without a range (viewport-only cap)", () => {
@@ -69,6 +69,61 @@ describe("pickTickInterval", () => {
       expect(pickTickInterval(7, 1024, "7d")).toBe(0);
       expect(pickTickInterval(8, 1024, "24h")).toBe(0);
     });
+  });
+});
+
+describe("aggregateToBuckets", () => {
+  it("returns an empty array on empty input", () => {
+    expect(aggregateToBuckets([], "7d")).toEqual([]);
+  });
+
+  it("sums hourly points into daily buckets for 7d range", () => {
+    // Two rainy hours on Thursday + zero hours on other days
+    const points = [
+      { time: "2026-05-14T10:00:00.000Z", value: 0.2 },
+      { time: "2026-05-14T13:00:00.000Z", value: 0.2 },
+      { time: "2026-05-15T08:00:00.000Z", value: 0 },
+    ];
+    const out = aggregateToBuckets(points, "7d");
+    expect(out).toHaveLength(2);
+    expect(out[0].value).toBeCloseTo(0.4, 5);
+    expect(out[1].value).toBe(0);
+  });
+
+  it("uses hourly buckets for 24h range", () => {
+    const points = [
+      { time: "2026-05-14T10:15:00.000Z", value: 1 },
+      { time: "2026-05-14T10:45:00.000Z", value: 2 },
+      { time: "2026-05-14T11:05:00.000Z", value: 3 },
+    ];
+    const out = aggregateToBuckets(points, "24h");
+    expect(out).toHaveLength(2);
+    expect(out[0].value).toBe(3);
+    expect(out[1].value).toBe(3);
+  });
+
+  it("returns chronologically sorted buckets", () => {
+    const points = [
+      { time: "2026-05-16T10:00:00.000Z", value: 1 },
+      { time: "2026-05-14T10:00:00.000Z", value: 1 },
+      { time: "2026-05-15T10:00:00.000Z", value: 1 },
+    ];
+    const out = aggregateToBuckets(points, "7d");
+    const times = out.map((p) => p.time);
+    expect(times).toEqual([...times].sort());
+  });
+
+  it("is idempotent — re-bucketing the output yields the same buckets", () => {
+    // We build the input around noon UTC to avoid TZ edge cases (a 00:00 UTC
+    // input would already cross the local midnight boundary in CET/CEST).
+    const points = [
+      { time: "2026-05-14T12:00:00.000Z", value: 3 },
+      { time: "2026-05-14T15:00:00.000Z", value: 2 },
+      { time: "2026-05-15T12:00:00.000Z", value: 10 },
+    ];
+    const once = aggregateToBuckets(points, "7d");
+    const twice = aggregateToBuckets(once, "7d");
+    expect(twice).toEqual(once);
   });
 });
 
