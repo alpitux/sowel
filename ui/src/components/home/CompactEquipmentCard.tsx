@@ -115,10 +115,13 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
               equipment.type === "weather"
                 ? sensorBindings
                     .filter((b) =>
-                      b.key === "temperature" || b.key === "sum_rain_24" || b.key === "wind_strength"
+                      b.key === "temperature" ||
+                      b.key === "humidity" ||
+                      b.key === "sum_rain_24" ||
+                      b.key === "wind_strength"
                     )
                     .map((b) =>
-                      b.key === "sum_rain_24" ? { ...b, unit: "mm/24h" } : b
+                      b.key === "sum_rain_24" ? { ...b, unit: "mm" } : b
                     )
                 : sensorBindings
             }
