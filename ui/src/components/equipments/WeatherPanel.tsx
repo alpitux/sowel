@@ -1,12 +1,21 @@
 import { useTranslation } from "react-i18next";
 import { Wind, CloudRain, Thermometer } from "lucide-react";
-import type { DataBindingWithValue } from "../../types";
+import type { ComputedDataEntry, DataBindingWithValue } from "../../types";
 import { getBatteryIcon, getBatteryColor, formatSensorValue } from "./sensorUtils";
-import { angleToCompass } from "./weather-utils";
+import { angleToCompass, syntheticBindingFromComputed } from "./weather-utils";
 
 interface WeatherPanelProps {
   bindings: DataBindingWithValue[];
+  equipmentId: string;
+  /** Sowel-computed values (e.g. rain_24h, rain_1h) — surfaced when the matching `sum_rain_*` binding is missing. */
+  computedData?: ComputedDataEntry[];
 }
+
+/** Map from a computed alias to the binding key we want it to mimic. */
+const COMPUTED_RAIN_TO_KEY: Record<string, string> = {
+  rain_24h: "sum_rain_24",
+  rain_1h: "sum_rain_1",
+};
 
 /** i18n key for each weather-specific property key. */
 const KEY_LABELS: Record<string, string> = {
@@ -97,7 +106,7 @@ function getKindColor(kind: DeviceKind): string {
 /** Sort order for device kinds so they always appear in a consistent order. */
 const KIND_SORT: Record<DeviceKind, number> = { outdoor: 0, wind: 1, rain: 2 };
 
-export function WeatherPanel({ bindings }: WeatherPanelProps) {
+export function WeatherPanel({ bindings, equipmentId, computedData }: WeatherPanelProps) {
   // Group bindings by device
   const byDevice = new Map<string, { deviceName: string; bindings: DataBindingWithValue[] }>();
   for (const b of bindings) {
@@ -107,6 +116,36 @@ export function WeatherPanel({ bindings }: WeatherPanelProps) {
       byDevice.set(b.deviceId, group);
     }
     group.bindings.push(b);
+  }
+
+  // Inject synthetic rain bindings (from computedData) into the rain device group
+  // if the matching sum_rain_* binding isn't already attached. Attaches to an
+  // existing rain-category device when present, otherwise creates a synthetic
+  // "Pluviomètre" group.
+  if (computedData && computedData.length > 0) {
+    const rainHostBinding = bindings.find((b) => b.category === "rain");
+    const rainDeviceId = rainHostBinding?.deviceId ?? "computed-rain";
+    const rainDeviceName = rainHostBinding?.deviceName ?? "Pluviomètre";
+    const existingKeys = new Set(
+      (byDevice.get(rainDeviceId)?.bindings ?? []).map((b) => b.key),
+    );
+
+    for (const c of computedData) {
+      const targetKey = COMPUTED_RAIN_TO_KEY[c.alias];
+      if (!targetKey || existingKeys.has(targetKey)) continue;
+      const synthetic = syntheticBindingFromComputed(equipmentId, c, {
+        key: targetKey,
+        deviceId: rainDeviceId,
+        deviceName: rainDeviceName,
+      });
+      let group = byDevice.get(rainDeviceId);
+      if (!group) {
+        group = { deviceName: rainDeviceName, bindings: [] };
+        byDevice.set(rainDeviceId, group);
+      }
+      group.bindings.push(synthetic);
+      existingKeys.add(targetKey);
+    }
   }
 
   const devices = [...byDevice.values()].map((g) => {

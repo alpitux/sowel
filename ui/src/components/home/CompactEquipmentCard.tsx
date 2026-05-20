@@ -12,6 +12,8 @@ import { WaterValveControl } from "../equipments/WaterValveControl";
 import { PoolHeatPumpControl } from "../equipments/PoolHeatPumpControl";
 import { Cloud, Timer } from "lucide-react";
 import { parseForecastDays, CONDITION_ICONS, CONDITION_COLORS } from "../equipments/weatherForecastUtils";
+import { syntheticBindingFromComputed } from "../equipments/weather-utils";
+import type { DataBindingWithValue } from "../../types";
 
 interface CompactEquipmentCardProps {
   equipment: EquipmentWithDetails;
@@ -113,16 +115,7 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
           <SensorValues
             sensorBindings={
               equipment.type === "weather"
-                ? sensorBindings
-                    .filter((b) =>
-                      b.key === "temperature" ||
-                      b.key === "humidity" ||
-                      b.key === "sum_rain_24" ||
-                      b.key === "wind_strength"
-                    )
-                    .map((b) =>
-                      b.key === "sum_rain_24" ? { ...b, unit: "mm" } : b
-                    )
+                ? buildWeatherCompactBindings(equipment, sensorBindings)
                 : sensorBindings
             }
             batteryBindings={equipment.type === "weather" ? [] : batteryBindings}
@@ -253,6 +246,36 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
       )}
     </div>
   );
+}
+
+/**
+ * Build the 4-value summary shown on a weather equipment row in the zone view:
+ * temperature, humidity, 24h rain, wind strength — in that exact order.
+ *
+ * Falls back to `computedData.rain_24h` when the cumulative `sum_rain_24`
+ * binding isn't attached (typical of the Netatmo plugin which auto-binds only
+ * the bare `rain` device-side).
+ */
+function buildWeatherCompactBindings(
+  equipment: EquipmentWithDetails,
+  sensorBindings: DataBindingWithValue[],
+): DataBindingWithValue[] {
+  const byKey = (key: string) => sensorBindings.find((b) => b.key === key);
+  const temp = byKey("temperature");
+  const hum = byKey("humidity");
+  const wind = byKey("wind_strength");
+
+  // Annotate the rain row with "mm/24h" so the zone-row reading is unambiguous
+  // (otherwise a bare "0 mm" looks like an instantaneous reading).
+  const rainBindingFromData = byKey("sum_rain_24");
+  const rainComputed = equipment.computedData?.find((c) => c.alias === "rain_24h");
+  const rainBase = rainBindingFromData
+    ?? (rainComputed
+      ? syntheticBindingFromComputed(equipment.id, rainComputed, { key: "sum_rain_24" })
+      : undefined);
+  const rain = rainBase ? { ...rainBase, unit: "mm/24h" } : null;
+
+  return [temp, hum, rain, wind].filter((b): b is DataBindingWithValue => !!b);
 }
 
 function CompactForecast({ equipment }: { equipment: EquipmentWithDetails }) {
