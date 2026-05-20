@@ -696,16 +696,16 @@ function WeatherStationWidget({
   return (
     <WidgetCard label={label}>
       <div className="flex flex-col h-full">
-        {/* Hero — icon + temperature, centered, fills upper portion */}
-        <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-2">
-          <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-primary-light text-primary">
-            <CloudRain size={24} strokeWidth={1.5} />
-          </div>
-          <div className="flex items-start leading-none">
+        {/* Hero — outdoor temperature, centered, fills upper portion */}
+        <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-1">
+          <span className="text-[11px] uppercase tracking-wide text-text-tertiary font-medium">
+            {t("weather.outdoor")}
+          </span>
+          <div className="flex items-baseline leading-none">
             <span className="font-mono font-bold text-[34px] sm:text-[40px] text-text tabular-nums leading-none">
               {tempValue}
             </span>
-            <span className="text-text-tertiary font-medium text-[20px] sm:text-[24px] leading-none ml-0.5">°</span>
+            <span className="text-text-tertiary font-medium text-[16px] sm:text-[18px] leading-none ml-1">°C</span>
           </div>
         </div>
 

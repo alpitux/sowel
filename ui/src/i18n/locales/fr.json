@@ -336,6 +336,7 @@
   "category.value.smoke.alert": "Alerte !",
   "category.value.smoke.ok": "OK",
 
+  "weather.outdoor": "Extérieur",
   "weather.windSpeed": "Vitesse",
   "weather.windDirection": "Direction",
   "weather.gustSpeed": "Rafales",
