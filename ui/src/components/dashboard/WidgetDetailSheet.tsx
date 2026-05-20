@@ -14,6 +14,7 @@ import {
   Snowflake,
   Lightbulb,
   LightbulbOff,
+  CloudRain,
 } from "lucide-react";
 import type { DashboardWidget, EquipmentWithDetails, ZoneWithChildren } from "../../types";
 import { executeZoneOrder } from "../../api";
@@ -21,6 +22,7 @@ import { useEquipmentState } from "../equipments/useEquipmentState";
 import { findOrderByCategory } from "../equipments/bindingUtils";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
 import { SensorValues } from "../equipments/SensorValues";
+import { formatSensorValue } from "../equipments/sensorUtils";
 import {
   LightBulbIcon,
   ShutterWidgetIcon,
@@ -104,6 +106,16 @@ export function EquipmentDetailSheet({ widget, equipment, onExecuteOrder, onClos
     );
   }
 
+  if (equipment.type === "weather") {
+    return (
+      <BottomSheet open onClose={onClose} title={label}
+        icon={customEntry ? <div className="scale-[0.35]">{createElement(customEntry.component, customEntry.previewProps)}</div> : undefined}
+      >
+        <WeatherDetailContent equipment={equipment} />
+      </BottomSheet>
+    );
+  }
+
   if (isSensor) {
     return (
       <BottomSheet open onClose={onClose} title={label}
@@ -115,6 +127,93 @@ export function EquipmentDetailSheet({ widget, equipment, onExecuteOrder, onClos
   }
 
   return null;
+}
+
+// ============================================================
+// Weather station detail (mobile bottom sheet)
+// ============================================================
+
+/** i18n key for each weather-specific binding key (mirrors WeatherPanel.KEY_LABELS). */
+const WEATHER_KEY_LABELS: Record<string, string> = {
+  temperature: "category.temperature",
+  humidity: "category.humidity",
+  pressure: "category.pressure",
+  wind_strength: "weather.windSpeed",
+  wind_angle: "weather.windDirection",
+  gust_strength: "weather.gustSpeed",
+  gust_angle: "weather.gustDirection",
+  rain: "weather.rainCurrent",
+  sum_rain_1: "weather.rain1h",
+  sum_rain_24: "weather.rain24h",
+  noise: "category.noise",
+  co2: "category.co2",
+};
+
+/** Display order for the weather binding list (most useful values first). */
+const WEATHER_KEY_ORDER = [
+  "temperature",
+  "humidity",
+  "sum_rain_24",
+  "sum_rain_1",
+  "rain",
+  "wind_strength",
+  "gust_strength",
+  "wind_angle",
+  "gust_angle",
+  "pressure",
+  "co2",
+  "noise",
+];
+
+function WeatherDetailContent({ equipment }: { equipment: EquipmentWithDetails }) {
+  const { t } = useTranslation();
+  const { sensorBindings, batteryBindings } = useEquipmentState(equipment);
+
+  // Sort bindings by the weather order; unknown keys go last in alphabetical order.
+  const sorted = [...sensorBindings].sort((a, b) => {
+    const ia = WEATHER_KEY_ORDER.indexOf(a.key);
+    const ib = WEATHER_KEY_ORDER.indexOf(b.key);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    return a.key.localeCompare(b.key);
+  });
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-center">
+        <div className="w-12 h-12 rounded-[10px] flex items-center justify-center bg-primary-light text-primary">
+          <CloudRain size={28} strokeWidth={1.5} />
+        </div>
+      </div>
+      <div className="divide-y divide-border-light">
+        {sorted.map((b) => (
+          <div key={b.id} className="flex items-baseline justify-between py-2">
+            <span className="text-[13px] text-text-secondary">
+              {WEATHER_KEY_LABELS[b.key] ? t(WEATHER_KEY_LABELS[b.key]) : b.key}
+            </span>
+            <span className="text-[14px] font-mono font-semibold text-text tabular-nums">
+              {formatSensorValue(b.value, undefined, t)}
+              {b.unit && (
+                <span className="text-text-tertiary font-normal text-[12px] ml-1">{b.unit}</span>
+              )}
+            </span>
+          </div>
+        ))}
+        {batteryBindings.map((b) => (
+          <div key={b.id} className="flex items-baseline justify-between py-2">
+            <span className="text-[13px] text-text-secondary">
+              {b.deviceName} · {t("sensors.battery")}
+            </span>
+            <span className="text-[14px] font-mono font-semibold text-text tabular-nums">
+              {formatSensorValue(b.value, undefined, t)}
+              <span className="text-text-tertiary font-normal text-[12px] ml-1">%</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ============================================================

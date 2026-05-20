@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Wind, CloudRain, Thermometer } from "lucide-react";
 import type { DataBindingWithValue } from "../../types";
 import { getBatteryIcon, getBatteryColor, formatSensorValue } from "./sensorUtils";
+import { angleToCompass } from "./weather-utils";
 
 interface WeatherPanelProps {
   bindings: DataBindingWithValue[];
@@ -33,8 +34,34 @@ const PRIMARY_KEY: Record<string, string> = {
 /** Display order for keys within each device type. */
 const KEY_ORDER: Record<string, string[]> = {
   wind: ["wind_strength", "wind_angle", "gust_strength", "gust_angle"],
-  rain: ["rain", "sum_rain_1", "sum_rain_24"],
+  rain: ["sum_rain_24", "sum_rain_1", "rain"],
 };
+
+/**
+ * Arrow pointing in the direction the wind is going (= angle + 180°).
+ * `angle` is the meteorological "from" angle (0° = from North).
+ * Returns null when the angle isn't a finite number.
+ */
+function WindArrow({ angle, size = 18 }: { angle: number | null; size?: number }) {
+  if (angle === null || !Number.isFinite(angle)) return null;
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ transform: `rotate(${angle}deg)`, transformOrigin: "center" }}
+      aria-hidden="true"
+    >
+      <line x1="12" y1="19" x2="12" y2="5" />
+      <polyline points="6 11 12 5 18 11" />
+    </svg>
+  );
+}
 
 type DeviceKind = "wind" | "rain" | "outdoor";
 
@@ -128,10 +155,22 @@ function WeatherDeviceCard({
   const primaryKey = PRIMARY_KEY[kind] ?? PRIMARY_KEY.default;
   const primaryBinding = sensorBindings.find((b) => b.key === primaryKey);
 
-  // Sort remaining bindings by defined order, primary excluded
+  // For the wind module, surface direction next to the hero (arrow + compass label).
+  const windAngleBinding =
+    kind === "wind"
+      ? sensorBindings.find((b) => b.key === "wind_angle")
+      : undefined;
+  const windAngle =
+    windAngleBinding && typeof windAngleBinding.value === "number"
+      ? windAngleBinding.value
+      : null;
+
+  // Sort remaining bindings by defined order, primary excluded.
+  // wind_angle is folded into the hero (arrow + compass) so we drop it from the secondary list.
   const order = KEY_ORDER[kind];
   const secondaryBindings = sensorBindings
     .filter((b) => b !== primaryBinding)
+    .filter((b) => !(kind === "wind" && b.key === "wind_angle"))
     .sort((a, b) => {
       if (!order) return 0;
       const ia = order.indexOf(a.key);
@@ -168,18 +207,28 @@ function WeatherDeviceCard({
       {/* Hero value */}
       {primaryBinding && (
         <div className="text-center mb-4">
-          <span className="text-[32px] font-bold font-mono text-text leading-none tabular-nums">
-            {formatSensorValue(primaryBinding.value, undefined, t)}
-          </span>
-          {primaryBinding.unit && (
-            <span className="text-[16px] text-text-tertiary ml-1">
-              {primaryBinding.unit}
+          <div className="inline-flex items-center gap-2">
+            <span className="text-[32px] font-bold font-mono text-text leading-none tabular-nums">
+              {formatSensorValue(primaryBinding.value, undefined, t)}
             </span>
-          )}
+            {primaryBinding.unit && (
+              <span className="text-[16px] text-text-tertiary">
+                {primaryBinding.unit}
+              </span>
+            )}
+            {kind === "wind" && windAngle !== null && (
+              <span className="text-primary inline-flex items-center">
+                <WindArrow angle={windAngle} size={20} />
+              </span>
+            )}
+          </div>
           <div className="text-[12px] text-text-tertiary mt-1">
             {KEY_LABELS[primaryBinding.key]
               ? t(KEY_LABELS[primaryBinding.key])
               : primaryBinding.key}
+            {kind === "wind" && windAngle !== null && (
+              <> · {angleToCompass(windAngle)}</>
+            )}
           </div>
         </div>
       )}

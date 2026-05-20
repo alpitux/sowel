@@ -19,7 +19,7 @@ import {
 } from "./WidgetIcons";
 import { CUSTOM_ICON_REGISTRY, shutterLevel } from "./widget-icons";
 import { parseForecastDays, CONDITION_ICONS, CONDITION_COLORS } from "../equipments/weatherForecastUtils";
-import { Cloud, WashingMachine, Tv } from "lucide-react";
+import { Cloud, CloudRain, WashingMachine, Tv } from "lucide-react";
 
 interface MobileWidgetCardProps {
   widget: DashboardWidget;
@@ -173,6 +173,23 @@ function useMobileState(
         ? createElement(customEntry.component, customEntry.previewProps)
         : <HeaterWidgetIcon comfort={isComfort} />,
       stateLines: [isComfort ? t("controls.heater.comfort") : t("controls.heater.eco")],
+    };
+  }
+
+  if (equipment.type === "weather") {
+    const find = (key: string) => equipment.dataBindings.find((b) => b.key === key);
+    const temp = find("temperature");
+    const hum = find("humidity");
+    const rain = find("sum_rain_24");
+    const lines: string[] = [];
+    if (typeof temp?.value === "number") lines.push(`${temp.value.toFixed(1)}°`);
+    if (typeof hum?.value === "number") lines.push(`${Math.round(hum.value)}%`);
+    if (typeof rain?.value === "number") lines.push(`${rain.value.toFixed(1)}mm`);
+    return {
+      icon: customEntry
+        ? createElement(customEntry.component, customEntry.previewProps)
+        : <CloudRain size={96} strokeWidth={1.2} className="text-primary" />,
+      stateLines: lines,
     };
   }
 
