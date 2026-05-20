@@ -145,6 +145,9 @@ const WEATHER_KEY_LABELS: Record<string, string> = {
   rain: "weather.rainCurrent",
   sum_rain_1: "weather.rain1h",
   sum_rain_24: "weather.rain24h",
+  // Sowel-computed cumulative rain (alias differs from the Netatmo native bindings).
+  rain_1h: "weather.rain1h",
+  rain_24h: "weather.rain24h",
   noise: "category.noise",
   co2: "category.co2",
 };
@@ -153,6 +156,8 @@ const WEATHER_KEY_LABELS: Record<string, string> = {
 const WEATHER_KEY_ORDER = [
   "temperature",
   "humidity",
+  "rain_24h",
+  "rain_1h",
   "sum_rain_24",
   "sum_rain_1",
   "wind_strength",
@@ -171,22 +176,50 @@ const WEATHER_KEY_ORDER = [
  */
 const WEATHER_KEY_HIDDEN = new Set(["rain"]);
 
+/** Computed-data aliases surfaced on weather equipments (in addition to dataBindings). */
+const WEATHER_COMPUTED_ALIASES = ["rain_24h", "rain_1h"];
+
+interface WeatherRow {
+  id: string;
+  key: string;
+  value: unknown;
+  unit?: string;
+}
+
 function WeatherDetailContent({ equipment }: { equipment: EquipmentWithDetails }) {
   const { t } = useTranslation();
   const { sensorBindings, batteryBindings } = useEquipmentState(equipment);
 
-  // Filter out bindings explicitly hidden on mobile, then sort by weather order
-  // (unknown keys go last in alphabetical order).
-  const sorted = sensorBindings
-    .filter((b) => !WEATHER_KEY_HIDDEN.has(b.key))
-    .sort((a, b) => {
-      const ia = WEATHER_KEY_ORDER.indexOf(a.key);
-      const ib = WEATHER_KEY_ORDER.indexOf(b.key);
-      if (ia !== -1 && ib !== -1) return ia - ib;
-      if (ia !== -1) return -1;
-      if (ib !== -1) return 1;
-      return a.key.localeCompare(b.key);
-    });
+  // Merge dataBindings (filtered to hide instantaneous `rain`) with selected
+  // computedData entries (rain_24h, rain_1h) so the drawer surfaces the rain
+  // cumulative values even when only the bare `rain` binding is attached.
+  const rows: WeatherRow[] = [
+    ...sensorBindings
+      .filter((b) => !WEATHER_KEY_HIDDEN.has(b.key))
+      .map((b): WeatherRow => ({
+        id: `b-${b.id}`,
+        key: b.key,
+        value: b.value,
+        unit: b.unit ?? undefined,
+      })),
+    ...(equipment.computedData ?? [])
+      .filter((c) => WEATHER_COMPUTED_ALIASES.includes(c.alias))
+      .map((c): WeatherRow => ({
+        id: `c-${c.alias}`,
+        key: c.alias,
+        value: c.value,
+        unit: c.unit,
+      })),
+  ];
+
+  rows.sort((a, b) => {
+    const ia = WEATHER_KEY_ORDER.indexOf(a.key);
+    const ib = WEATHER_KEY_ORDER.indexOf(b.key);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    return a.key.localeCompare(b.key);
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -196,15 +229,15 @@ function WeatherDetailContent({ equipment }: { equipment: EquipmentWithDetails }
         </div>
       </div>
       <div className="divide-y divide-border-light">
-        {sorted.map((b) => (
-          <div key={b.id} className="flex items-baseline justify-between py-2">
+        {rows.map((r) => (
+          <div key={r.id} className="flex items-baseline justify-between py-2">
             <span className="text-[13px] text-text-secondary">
-              {WEATHER_KEY_LABELS[b.key] ? t(WEATHER_KEY_LABELS[b.key]) : b.key}
+              {WEATHER_KEY_LABELS[r.key] ? t(WEATHER_KEY_LABELS[r.key]) : r.key}
             </span>
             <span className="text-[14px] font-mono font-semibold text-text tabular-nums">
-              {formatSensorValue(b.value, undefined, t)}
-              {b.unit && (
-                <span className="text-text-tertiary font-normal text-[12px] ml-1">{b.unit}</span>
+              {formatSensorValue(r.value, undefined, t)}
+              {r.unit && (
+                <span className="text-text-tertiary font-normal text-[12px] ml-1">{r.unit}</span>
               )}
             </span>
           </div>
