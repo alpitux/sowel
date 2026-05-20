@@ -29,6 +29,10 @@ export default defineConfig({
       workbox: {
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//],
+        // Default precache cap is 2 MiB; the main bundle crossed that with the
+        // spec 114 rework + Recharts, so the build failed in CI. Raise the cap
+        // to 5 MiB until we split the bundle (manualChunks) in a follow-up.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^\/api\//,

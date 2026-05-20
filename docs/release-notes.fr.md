@@ -13,6 +13,10 @@ Cette page résume toutes les versions publiées, de la plus récente à la plus
 
 ## 1.12.x — UX station météo
 
+### v1.12.1 — 2026-05-20 { #v1-12-1 }
+
+- Build : remontée de la limite de pré-cache PWA workbox à 5 MiB. Le bundle UI principal a dépassé les 2 MiB par défaut après la refonte spec 114, ce qui a cassé le build Docker de la v1.12.0. Aucun changement runtime. Un follow-up découpera le bundle via `manualChunks` pour pouvoir redescendre la limite.
+
 ### v1.12.0 — 2026-05-20 { #v1-12-0 }
 
 - UI : refonte de la station météo (spec 114). La vignette "Station Météo" affiche désormais une tuile 1×1 épurée sur PC comme sur mobile — température extérieure en gros mono + humidité en dessous, rien d'autre — et un tap (ou clic sur desktop) ouvre un drawer avec le détail complet. Le drawer surface en plus les valeurs calculées par Sowel `rain_24h` / `rain_1h`, donc les utilisateurs dont le plugin Netatmo n'auto-binde que la pluie instantanée (`rain` mm/h) voient quand même le vrai cumul 24 h. La ligne compacte de zone passe à 4 valeurs (temp / humidité / pluie `mm/24h` / vent) avec le même fallback. Le `WeatherPanel` de la page détail injecte aussi les valeurs calculées dans la carte du module pluviomètre, et le module vent reçoit une petite flèche directionnelle + abréviation boussole dérivées de `wind_angle`.
