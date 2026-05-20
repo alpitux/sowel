@@ -156,7 +156,7 @@ export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBa
     );
   }
 
-  const tickInterval = pickTickInterval(data.length, viewportWidth);
+  const tickInterval = pickTickInterval(data.length, viewportWidth, range);
   const tickFontSize = isNarrow ? 9 : 10;
   const has2LineLabels = multiline.size > 0;
   const xAxisHeight = has2LineLabels ? 36 : 20;

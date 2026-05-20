@@ -24,11 +24,30 @@ export function formatLabel(iso: string, range: TimeRange): { line1: string; lin
 }
 
 /**
- * Compute the Recharts `interval` value (= number of ticks to skip between two visible ticks).
- * Aims for ≤ `maxLabels` visible ticks given the available viewport width.
+ * Range-specific cap on the number of X-axis labels. Picked so the labels read
+ * as "one entry per natural time unit" — 7 labels on 7d, 10 on 30d, etc.
  */
-export function pickTickInterval(count: number, viewportWidth: number): number {
-  const maxLabels = viewportWidth < 360 ? 6 : viewportWidth < 640 ? 8 : 12;
+const RANGE_MAX_LABELS: Record<TimeRange, number> = {
+  "6h": 6,
+  "24h": 8,
+  "7d": 7,
+  "30d": 10,
+};
+
+/**
+ * Compute the Recharts `interval` value (= number of ticks to skip between two visible ticks).
+ *
+ * Aims for ≤ `maxLabels` visible ticks given (a) the time range and (b) the
+ * available viewport width. The smaller of the two caps wins so mobile stays
+ * legible even on short ranges.
+ */
+export function pickTickInterval(count: number, viewportWidth: number, range?: TimeRange): number {
+  const viewportMax = viewportWidth < 360 ? 6 : viewportWidth < 640 ? 8 : 12;
+  const rangeMax = range ? RANGE_MAX_LABELS[range] : viewportMax;
+  const maxLabels = Math.min(rangeMax, viewportMax);
   if (count <= maxLabels) return 0;
-  return Math.max(1, Math.floor(count / maxLabels)) - 1;
+  // Ceil so the visible tick count actually stays ≤ maxLabels.
+  // floor() would underestimate the skip and let too many labels through
+  // (e.g. count=19 / maxLabels=12 → floor 1 → interval 0 → all 19 shown).
+  return Math.ceil(count / maxLabels) - 1;
 }
