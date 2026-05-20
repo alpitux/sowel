@@ -13,6 +13,10 @@ This page summarises every published version, newest first. For the full diff be
 
 ## 1.12.x — Weather station UX
 
+### v1.12.1 — 2026-05-20 { #v1-12-1 }
+
+- Build: raised the PWA workbox precache cap to 5 MiB. The main UI bundle crossed the 2 MiB default after the spec 114 rework, which broke the v1.12.0 Docker build. No runtime change. A follow-up will split the bundle via `manualChunks` so the cap can come back down.
+
 ### v1.12.0 — 2026-05-20 { #v1-12-0 }
 
 - UI: weather station rework (spec 114). The "Station Météo" widget now renders a clean 1×1 tile on both PC and mobile — outdoor temperature in big mono font + humidity below, nothing else — and a tap (or click on desktop) opens a drawer with the full reading. The drawer also surfaces the Sowel-computed `rain_24h` / `rain_1h` totals, so users whose Netatmo plugin only auto-bound the bare `rain` (mm/h) device-side still see the actual 24 h rainfall. The compact zone row now shows 4 values (temp / humidity / `mm/24h` rain / wind) with the same computed-data fallback. The equipment detail `WeatherPanel` injects the computed values into the rain module card too, and the wind module gained a small directional arrow + compass abbreviation derived from `wind_angle`.
