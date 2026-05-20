@@ -1,21 +1,16 @@
 export type TimeRange = "6h" | "24h" | "7d" | "30d";
 
 /**
- * Decide whether a binding should be visualised as a cumulative bar chart.
+ * Decide whether a binding should be visualised as a bar chart.
  *
- * `category` alone is not sufficient for rain: Netatmo exposes three rain
- * bindings sharing the `rain` category but with different semantics:
- *   - `rain` (instant rate, mm/h) → must be a line chart.
- *   - `sum_rain_1` (cumulative over 1 h) → bar.
- *   - `sum_rain_24` (cumulative over 24 h) → bar.
+ * `rain` and `energy` are rendered as bars (cumulative or rate-style values
+ * that read better as discrete buckets); every other category is a line.
  *
- * For the `energy` category all aliases are cumulative (Wh/kWh), so the
- * category check is enough there.
+ * Kept as a helper (rather than a Set) so we can refine the rule per alias
+ * later without changing the call site.
  */
-export function isCumulativeBarChart(category: string, alias: string): boolean {
-  if (category === "energy") return true;
-  if (category === "rain") return /^sum_rain/i.test(alias);
-  return false;
+export function isCumulativeBarChart(category: string): boolean {
+  return category === "rain" || category === "energy";
 }
 
 /** Convert a TimeRange to a relative "from" string for the API. */

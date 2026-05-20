@@ -15,6 +15,8 @@ import {
   WashingMachine,
   Timer,
   CloudRain,
+  Droplets,
+  Wind,
 } from "lucide-react";
 import type { EquipmentWithDetails } from "../../types";
 import type { DashboardWidget } from "../../types";
@@ -673,14 +675,18 @@ function WeatherStationWidget({
       : "—";
 
   const renderRow = (
+    iconNode: React.ReactNode,
     labelText: string,
     binding: typeof tempBinding,
     formatter: (v: number) => string,
     unit: string,
   ) => (
-    <div className="flex items-baseline justify-between text-[12px]">
-      <span className="text-text-secondary">{labelText}</span>
-      <span className="font-mono font-semibold text-text tabular-nums">
+    <div className="flex items-baseline justify-between gap-2 text-[12px]">
+      <span className="flex items-center gap-1.5 text-text-secondary min-w-0">
+        <span className="text-text-tertiary flex-shrink-0">{iconNode}</span>
+        <span className="truncate">{labelText}</span>
+      </span>
+      <span className="font-mono font-semibold text-text tabular-nums flex-shrink-0">
         {binding && typeof binding.value === "number" ? formatter(binding.value) : "—"}
         <span className="text-text-tertiary font-normal text-[10px] ml-0.5">{unit}</span>
       </span>
@@ -690,22 +696,42 @@ function WeatherStationWidget({
   return (
     <WidgetCard label={label}>
       <div className="flex flex-col h-full">
-        {/* Hero — icon + temperature */}
-        <div className="flex items-center gap-2 mb-2 sm:mb-3 mt-1 sm:mt-2">
-          <div className="w-8 h-8 rounded-[8px] flex items-center justify-center bg-primary-light text-primary flex-shrink-0">
-            <CloudRain size={18} strokeWidth={1.5} />
+        {/* Hero — icon + temperature, centered, fills upper portion */}
+        <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-2">
+          <div className="w-11 h-11 rounded-[10px] flex items-center justify-center bg-primary-light text-primary">
+            <CloudRain size={24} strokeWidth={1.5} />
           </div>
-          <span className="font-mono font-bold text-[22px] sm:text-[26px] text-text tabular-nums leading-none">
-            {tempValue}
-            <span className="text-text-tertiary font-normal text-[14px] ml-0.5">°</span>
-          </span>
+          <div className="flex items-start leading-none">
+            <span className="font-mono font-bold text-[34px] sm:text-[40px] text-text tabular-nums leading-none">
+              {tempValue}
+            </span>
+            <span className="text-text-tertiary font-medium text-[20px] sm:text-[24px] leading-none ml-0.5">°</span>
+          </div>
         </div>
 
-        {/* Secondary rows */}
-        <div className="flex flex-col gap-1 sm:gap-1.5">
-          {renderRow(t("category.humidity"), humidityBinding, (v) => `${Math.round(v)}`, "%")}
-          {renderRow(t("weather.rain24h"), rainBinding, (v) => v.toFixed(1), "mm")}
-          {renderRow(t("weather.windSpeed"), windBinding, (v) => `${Math.round(v)}`, "km/h")}
+        {/* Secondary rows pinned at the bottom */}
+        <div className="flex flex-col gap-1.5 border-t border-border-light pt-2 mt-2">
+          {renderRow(
+            <Droplets size={12} strokeWidth={1.5} />,
+            t("category.humidity"),
+            humidityBinding,
+            (v) => `${Math.round(v)}`,
+            "%",
+          )}
+          {renderRow(
+            <CloudRain size={12} strokeWidth={1.5} />,
+            t("weather.rain24h"),
+            rainBinding,
+            (v) => v.toFixed(1),
+            "mm",
+          )}
+          {renderRow(
+            <Wind size={12} strokeWidth={1.5} />,
+            t("weather.windSpeed"),
+            windBinding,
+            (v) => `${Math.round(v)}`,
+            "km/h",
+          )}
         </div>
       </div>
     </WidgetCard>
