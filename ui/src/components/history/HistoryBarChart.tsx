@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import type { HistoryPoint } from "../../types";
 import type { TimeRange } from "./history-utils";
-import { formatLabel, pickTickInterval } from "./chart-utils";
+import { aggregateToBuckets, formatLabel, pickTickInterval } from "./chart-utils";
 
 interface HistoryBarChartProps {
   points: HistoryPoint[];
@@ -31,8 +31,17 @@ interface ChartDatum {
   value: number;
 }
 
-function formatTooltipTime(iso: string): string {
+function formatTooltipTime(iso: string, range: TimeRange): string {
   const d = new Date(iso);
+  if (range === "7d" || range === "30d") {
+    // Daily bucket — show the day in full, no hour.
+    return d.toLocaleDateString(undefined, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    });
+  }
+  // Hourly bucket — show the day + start hour.
   return d.toLocaleString(undefined, {
     month: "short",
     day: "numeric",
@@ -149,7 +158,12 @@ export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBa
   const isNarrow = viewportWidth < 360;
 
   const data = useMemo<ChartDatum[]>(() => {
-    return points.map((p) => {
+    // Re-bucket raw points into uniform time slots (hourly for 6h/24h, daily for
+    // 7d/30d). This collapses sparse hourly samples into 1 bar per day on the
+    // longer ranges — e.g. 2 rainy hours on Thursday show as a single Thursday
+    // bar instead of 2 detached spikes.
+    const bucketed = aggregateToBuckets(points, range);
+    return bucketed.map((p) => {
       const { line1, line2 } = formatLabel(p.time, range);
       return { label: line1, label2: line2, time: p.time, value: p.value };
     });
@@ -227,7 +241,7 @@ export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBa
           formatter={(value: number | undefined) => [formatValueWithUnit(value ?? 0, unit), tooltipLabel]}
           labelFormatter={(_, payload) => {
             if (payload?.[0]?.payload?.time) {
-              return formatTooltipTime(payload[0].payload.time as string);
+              return formatTooltipTime(payload[0].payload.time as string, range);
             }
             return "";
           }}
