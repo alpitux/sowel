@@ -155,7 +155,6 @@ const WEATHER_KEY_ORDER = [
   "humidity",
   "sum_rain_24",
   "sum_rain_1",
-  "rain",
   "wind_strength",
   "gust_strength",
   "wind_angle",
@@ -165,19 +164,29 @@ const WEATHER_KEY_ORDER = [
   "noise",
 ];
 
+/**
+ * Weather binding keys explicitly hidden from the mobile bottom sheet.
+ * The instantaneous rain rate (mm/h) is noise compared to the 24h cumulative,
+ * which is the value people actually act on.
+ */
+const WEATHER_KEY_HIDDEN = new Set(["rain"]);
+
 function WeatherDetailContent({ equipment }: { equipment: EquipmentWithDetails }) {
   const { t } = useTranslation();
   const { sensorBindings, batteryBindings } = useEquipmentState(equipment);
 
-  // Sort bindings by the weather order; unknown keys go last in alphabetical order.
-  const sorted = [...sensorBindings].sort((a, b) => {
-    const ia = WEATHER_KEY_ORDER.indexOf(a.key);
-    const ib = WEATHER_KEY_ORDER.indexOf(b.key);
-    if (ia !== -1 && ib !== -1) return ia - ib;
-    if (ia !== -1) return -1;
-    if (ib !== -1) return 1;
-    return a.key.localeCompare(b.key);
-  });
+  // Filter out bindings explicitly hidden on mobile, then sort by weather order
+  // (unknown keys go last in alphabetical order).
+  const sorted = sensorBindings
+    .filter((b) => !WEATHER_KEY_HIDDEN.has(b.key))
+    .sort((a, b) => {
+      const ia = WEATHER_KEY_ORDER.indexOf(a.key);
+      const ib = WEATHER_KEY_ORDER.indexOf(b.key);
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      if (ia !== -1) return -1;
+      if (ib !== -1) return 1;
+      return a.key.localeCompare(b.key);
+    });
 
   return (
     <div className="flex flex-col gap-4">
