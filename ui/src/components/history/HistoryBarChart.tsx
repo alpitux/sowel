@@ -93,18 +93,28 @@ function useViewportWidth(): number {
 interface RechartsTick {
   x?: number;
   y?: number;
-  payload?: { value: string };
+  index?: number;
+  payload?: { value: string; index?: number };
 }
 
 interface CustomTickProps extends RechartsTick {
   fontSize: number;
-  multiline: Map<string, string>;
+  /** Pre-computed labels keyed by data index — only indices in this map render. */
+  labels: Map<number, { line1: string; line2?: string }>;
 }
 
-/** Renders the X-axis tick on one or two lines depending on the range. */
-function CustomTick({ x = 0, y = 0, payload, fontSize, multiline }: CustomTickProps) {
-  const line1 = payload?.value ?? "";
-  const line2 = multiline.get(line1);
+/**
+ * Renders the X-axis tick on one or two lines if the index is in `labels`.
+ *
+ * Indices missing from the map render an empty <g> — this is how we dedupe
+ * adjacent ticks that would otherwise show the same label twice (e.g. two
+ * "jeu. 14" labels when 7d data clusters several samples on one day).
+ */
+function CustomTick({ x = 0, y = 0, index, payload, fontSize, labels }: CustomTickProps) {
+  const dataIndex = payload?.index ?? index ?? -1;
+  const entry = labels.get(dataIndex);
+  if (!entry) return <g />;
+  const { line1, line2 } = entry;
   return (
     <g transform={`translate(${x},${y})`}>
       <text
@@ -138,14 +148,11 @@ export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBa
   const viewportWidth = useViewportWidth();
   const isNarrow = viewportWidth < 360;
 
-  const { data, multiline } = useMemo(() => {
-    const map = new Map<string, string>();
-    const arr: ChartDatum[] = points.map((p) => {
+  const data = useMemo<ChartDatum[]>(() => {
+    return points.map((p) => {
       const { line1, line2 } = formatLabel(p.time, range);
-      if (line2 !== undefined) map.set(line1, line2);
       return { label: line1, label2: line2, time: p.time, value: p.value };
     });
-    return { data: arr, multiline: map };
   }, [points, range]);
 
   if (data.length === 0) {
@@ -158,9 +165,24 @@ export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBa
 
   const tickInterval = pickTickInterval(data.length, viewportWidth, range);
   const tickFontSize = isNarrow ? 9 : 10;
-  const has2LineLabels = multiline.size > 0;
+  const has2LineLabels = data.some((d) => d.label2 !== undefined);
   const xAxisHeight = has2LineLabels ? 36 : 20;
   const chartHeight = has2LineLabels ? height + 16 : height;
+
+  // Pre-compute the labels Recharts will actually show, and skip those that
+  // would repeat the previous shown label (e.g. two "jeu. 14" in a row when
+  // hourly data clusters around one day).
+  const labels = new Map<number, { line1: string; line2?: string }>();
+  const step = tickInterval + 1;
+  let prevKey = "";
+  for (let i = 0; i < data.length; i += step) {
+    const d = data[i];
+    const key = `${d.label}|${d.label2 ?? ""}`;
+    if (key !== prevKey) {
+      labels.set(i, { line1: d.label, line2: d.label2 });
+      prevKey = key;
+    }
+  }
 
   // Tooltip label adapts to unit
   const tooltipLabel = unit === "Wh" || unit === "kWh"
@@ -183,7 +205,7 @@ export function HistoryBarChart({ points, range, unit, height = 200 }: HistoryBa
             <CustomTick
               {...(tickProps as RechartsTick)}
               fontSize={tickFontSize}
-              multiline={multiline}
+              labels={labels}
             />
           )}
         />

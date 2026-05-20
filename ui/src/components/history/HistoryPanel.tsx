@@ -211,7 +211,7 @@ export function HistoryPanel({ equipmentId, bindings }: HistoryPanelProps) {
                       <div className="flex justify-end mb-2">
                         <TimeRangeSelector value={range} onChange={setRange} />
                       </div>
-                      {isCumulativeBarChart(chart?.category ?? "", entry.alias) ? (
+                      {isCumulativeBarChart(chart?.category ?? "") ? (
                         <HistoryBarChart
                           points={chart?.points ?? []}
                           range={range}
