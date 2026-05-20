@@ -2,37 +2,73 @@ import { describe, it, expect } from "vitest";
 import { formatLabel, pickTickInterval } from "./chart-utils";
 
 describe("pickTickInterval", () => {
-  it("returns 0 when count fits the desktop budget (≤12)", () => {
-    expect(pickTickInterval(7, 1024)).toBe(0);
-    expect(pickTickInterval(12, 1024)).toBe(0);
+  describe("without a range (viewport-only cap)", () => {
+    it("returns 0 when count fits the desktop budget (≤12)", () => {
+      expect(pickTickInterval(7, 1024)).toBe(0);
+      expect(pickTickInterval(12, 1024)).toBe(0);
+    });
+
+    it("returns 0 when count fits the small-mobile budget (≤6 at <360px)", () => {
+      expect(pickTickInterval(6, 320)).toBe(0);
+    });
+
+    it("returns 0 when count fits the medium-mobile budget (≤8 at <640px)", () => {
+      expect(pickTickInterval(8, 400)).toBe(0);
+    });
+
+    it("uses ceil() so visible count actually stays ≤ maxLabels (regression: floor leaks ticks)", () => {
+      // 19 points / 12 maxLabels — floor would give 0 (all ticks shown).
+      // ceil(19/12)=2 → interval 1 → ~10 visible. Bug seen in spec 114 v1.
+      expect(pickTickInterval(19, 1024)).toBe(1);
+    });
+
+    it("skips ticks on desktop when count exceeds 12", () => {
+      // ceil(30/12)=3 → interval 2 (=> 1 visible / 3 → ~10 shown)
+      expect(pickTickInterval(30, 1024)).toBe(2);
+    });
+
+    it("skips more aggressively on small mobile", () => {
+      // ceil(30/6)=5 → interval 4 (=> 1 visible / 5 → 6 shown)
+      expect(pickTickInterval(30, 340)).toBe(4);
+    });
+
+    it("handles dense hourly history on desktop", () => {
+      // ceil(168/12)=14 → interval 13 (=> 1 visible / 14)
+      expect(pickTickInterval(168, 1024)).toBe(13);
+    });
+
+    it("never returns a negative interval", () => {
+      expect(pickTickInterval(1, 320)).toBe(0);
+      expect(pickTickInterval(0, 320)).toBe(0);
+    });
   });
 
-  it("returns 0 when count fits the small-mobile budget (≤6 at <360px)", () => {
-    expect(pickTickInterval(6, 320)).toBe(0);
-  });
+  describe("with a range (per-range cap kicks in)", () => {
+    it("caps 7d at ~7 labels on desktop", () => {
+      // 19 spiky points on 7d → 7 labels max → ceil(19/7)=3 → interval 2
+      expect(pickTickInterval(19, 1024, "7d")).toBe(2);
+    });
 
-  it("returns 0 when count fits the medium-mobile budget (≤8 at <640px)", () => {
-    expect(pickTickInterval(8, 400)).toBe(0);
-  });
+    it("caps 30d at ~10 labels on desktop", () => {
+      // 30 points on 30d → 10 max → ceil(30/10)=3 → interval 2
+      expect(pickTickInterval(30, 1024, "30d")).toBe(2);
+    });
 
-  it("skips ticks on desktop when count exceeds 12", () => {
-    // 30 points / 12 maxLabels = 2.5 → floor = 2 → interval = 1 (=> 1 visible / 2)
-    expect(pickTickInterval(30, 1024)).toBe(1);
-  });
+    it("caps 24h at ~8 labels on desktop", () => {
+      // 24 points → 8 max → ceil(24/8)=3 → interval 2
+      expect(pickTickInterval(24, 1024, "24h")).toBe(2);
+    });
 
-  it("skips more aggressively on small mobile", () => {
-    // 30 points / 6 maxLabels = 5 → interval = 4 (=> 1 visible / 5)
-    expect(pickTickInterval(30, 340)).toBe(4);
-  });
+    it("takes the smaller of range cap and viewport cap on mobile", () => {
+      // 7d range cap = 7; small-mobile viewport cap = 6 → min = 6
+      // 30 points / 6 = 5 → interval 4
+      expect(pickTickInterval(30, 340, "7d")).toBe(4);
+    });
 
-  it("handles dense hourly history on desktop", () => {
-    // 168 points / 12 = 14 → interval = 13 (=> 1 visible / 14)
-    expect(pickTickInterval(168, 1024)).toBe(13);
-  });
-
-  it("never returns a negative interval", () => {
-    expect(pickTickInterval(1, 320)).toBe(0);
-    expect(pickTickInterval(0, 320)).toBe(0);
+    it("returns 0 when count fits the range cap", () => {
+      expect(pickTickInterval(7, 1024, "7d")).toBe(0);
+      expect(pickTickInterval(8, 1024, "24h")).toBe(0);
+    });
   });
 });
 
