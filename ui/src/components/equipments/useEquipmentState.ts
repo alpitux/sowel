@@ -1,6 +1,7 @@
 import type { EquipmentWithDetails } from "../../types";
 import { TYPE_ICONS } from "./EquipmentCard";
 import { ShutterIcon } from "../icons/ShutterIcons";
+import { AwningIcon } from "../icons/AwningIcon";
 import {
   getSensorIcon,
   getSensorIconColor,
@@ -16,6 +17,11 @@ export function useEquipmentState(equipment: EquipmentWithDetails) {
     equipment.type === "light_dimmable" ||
     equipment.type === "light_color";
   const isShutter = equipment.type === "shutter";
+  const isAwning = equipment.type === "awning";
+  // Shutter-family equipments share the same control surface (position +
+  // open/stop/close). The vocabulary differs (extend/retract), but the wiring
+  // is identical, so most existing logic gates on `isShutter || isAwning`.
+  const isShutterFamily = isShutter || isAwning;
   const isWeatherForecast = equipment.type === "weather_forecast";
   const isSensor = equipment.type === "sensor" || equipment.type === "button" || equipment.type === "weather";
   const isEnergyMeter = equipment.type === "energy_meter" || equipment.type === "main_energy_meter" || equipment.type === "energy_production_meter";
@@ -53,8 +59,8 @@ export function useEquipmentState(equipment: EquipmentWithDetails) {
         ? stateBinding.value === true || stateBinding.value === "ON"
         : false;
 
-  // Shutter
-  const shutterPositionBinding = isShutter
+  // Shutter family (shutter + awning)
+  const shutterPositionBinding = isShutterFamily
     ? equipment.dataBindings.find((db) => db.category === "shutter_position")
     : null;
   const shutterPosition =
@@ -65,7 +71,7 @@ export function useEquipmentState(equipment: EquipmentWithDetails) {
   // their controls visible across compact zone view, equipment card and
   // detail page (spec 110).
   const hasShutterState =
-    isShutter &&
+    isShutterFamily &&
     !!findOrderByCategory(
       equipment.orderBindings,
       ["shutter_move", "pool_cover_move"],
@@ -91,12 +97,15 @@ export function useEquipmentState(equipment: EquipmentWithDetails) {
       ? equipment.dataBindings.find((b) => b.category === "action")
       : null;
 
-  // Icon
+  // Icon — shutters and awnings render their own state-aware illustration
+  // (slats lowered for shutters, canopy deployed/retracted for awnings).
   const iconElement: React.ReactNode = isSensor
     ? getSensorIcon(equipment.dataBindings)
     : isShutter
       ? ShutterIcon({ size: 18, strokeWidth: 1.5, position: shutterPosition })
-      : TYPE_ICONS[equipment.type];
+      : isAwning
+        ? AwningIcon({ size: 22, state: shutterIsOpen ? "open" : "closed" })
+        : TYPE_ICONS[equipment.type];
 
   // Gate state for icon color
   const gateStateBinding = isGate
@@ -124,7 +133,7 @@ export function useEquipmentState(equipment: EquipmentWithDetails) {
         ? !isOn // fil pilote: relay OFF = comfort (warm)
           ? "bg-error/10 text-error"
           : "bg-border-light text-text-tertiary"
-      : isShutter
+      : isShutterFamily
         ? shutterIsOpen
           ? "bg-primary/10 text-primary"
           : "bg-border-light text-text-tertiary"
@@ -141,6 +150,8 @@ export function useEquipmentState(equipment: EquipmentWithDetails) {
   return {
     isLight,
     isShutter,
+    isAwning,
+    isShutterFamily,
     isSensor,
     isWeatherForecast,
     isEnergyMeter,

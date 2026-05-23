@@ -26,6 +26,7 @@ import { formatSensorValue } from "../equipments/sensorUtils";
 import {
   LightBulbIcon,
   ShutterWidgetIcon,
+  AwningWidgetIcon,
   ThermometerIcon,
   MultiSensorIcon,
   HeaterWidgetIcon,
@@ -49,7 +50,7 @@ interface EquipmentDetailProps {
 }
 
 export function EquipmentDetailSheet({ widget, equipment, onExecuteOrder, onClose }: EquipmentDetailProps) {
-  const { isLight, isShutter, isThermostat, isHeater, isSensor, isGate, isPoolHeatPump } = useEquipmentState(equipment);
+  const { isLight, isShutter, isAwning, isThermostat, isHeater, isSensor, isGate, isPoolHeatPump } = useEquipmentState(equipment);
   const label = widget.label || equipment.name;
   const execOrder = (alias: string, value: unknown) => onExecuteOrder(equipment.id, alias, value);
 
@@ -66,7 +67,7 @@ export function EquipmentDetailSheet({ widget, equipment, onExecuteOrder, onClos
     );
   }
 
-  if (isShutter || equipment.type === "pool_cover") {
+  if (isShutter || isAwning || equipment.type === "pool_cover") {
     return (
       <BottomSheet open onClose={onClose} title={label}
         icon={customEntry ? <div className="scale-[0.35]">{createElement(customEntry.component, customEntry.previewProps)}</div> : undefined}
@@ -265,6 +266,7 @@ function WeatherDetailContent({ equipment }: { equipment: EquipmentWithDetails }
 const WIDGET_FAMILY_TYPES: Record<string, string[]> = {
   lights: ["light_onoff", "light_dimmable", "light_color"],
   shutters: ["shutter"],
+  awnings: ["awning"],
   heating: ["thermostat", "heater"],
   sensors: ["sensor"],
   water: ["water_valve"],
@@ -328,6 +330,13 @@ export function ZoneDetailSheet({ widget, zone, equipments, onClose }: ZoneDetai
       )}
       {family === "shutters" && (
         <ZoneShuttersDetail
+          equipments={filteredEquipments}
+          commandLoading={commandLoading}
+          onCommand={handleZoneCommand}
+        />
+      )}
+      {family === "awnings" && (
+        <ZoneAwningsDetail
           equipments={filteredEquipments}
           commandLoading={commandLoading}
           onCommand={handleZoneCommand}
@@ -526,6 +535,77 @@ function ZoneShuttersDetail({
           title={t("zones.commands.allShuttersClose")}
         >
           {commandLoading === "allShuttersClose" ? <Loader2 size={18} className="animate-spin" /> : <ChevronDown size={20} strokeWidth={2} />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Zone awnings detail (mobile)
+// ============================================================
+
+function ZoneAwningsDetail({
+  equipments,
+  commandLoading,
+  onCommand,
+}: {
+  equipments: EquipmentWithDetails[];
+  commandLoading: string | null;
+  onCommand: (orderKey: string, value?: unknown) => void;
+}) {
+  const { t } = useTranslation();
+
+  const { deployedCount, total } = useMemo(() => {
+    let deployed = 0;
+    for (const eq of equipments) {
+      const b = eq.dataBindings.find((d) => d.category === "shutter_position");
+      if (b && typeof b.value === "number" && b.value > 0) deployed += 1;
+    }
+    return { deployedCount: deployed, total: equipments.length };
+  }, [equipments]);
+
+  if (total === 0) return null;
+
+  const stateText =
+    deployedCount === total
+      ? t("controls.deployed")
+      : deployedCount === 0
+        ? t("controls.retracted")
+        : `${deployedCount}/${total}`;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-center">
+        <AwningWidgetIcon deployed={deployedCount > 0} />
+      </div>
+
+      <div className="text-center text-[14px] font-medium text-text">{stateText}</div>
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => onCommand("allAwningsRetract")}
+          disabled={commandLoading !== null}
+          className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
+          title={t("zones.commands.allAwningsRetract")}
+        >
+          {commandLoading === "allAwningsRetract" ? <Loader2 size={18} className="animate-spin" /> : <ChevronUp size={20} strokeWidth={2} />}
+        </button>
+        <button
+          onClick={() => onCommand("allAwningsStop")}
+          disabled={commandLoading !== null}
+          className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
+          title={t("zones.commands.allAwningsStop")}
+        >
+          {commandLoading === "allAwningsStop" ? <Loader2 size={18} className="animate-spin" /> : <Square size={14} strokeWidth={2.5} />}
+        </button>
+        <button
+          onClick={() => onCommand("allAwningsExtend")}
+          disabled={commandLoading !== null}
+          className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
+          title={t("zones.commands.allAwningsExtend")}
+        >
+          {commandLoading === "allAwningsExtend" ? <Loader2 size={18} className="animate-spin" /> : <ChevronDown size={20} strokeWidth={2} />}
         </button>
       </div>
     </div>
@@ -815,6 +895,8 @@ function ShutterDetailContent({
   const [executing, setExecuting] = useState(false);
   const slider = useSliderOverride();
 
+  const isAwning = equipment.type === "awning";
+
   const positionBinding = equipment.dataBindings.find(
     (db) => db.category === "shutter_position",
   );
@@ -823,6 +905,10 @@ function ShutterDetailContent({
     : null;
   const position = slider.displayValue(devicePosition);
   const level = position !== null ? shutterLevel(position) : null;
+
+  // Awning vocabulary — mirrors ShutterControl + ShutterEquipmentWidget.
+  const labelHundred = isAwning ? t("controls.deployed") : t("controls.opened");
+  const labelZero = isAwning ? t("controls.retracted") : t("controls.closed");
 
   // Resolve the move + position-set bindings by category first, falling back
   // to the conventional alias (`state`, `position`) and finally to any
@@ -861,10 +947,12 @@ function ShutterDetailContent({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Icon centered — pool covers get the pool-specific picto */}
+      {/* Icon centered — pool covers + awnings get their own picto */}
       <div className="flex justify-center">
         {equipment.type === "pool_cover" ? (
           <PoolCoverIcon position={position} />
+        ) : isAwning ? (
+          <AwningWidgetIcon deployed={position !== null && position > 0} />
         ) : (
           <ShutterWidgetIcon level={level} />
         )}
@@ -885,7 +973,7 @@ function ShutterDetailContent({
             className="flex-1 h-12"
           />
           <span className="text-[18px] font-semibold text-text tabular-nums min-w-[40px] text-right">
-            {position === 100 ? t("controls.opened") : position === 0 ? t("controls.closed") : `${position}%`}
+            {position === 100 ? labelHundred : position === 0 ? labelZero : `${position}%`}
           </span>
         </div>
       )}

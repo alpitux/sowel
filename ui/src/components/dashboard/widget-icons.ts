@@ -52,6 +52,7 @@ import type { EquipmentType, WidgetFamily } from "../../types";
 import {
   LightBulbIcon,
   ShutterWidgetIcon,
+  AwningWidgetIcon,
   ThermometerIcon,
   MultiSensorIcon,
   HumiditySensorIcon,
@@ -110,6 +111,12 @@ export const CUSTOM_ICON_REGISTRY: Record<string, CustomIconEntry> = {
     component: ShutterWidgetIcon as ComponentType<Record<string, unknown>>,
     previewProps: { level: 2 },
     types: ["shutter", "shutters"],
+  },
+  awning: {
+    label: "Store banne",
+    component: AwningWidgetIcon as ComponentType<Record<string, unknown>>,
+    previewProps: { deployed: true },
+    types: ["awning", "awnings"],
   },
   thermometer: {
     label: "Thermomètre",
@@ -289,6 +296,7 @@ const EQUIPMENT_DEFAULT_ICONS: Partial<Record<EquipmentType, string>> = {
   light_dimmable: "Lightbulb",
   light_color: "Lightbulb",
   shutter: "ArrowUpDown",
+  awning: "ArrowUpDown",
   sensor: "Thermometer",
   thermostat: "Thermometer",
   heater: "Flame",
@@ -304,6 +312,7 @@ const EQUIPMENT_DEFAULT_ICONS: Partial<Record<EquipmentType, string>> = {
 const FAMILY_DEFAULT_ICONS: Record<WidgetFamily, string> = {
   lights: "Lightbulb",
   shutters: "ArrowUpDown",
+  awnings: "ArrowUpDown",
   heating: "Flame",
   sensors: "Gauge",
   water: "Droplets",
