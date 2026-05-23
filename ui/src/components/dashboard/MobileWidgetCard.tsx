@@ -6,6 +6,7 @@ import { getSensorBindings, formatSensorValue } from "../equipments/sensorUtils"
 import {
   LightBulbIcon,
   ShutterWidgetIcon,
+  AwningWidgetIcon,
   ThermometerIcon,
   MultiSensorIcon,
   GateWidgetIcon,
@@ -70,6 +71,7 @@ function useMobileState(
   const {
     isLight,
     isShutter,
+    isAwning,
     isThermostat,
     isGate,
     isHeater,
@@ -118,6 +120,24 @@ function useMobileState(
       icon: customEntry
         ? createElement(customEntry.component, customEntry.previewProps)
         : <ShutterWidgetIcon level={level} />,
+      stateLines: text ? [text] : [],
+    };
+  }
+
+  if (isAwning) {
+    const pos = equipment.dataBindings.find((b) => b.category === "shutter_position");
+    const position = pos && typeof pos.value === "number" ? pos.value : null;
+    const text = position === 100
+      ? t("controls.deployed")
+      : position === 0
+        ? t("controls.retracted")
+        : position !== null
+          ? `${position}%`
+          : null;
+    return {
+      icon: customEntry
+        ? createElement(customEntry.component, customEntry.previewProps)
+        : <AwningWidgetIcon deployed={position !== null && position > 0} />,
       stateLines: text ? [text] : [],
     };
   }

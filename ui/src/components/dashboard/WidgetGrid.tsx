@@ -24,7 +24,7 @@ import { ZoneWidget } from "./ZoneWidget";
 import { IconPicker } from "./IconPicker";
 import { BindingsPicker } from "./BindingsPicker";
 import { MobileWidgetCard } from "./MobileWidgetCard";
-import { LightBulbIcon, ShutterWidgetIcon, ThermometerIcon, MultiSensorIcon } from "./WidgetIcons";
+import { LightBulbIcon, ShutterWidgetIcon, AwningWidgetIcon, ThermometerIcon, MultiSensorIcon } from "./WidgetIcons";
 import { shutterLevel } from "./widget-icons";
 import { EquipmentDetailSheet, ZoneDetailSheet } from "./WidgetDetailSheet";
 import { needsDetailSheet } from "./widget-utils";
@@ -403,6 +403,7 @@ function WidgetRenderer({
 const ZONE_FAMILY_TYPES: Record<string, string[]> = {
   lights: ["light_onoff", "light_dimmable", "light_color"],
   shutters: ["shutter"],
+  awnings: ["awning"],
   heating: ["thermostat", "heater"],
   sensors: ["sensor"],
   water: ["water_valve"],
@@ -471,6 +472,18 @@ function MobileZoneCard({
         : avg !== null ? `${avg}%`
         : null;
       return { icon: <ShutterWidgetIcon level={level} />, stateText: text };
+    }
+    if (family === "awnings") {
+      let deployed = 0;
+      for (const eq of filtered) {
+        const b = eq.dataBindings.find((d) => d.category === "shutter_position");
+        if (b && typeof b.value === "number" && b.value > 0) deployed += 1;
+      }
+      const text = filtered.length > 0 ? `${deployed}/${filtered.length}` : null;
+      return {
+        icon: <AwningWidgetIcon deployed={deployed > 0} />,
+        stateText: text,
+      };
     }
     if (family === "heating") {
       const temps: number[] = [];

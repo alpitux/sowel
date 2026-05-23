@@ -30,6 +30,9 @@ const TYPE_TINTS: Record<EquipmentType, Tint> = {
   light_dimmable:          { bg: "bg-light-50",     text: "text-light-500" },
   light_color:             { bg: "bg-light-50",     text: "text-light-500" },
   shutter:                 { bg: "bg-shutter-50",   text: "text-shutter-500" },
+  // Awning uses the Sowel primary-light backdrop — the V3 illustration is
+  // already colored (primary blue + primary light) and harmonises with it.
+  awning:                  { bg: "bg-primary-light",text: "text-primary" },
   pool_cover:              { bg: "bg-shutter-50",   text: "text-shutter-500" },
   sensor:                  { bg: "bg-sensor-50",    text: "text-sensor-500" },
   button:                  { bg: "bg-sensor-50",    text: "text-sensor-500" },
@@ -54,7 +57,7 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
 
   const {
     isLight,
-    isShutter,
+    isShutterFamily,
     isSensor,
     isEnergyMeter,
     isThermostat,
@@ -77,7 +80,7 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
 
   // Find primary data value for generic equipments
   const isKnownType =
-    isLight || isSensor || isShutter || isThermostat || isHeater || isGate ||
+    isLight || isSensor || isShutterFamily || isThermostat || isHeater || isGate ||
     isEnergyMeter || isWeatherForecast || isMediaPlayer || isAppliance ||
     isWaterValve || isPoolPump || isPoolCover || isPoolHeatPump;
   const primaryBinding = !isKnownType
@@ -151,8 +154,8 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
         />
       )}
 
-      {/* Shutter controls */}
-      {isShutter && equipment.enabled && (
+      {/* Shutter / Awning controls (shared compact control with awning vocabulary swap) */}
+      {isShutterFamily && equipment.enabled && (
         <ShutterControl
           equipment={equipment}
           onExecuteOrder={(alias, value) => onExecuteOrder(equipment.id, alias, value)}
