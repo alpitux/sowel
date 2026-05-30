@@ -30,9 +30,12 @@ import type {
   HistoryPoint,
   SavedChart,
 } from "../../types";
-import { TimeRangeSelector } from "./TimeRangeSelector";
-import { rangeToFrom } from "./history-utils";
-import type { TimeRange } from "./history-utils";
+import { PeriodSelector } from "./PeriodSelector";
+import {
+  periodTodayStr,
+  periodToWindow,
+  type Period,
+} from "./history-utils";
 import { humanBindingLabel, humanBindingLabelFromList } from "./binding-label";
 
 // ============================================================
@@ -113,15 +116,18 @@ function flattenZones(zones: ZoneWithChildren[]): { id: string; name: string; de
   return result;
 }
 
-function formatTime(iso: string, range: TimeRange): string {
+function formatTime(iso: string, period: Period): string {
   const d = new Date(iso);
-  if (range === "6h" || range === "24h") {
-    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  switch (period) {
+    case "day":
+      return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    case "week":
+      return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    case "month":
+      return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    case "year":
+      return d.toLocaleDateString(undefined, { month: "short" });
   }
-  if (range === "7d") {
-    return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-  }
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function formatTooltipTime(iso: string): string {
@@ -153,7 +159,10 @@ export function AnalyseView() {
   const [loading, setLoading] = useState(true);
 
   // --- Selection state ---
-  const [range, setRange] = useState<TimeRange>("24h");
+  // Period + date drives the chart window (absolute, Energy-style navigator).
+  // Default: today as a day.
+  const [period, setPeriod] = useState<Period>("day");
+  const [date, setDate] = useState<string>(() => periodTodayStr());
   const [series, setSeries] = useState<SeriesConfig[]>([]);
   const [seriesData, setSeriesData] = useState<Record<string, SeriesData>>({});
 
@@ -208,7 +217,8 @@ export function AnalyseView() {
         setCurrentChart(null);
         setSeries([]);
         setSeriesData({});
-        setRange("24h");
+        setPeriod("day");
+        setDate(periodTodayStr());
         loadedChartIdRef.current = undefined;
       }
       return;
@@ -218,14 +228,50 @@ export function AnalyseView() {
     if (equipments.length === 0) return; // wait for equipments to resolve names
 
     setLoadingChart(true);
-    getChart(chartId)
-      .then((chart) => {
+    (async () => {
+      try {
+        const chart = await getChart(chartId);
         setCurrentChart(chart);
         loadedChartIdRef.current = chartId;
-        setRange((chart.config.timeRange as TimeRange) || "24h");
+        // New format (period + date) takes precedence. Legacy charts saved
+        // with `timeRange` are mapped to the closest period on today, so the
+        // user can pick the date back to whatever they had in mind.
+        if (chart.config.period && chart.config.date) {
+          setPeriod(chart.config.period);
+          setDate(chart.config.date);
+        } else {
+          const legacy = chart.config.timeRange;
+          const mapped: Period =
+            legacy === "30d" ? "month" : legacy === "7d" ? "week" : "day";
+          setPeriod(mapped);
+          setDate(periodTodayStr());
+        }
+
+        // Enrich saved series with category + deviceName + sameCategoryCount
+        // so humanBindingLabel can render friendly labels in pills, tooltip
+        // and legend. Without this, freshly-loaded charts fall back to raw
+        // aliases ("Bureau / THR / humidity") instead of the equipment-level
+        // label ("Humidité intérieure").
+        const uniqueEqIds = [...new Set(chart.config.series.map((s) => s.equipmentId))];
+        const bindingsPerEq = new Map<string, HistoryBindingState[]>();
+        await Promise.all(
+          uniqueEqIds.map(async (eqId) => {
+            try {
+              bindingsPerEq.set(eqId, await getHistoryBindings(eqId));
+            } catch {
+              // Best-effort: an equipment may have been deleted since save.
+            }
+          }),
+        );
+
         const newSeries: SeriesConfig[] = [];
         for (const sc of chart.config.series) {
           const eq = equipments.find((e) => e.id === sc.equipmentId);
+          const eqBindings = bindingsPerEq.get(sc.equipmentId) ?? [];
+          const binding = eqBindings.find((b) => b.alias === sc.alias);
+          const sameCategoryCount = binding
+            ? eqBindings.filter((b) => b.category === binding.category).length
+            : 1;
           const id = `${sc.equipmentId}:${sc.alias}`;
           newSeries.push({
             id,
@@ -233,20 +279,21 @@ export function AnalyseView() {
             equipmentName: eq?.name ?? sc.equipmentId,
             zoneName: eq?.zoneId ? (zoneNameById.get(eq.zoneId) ?? "") : "",
             alias: sc.alias,
-            category: "",
-            deviceName: "",
-            sameCategoryCount: 1,
+            category: binding?.category ?? "",
+            deviceName: binding?.deviceName ?? "",
+            sameCategoryCount,
             color: SERIES_COLORS[newSeries.length % SERIES_COLORS.length],
           });
         }
         setSeries(newSeries);
         setSeriesData({});
-      })
-      .catch(() => {
+      } catch {
         setCurrentChart(null);
         loadedChartIdRef.current = chartId;
-      })
-      .finally(() => setLoadingChart(false));
+      } finally {
+        setLoadingChart(false);
+      }
+    })();
   }, [chartId, equipments, zoneNameById]);
 
   const filteredEquipments = useMemo(() => {
@@ -266,7 +313,9 @@ export function AnalyseView() {
   }, [selectedEquipmentId]);
 
   const fetchSeriesData = useCallback(
-    async (seriesList: SeriesConfig[], timeRange: TimeRange) => {
+    async (seriesList: SeriesConfig[], window: { from: Date; to: Date }) => {
+      const fromIso = window.from.toISOString();
+      const toIso = window.to.toISOString();
       for (const s of seriesList) {
         setSeriesData((prev) => ({
           ...prev,
@@ -274,7 +323,8 @@ export function AnalyseView() {
         }));
         try {
           const result = await getHistoryData(s.equipmentId, s.alias, {
-            from: rangeToFrom(timeRange),
+            from: fromIso,
+            to: toIso,
             aggregation: "auto",
           });
           setSeriesData((prev) => ({
@@ -292,11 +342,13 @@ export function AnalyseView() {
     [],
   );
 
+  const chartWindow = useMemo(() => periodToWindow(date, period), [date, period]);
+
   useEffect(() => {
     if (series.length > 0) {
-      fetchSeriesData(series, range);
+      fetchSeriesData(series, chartWindow);
     }
-  }, [series, range, fetchSeriesData]);
+  }, [series, chartWindow, fetchSeriesData]);
 
   // --- Actions ---
   const addSeries = (binding: HistoryBindingState) => {
@@ -337,7 +389,8 @@ export function AnalyseView() {
   // --- Save handlers ---
   const buildConfig = () => ({
     series: series.map((s) => ({ equipmentId: s.equipmentId, alias: s.alias })),
-    timeRange: range,
+    period,
+    date,
   });
 
   const handleSave = async () => {
@@ -414,10 +467,10 @@ export function AnalyseView() {
     const sorted = Array.from(timeMap.entries()).sort(([a], [b]) => a.localeCompare(b));
     return sorted.map(([time, values]) => ({
       time,
-      label: formatTime(time, range),
+      label: formatTime(time, period),
       ...values,
     }));
-  }, [series, seriesData, range]);
+  }, [series, seriesData, period]);
 
   const anyLoading = series.some((s) => seriesData[s.id]?.loading);
 
@@ -436,107 +489,113 @@ export function AnalyseView() {
 
   return (
     <div className="space-y-4">
-      {/* Header with range selector + save buttons */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      {/* Header — copies Energy's two-child flex layout (title left,
+          PeriodSelector right, justify-between). Save actions move to the
+          end of the series-pills row so the header stays clean. */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="hidden sm:flex items-center gap-3">
           <BarChart3 size={20} strokeWidth={1.5} className="text-primary" />
           <h1>{title}</h1>
         </div>
-        <div className="flex items-center gap-2">
-          {series.length > 0 && (
-            <>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[12px] font-medium
-                  bg-primary-light text-primary hover:bg-primary hover:text-white
-                  transition-colors cursor-pointer disabled:opacity-50"
-                title={t("analyse.save")}
-              >
-                <Save size={14} strokeWidth={1.5} />
-                {t("analyse.save")}
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveAs}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[12px] font-medium
-                  text-text-secondary hover:bg-border-light hover:text-text
-                  transition-colors cursor-pointer disabled:opacity-50"
-                title={t("analyse.saveAs")}
-              >
-                <Copy size={14} strokeWidth={1.5} />
-              </button>
-              {currentChart && (
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[12px] font-medium
-                    text-text-secondary hover:bg-error/10 hover:text-error
-                    transition-colors cursor-pointer"
-                  title={t("analyse.deleteChart")}
-                >
-                  <Trash2 size={14} strokeWidth={1.5} />
-                </button>
-              )}
-            </>
-          )}
-          <TimeRangeSelector value={range} onChange={setRange} />
-        </div>
+        <PeriodSelector
+          period={period}
+          date={date}
+          onPeriodChange={setPeriod}
+          onDateChange={setDate}
+        />
       </div>
 
-      {/* Series pills + add button */}
-      <div className="flex flex-wrap items-center gap-2">
-        {series.map((s) => (
-          <div
-            key={s.id}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium bg-surface border border-border"
+      {/* Series pills + add button (left) — save / save-as / delete (right) */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {series.map((s) => (
+            <div
+              key={s.id}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium bg-surface border border-border"
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: s.color }}
+              />
+              {s.zoneName && <span className="text-text-tertiary">{s.zoneName} /</span>}
+              <span className="text-text">{s.equipmentName}</span>
+              <span className="text-text-tertiary">
+                /{" "}
+                {s.category
+                  ? humanBindingLabel(
+                      { alias: s.alias, category: s.category, deviceName: s.deviceName, sameCategoryCount: s.sameCategoryCount },
+                      t,
+                    )
+                  : s.alias}
+              </span>
+              {CATEGORY_UNITS[s.category] && (
+                <span className="text-text-tertiary">({CATEGORY_UNITS[s.category]})</span>
+              )}
+              <button
+                type="button"
+                onClick={() => removeSeries(s.id)}
+                className="ml-0.5 text-text-tertiary hover:text-error transition-colors cursor-pointer"
+              >
+                <X size={12} strokeWidth={2} />
+              </button>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={() => {
+              const next = !showAddForm;
+              setShowAddForm(next);
+              if (next && !selectedZoneId && flatZones.length > 0) {
+                setSelectedZoneId(flatZones[0].id);
+              }
+            }}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium
+              bg-primary-light text-primary hover:bg-primary hover:text-white
+              transition-colors cursor-pointer"
           >
-            <span
-              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: s.color }}
-            />
-            {s.zoneName && <span className="text-text-tertiary">{s.zoneName} /</span>}
-            <span className="text-text">{s.equipmentName}</span>
-            <span className="text-text-tertiary">
-              /{" "}
-              {s.category
-                ? humanBindingLabel(
-                    { alias: s.alias, category: s.category, deviceName: s.deviceName, sameCategoryCount: s.sameCategoryCount },
-                    t,
-                  )
-                : s.alias}
-            </span>
-            {CATEGORY_UNITS[s.category] && (
-              <span className="text-text-tertiary">({CATEGORY_UNITS[s.category]})</span>
-            )}
+            <Plus size={12} strokeWidth={2} />
+            {t("analyse.addSeries")}
+          </button>
+        </div>
+
+        {series.length > 0 && (
+          <div className="flex items-center gap-1">
             <button
               type="button"
-              onClick={() => removeSeries(s.id)}
-              className="ml-0.5 text-text-tertiary hover:text-error transition-colors cursor-pointer"
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[12px] font-medium
+                bg-primary-light text-primary hover:bg-primary hover:text-white
+                transition-colors cursor-pointer disabled:opacity-50"
+              title={t("analyse.save")}
             >
-              <X size={12} strokeWidth={2} />
+              <Save size={14} strokeWidth={1.5} />
+              <span className="hidden sm:inline">{t("analyse.save")}</span>
             </button>
+            <button
+              type="button"
+              onClick={handleSaveAs}
+              disabled={saving}
+              className="flex items-center justify-center p-1.5 rounded-[6px] text-text-secondary
+                hover:bg-border-light hover:text-text transition-colors cursor-pointer disabled:opacity-50"
+              title={t("analyse.saveAs")}
+            >
+              <Copy size={14} strokeWidth={1.5} />
+            </button>
+            {currentChart && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex items-center justify-center p-1.5 rounded-[6px] text-text-secondary
+                  hover:bg-error/10 hover:text-error transition-colors cursor-pointer"
+                title={t("analyse.deleteChart")}
+              >
+                <Trash2 size={14} strokeWidth={1.5} />
+              </button>
+            )}
           </div>
-        ))}
-
-        <button
-          type="button"
-          onClick={() => {
-            const next = !showAddForm;
-            setShowAddForm(next);
-            if (next && !selectedZoneId && flatZones.length > 0) {
-              setSelectedZoneId(flatZones[0].id);
-            }
-          }}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-medium
-            bg-primary-light text-primary hover:bg-primary hover:text-white
-            transition-colors cursor-pointer"
-        >
-          <Plus size={12} strokeWidth={2} />
-          {t("analyse.addSeries")}
-        </button>
+        )}
       </div>
 
       {/* Add series form */}

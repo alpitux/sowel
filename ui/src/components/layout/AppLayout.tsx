@@ -32,7 +32,6 @@ import {
   AlertTriangle,
   RefreshCw,
   Power,
-  MoreVertical,
 } from "lucide-react";
 
 // Display name → 1-2 uppercase initials for the avatar pill.
@@ -186,15 +185,6 @@ export function AppLayout() {
                 </button>
               </div>
             )}
-            {/* Mobile ⋮ menu — opens drawer (same one bottom nav uses) */}
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="sm:hidden w-10 h-10 flex items-center justify-center rounded-[6px] text-text-secondary hover:bg-border-light/60 transition-colors duration-150"
-              aria-label={t("nav.more", "Plus")}
-              title={t("nav.more", "Plus")}
-            >
-              <MoreVertical size={20} strokeWidth={1.7} />
-            </button>
           </div>
         </header>
 
@@ -289,9 +279,11 @@ function MobileTopbarBurger() {
   const hasProduction = useEnergy((s) => s.hasProduction);
   const openZoneDrawer = useUiState((s) => s.openZoneDrawer);
   const openEnergyNav = useUiState((s) => s.openEnergyNav);
+  const openAnalyseNav = useUiState((s) => s.openAnalyseNav);
 
   const onZonePage = location.pathname === "/home" || location.pathname.startsWith("/home/");
   const onEnergyPage = location.pathname.startsWith("/energy");
+  const onAnalysePage = location.pathname.startsWith("/analyse");
 
   let onClick: (() => void) | null = null;
   let label = "";
@@ -301,6 +293,9 @@ function MobileTopbarBurger() {
   } else if (onEnergyPage && hasProduction) {
     onClick = openEnergyNav;
     label = t("nav.energy");
+  } else if (onAnalysePage) {
+    onClick = openAnalyseNav;
+    label = t("analyse.title");
   }
 
   if (onClick) {
