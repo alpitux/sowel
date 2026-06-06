@@ -46,6 +46,7 @@ const TYPE_TINTS: Record<EquipmentType, Tint> = {
   pool_pump:               { bg: "bg-primary-light",text: "text-primary" },
   gate:                    { bg: "bg-success/10",   text: "text-success" },
   energy_production_meter: { bg: "bg-success/10",   text: "text-success" },
+  solar_panel:             { bg: "bg-primary-light",  text: "text-primary" },
   heater:                  { bg: "bg-error/10",     text: "text-error" },
   pool_heat_pump:          { bg: "bg-error/10",     text: "text-error" },
   energy_meter:            { bg: "bg-accent-light", text: "text-accent" },
@@ -80,12 +81,21 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
   const isPoolPump = equipment.type === "pool_pump";
   const isPoolCover = equipment.type === "pool_cover";
   const isPoolHeatPump = equipment.type === "pool_heat_pump";
+  const isSolar = equipment.type === "solar_panel";
 
   // Find primary data value for generic equipments
   const isKnownType =
     isLight || isSensor || isShutterFamily || isThermostat || isHeater || isGate ||
     isEnergyMeter || isWeatherForecast || isMediaPlayer || isAppliance ||
-    isWaterValve || isPoolPump || isPoolCover || isPoolHeatPump;
+    isWaterValve || isPoolPump || isPoolCover || isPoolHeatPump || isSolar;
+
+  // Solar panel: show the produced DC power (W/kW) as the headline value.
+  const solarPowerW = isSolar
+    ? (() => {
+        const p = equipment.dataBindings.find((b) => b.category === "power");
+        return typeof p?.value === "number" ? p.value : null;
+      })()
+    : null;
   const primaryBinding = !isKnownType
     ? equipment.dataBindings[0] ?? null
     : null;
@@ -164,6 +174,17 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
 
       {/* Energy meter values */}
       {isEnergyMeter && <CompactEnergyValues equipment={equipment} />}
+
+      {/* Solar panel — produced power (green) */}
+      {isSolar && (
+        <span className="text-[13px] font-semibold text-success tabular-nums flex-shrink-0 font-mono">
+          {solarPowerW === null
+            ? "—"
+            : solarPowerW >= 1000
+              ? `${(solarPowerW / 1000).toFixed(2)} kW`
+              : `${Math.round(solarPowerW)} W`}
+        </span>
+      )}
 
       {/* Media player compact */}
       {isMediaPlayer && <CompactMediaPlayer equipment={equipment} />}

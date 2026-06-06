@@ -4,6 +4,7 @@ import { Radio, Check, ChevronDown, ChevronUp, Search } from "lucide-react";
 import type { DataCategory, EquipmentType } from "../../types";
 import { getDevices, type DeviceWithData } from "../../api";
 import { computeBindingCandidates, type BindingCandidate } from "../../lib/binding-candidates";
+import { freeCandidates } from "../../lib/binding-utils";
 
 /** Maps EquipmentType to required DataCategories for filtering. */
 const EQUIPMENT_TYPE_CATEGORIES: Partial<Record<EquipmentType, DataCategory[]>> = {
@@ -20,6 +21,8 @@ const EQUIPMENT_TYPE_CATEGORIES: Partial<Record<EquipmentType, DataCategory[]>> 
   energy_meter: ["energy", "power"],
   main_energy_meter: ["energy"],
   energy_production_meter: ["energy", "power"],
+  // Solar panel devices expose per-channel DC power; that's the discriminator.
+  solar_panel: ["power", "current"],
   // Polytropic PAC matches via pool_water_temperature; Sonoff filtration relay
   // matches via light_state (used as the optional `filtration_state` binding).
   pool_heat_pump: ["pool_water_temperature", "light_state"],
@@ -80,6 +83,8 @@ const CANDIDATE_BASED_TYPES: ReadonlySet<EquipmentType> = new Set<EquipmentType>
   "shutter",
   "awning",
   "water_valve",
+  // Spec 125 — solar panel: one candidate per inverter channel (Panel 1 / Panel 2).
+  "solar_panel",
 ]);
 
 interface DeviceSelectorProps {
@@ -94,6 +99,9 @@ interface DeviceSelectorProps {
   /** Per-device set of device_order keys already bound on other equipments.
    * Used to hide candidates whose order keys are all consumed. */
   boundOrderKeysByDevice?: Record<string, Set<string>>;
+  /** Per-device set of device_data keys already bound on other equipments.
+   * Used to hide data-only candidates (PV channels) already taken. */
+  boundDataKeysByDevice?: Record<string, Set<string>>;
 }
 
 export function DeviceSelector({
@@ -103,6 +111,7 @@ export function DeviceSelector({
   onCandidateChange,
   boundDeviceIds,
   boundOrderKeysByDevice,
+  boundDataKeysByDevice,
 }: DeviceSelectorProps) {
   const { t } = useTranslation();
   const [allDevices, setAllDevices] = useState<DeviceWithData[]>([]);
@@ -140,19 +149,16 @@ export function DeviceSelector({
     const map = new Map<string, BindingCandidate[]>();
     for (const d of availableDevices) {
       const all = computeBindingCandidates(equipmentType, d.data, d.orders ?? []);
-      const bound = boundOrderKeysByDevice?.[d.id];
-      const free = bound
-        ? all.filter((c) =>
-            // Keep the candidate if at least one of its order keys is not yet
-            // bound on this device. Pure-data candidates (orderKeys=[]) always
-            // stay — re-binding data is allowed.
-            c.orderKeys.length === 0 || c.orderKeys.some((k) => !bound.has(k)),
-          )
-        : all;
-      map.set(d.id, free);
+      map.set(d.id, freeCandidates(all, boundOrderKeysByDevice?.[d.id], boundDataKeysByDevice?.[d.id]));
     }
     return map;
-  }, [availableDevices, equipmentType, isCandidateBased, boundOrderKeysByDevice]);
+  }, [
+    availableDevices,
+    equipmentType,
+    isCandidateBased,
+    boundOrderKeysByDevice,
+    boundDataKeysByDevice,
+  ]);
 
   const categories = EQUIPMENT_TYPE_CATEGORIES[equipmentType];
   const requiredKeys = EQUIPMENT_TYPE_DATA_KEYS[equipmentType];
@@ -185,6 +191,10 @@ export function DeviceSelector({
     onCandidateChange?.(next);
   };
 
+  // A solar panel is exactly one inverter channel → one device, one channel.
+  // Selecting another inverter replaces the selection rather than adding to it.
+  const singleDevice = equipmentType === "solar_panel";
+
   const toggleDevice = (deviceId: string) => {
     if (selectedDeviceIds.includes(deviceId)) {
       onSelectionChange(selectedDeviceIds.filter((id) => id !== deviceId));
@@ -193,14 +203,21 @@ export function DeviceSelector({
         const { [deviceId]: _, ...rest } = candidateByDevice;
         emitCandidates(rest);
       }
-    } else {
-      onSelectionChange([...selectedDeviceIds, deviceId]);
-      // Auto-pick the only candidate if there's just one — callers don't need
-      // to know about candidates when there's no choice to make.
-      const cs = candidatesByDevice.get(deviceId);
-      if (cs && cs.length === 1 && !candidateByDevice[deviceId]) {
-        emitCandidates({ ...candidateByDevice, [deviceId]: cs[0].id });
-      }
+      return;
+    }
+    const cs = candidatesByDevice.get(deviceId);
+    if (singleDevice) {
+      // Replace selection; pre-pick the first free channel (the picker still
+      // lets the user switch when the inverter has more than one free channel).
+      onSelectionChange([deviceId]);
+      emitCandidates(cs && cs.length >= 1 ? { [deviceId]: cs[0].id } : {});
+      return;
+    }
+    onSelectionChange([...selectedDeviceIds, deviceId]);
+    // Auto-pick the only candidate if there's just one — callers don't need
+    // to know about candidates when there's no choice to make.
+    if (cs && cs.length === 1 && !candidateByDevice[deviceId]) {
+      emitCandidates({ ...candidateByDevice, [deviceId]: cs[0].id });
     }
   };
 
@@ -320,6 +337,14 @@ export function DeviceSelector({
                       </div>
                       {cs.map((c) => {
                         const isPicked = picked === c.id;
+                        // Solar panel: friendly "Canal N" label + the channel's
+                        // live power, so the user can tell which physical panel
+                        // is which. Other types keep the raw label + key list.
+                        const chMatch =
+                          equipmentType === "solar_panel" ? /^ch(\d+)$/.exec(c.id) : null;
+                        const chPower = chMatch
+                          ? device.data.find((x) => x.key === `ch${chMatch[1]}_power`)?.value
+                          : null;
                         return (
                           <label
                             key={c.id}
@@ -336,11 +361,26 @@ export function DeviceSelector({
                               onChange={() => pickCandidate(device.id, c.id)}
                               className="accent-primary"
                             />
-                            <span className="font-mono">{c.label}</span>
-                            {(c.dataKeys.length + c.orderKeys.length) > 0 && (
-                              <span className="text-text-tertiary text-[11px]">
-                                ({[...new Set([...c.dataKeys, ...c.orderKeys])].join(", ")})
-                              </span>
+                            {chMatch ? (
+                              <>
+                                <span className="font-medium">
+                                  {t("deviceSelector.channel", { n: chMatch[1] })}
+                                </span>
+                                {typeof chPower === "number" && (
+                                  <span className="text-text-tertiary text-[11px] tabular-nums">
+                                    · {Math.round(chPower)} W
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <span className="font-mono">{c.label}</span>
+                                {c.dataKeys.length + c.orderKeys.length > 0 && (
+                                  <span className="text-text-tertiary text-[11px]">
+                                    ({[...new Set([...c.dataKeys, ...c.orderKeys])].join(", ")})
+                                  </span>
+                                )}
+                              </>
                             )}
                           </label>
                         );
