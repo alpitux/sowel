@@ -114,6 +114,7 @@ const RELEVANT_DATA: Record<string, string[]> = {
   energy_meter: ["energy", "power"],
   main_energy_meter: ["energy", "power"],
   energy_production_meter: ["energy", "power"],
+  solar_panel: ["power", "energy", "voltage", "current", "temperature_device"],
   media_player: ["generic"],
   appliance: ["generic", "energy"],
   water_valve: ["light_state", "battery", "generic"],
@@ -159,6 +160,7 @@ const RELEVANT_ORDERS: Record<string, string[]> = {
   energy_meter: [],
   main_energy_meter: [],
   energy_production_meter: [],
+  solar_panel: [],
   media_player: ["power", "input_source"],
   appliance: [],
   water_valve: [
@@ -314,6 +316,9 @@ const CANDIDATE_BASED_TYPES: ReadonlySet<EquipmentType> = new Set<EquipmentType>
   "shutter",
   "awning",
   "water_valve",
+  // Spec 125 — one candidate per inverter channel (ch<N>_*), so a 2-panel DS3
+  // yields Panel 1 / Panel 2 and each equipment binds only its channel.
+  "solar_panel",
 ]);
 
 /** Auto-create DataBindings and OrderBindings for selected devices. */

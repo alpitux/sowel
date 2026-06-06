@@ -22,6 +22,7 @@ import { findOrderByCategory } from "../equipments/bindingUtils";
 import { findTempIndoor, findTempOutdoor } from "../equipments/weather-utils";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
 import { SensorValues } from "../equipments/SensorValues";
+import { SolarPanelIcon } from "../icons/SolarPanelIcon";
 import { createElement } from "react";
 import {
   LightBulbIcon,
@@ -80,6 +81,7 @@ export function EquipmentWidget({ widget, equipment, onExecuteOrder, onOpenDetai
   if (isGate) return <GateEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} iconKey={widget.icon} />;
   if (isHeater) return <HeaterEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} />;
   if (isEnergyMeter) return <EnergyMeterEquipmentWidget label={label} equipment={equipment} />;
+  if (equipment.type === "solar_panel") return <SolarPanelEquipmentWidget label={label} equipment={equipment} onOpenDetail={onOpenDetail} />;
   if (isWeatherForecast) return <WeatherForecastWidget label={label} equipment={equipment} />;
   if (equipment.type === "weather") return <WeatherStationWidget label={label} equipment={equipment} onOpenDetail={onOpenDetail} />;
   if (isAppliance) return <ApplianceEquipmentWidget label={label} equipment={equipment} />;
@@ -819,6 +821,56 @@ function EnergyMeterEquipmentWidget({
             </span>
             <span className="text-[10px] text-text-tertiary">{unitWh(energyMonth.value)}</span>
           </div>
+        )}
+      </div>
+    </WidgetCard>
+  );
+}
+
+// ============================================================
+// Solar panel widget (spec 125) — one PV panel = one inverter channel
+// ============================================================
+
+function SolarPanelEquipmentWidget({
+  label,
+  equipment,
+  onOpenDetail,
+}: {
+  label: string;
+  equipment: EquipmentWithDetails;
+  onOpenDetail?: () => void;
+}) {
+  const { t } = useTranslation();
+
+  // Only the PV logo + the produced power, large. When the panel is not
+  // producing (night → device offline, or 0 W), show a muted logo + "Veille"
+  // rather than a fake live 0. Tapping the card opens the full data sheet.
+  const power = equipment.dataBindings.find((b) => b.category === "power");
+  const powerW = typeof power?.value === "number" ? power.value : null;
+  const producing = equipment.status !== "offline" && powerW !== null && powerW > 0;
+
+  return (
+    <WidgetCard
+      label={label}
+      onClick={onOpenDetail}
+      className={onOpenDetail ? "cursor-pointer" : ""}
+    >
+      <div className="flex-1 flex items-center justify-center gap-4">
+        <SolarPanelIcon
+          strokeWidth={1.5}
+          className={`${producing ? "text-primary" : "text-text-tertiary opacity-50"} w-[76px] h-[76px] sm:w-[92px] sm:h-[92px]`}
+        />
+        {producing ? (
+          <div className="flex items-baseline gap-1">
+            <span className="text-[40px] sm:text-[46px] font-bold text-success tabular-nums leading-none font-mono">
+              {powerW >= 1000 ? (powerW / 1000).toFixed(2) : Math.round(powerW)}
+            </span>
+            <span className="text-[15px] font-semibold text-text-tertiary">
+              {powerW >= 1000 ? "kW" : "W"}
+            </span>
+          </div>
+        ) : (
+          <span className="text-[22px] font-semibold text-text-tertiary">{t("solar.standby")}</span>
         )}
       </div>
     </WidgetCard>
