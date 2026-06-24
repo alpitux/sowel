@@ -137,6 +137,11 @@ slots: RecipeSlotDef[] = [
 | `number`    | Numeric input  | Numeric value                      |
 | `time`      | Time picker    | `"HH:MM"` string (24h)             |
 | `boolean`   | Toggle         | `true` / `false`                   |
+| `select`    | Dropdown       | chosen option `value` (string)     |
+
+**`select` slot (spec 126).** Provide `options: { value: string; label: string }[]`; `label` is the English fallback. Per-language option labels live in the recipe's i18n under `slots[<id>].options[<value>]`. The chosen option's `value` is stored as the param. Use it for a small closed list of named choices (e.g. "fixed time / sunrise / sunset").
+
+**Conditional visibility (spec 126).** Any slot can declare `hiddenWhen: { slot: "<otherSlotId>", equals: <value | value[]> }`. The recipe form hides that slot (removes it from the layout, keeping the remaining fields aligned) when the referenced sibling's effective value (its param, or its `defaultValue` when untouched) matches. Pairs naturally with a `select`: e.g. a fixed-time picker `hiddenWhen` the kind select is `["sunrise", "sunset"]`, and an offset `hiddenWhen` it is `"time"`, so only the relevant field shows.
 
 ## Translations (i18n)
 
@@ -214,14 +219,17 @@ Reusable utilities in `src/recipes/engine/`:
 | `duration.ts`      | `parseDuration(value)`, `formatDuration(ms)`                                   |
 | `light-helpers.ts` | `isAnyLightOn()`, `turnOnLights()`, `turnOffLights()`, `setLightsBrightness()` |
 
+`ctx.helpers` also exposes `getSunlight(): { sunrise, sunset, isDaylight }` (spec 126) — the current sun times (`"HH:MM"`, offsets applied) for sun-aware scheduling. Pair it with the `sunlight.changed` event to re-sync across days; fields are `null` when sun times are not yet computed or no home coordinates are configured.
+
 ## Event Bus Events
 
 Key events recipes typically subscribe to:
 
-| Event                    | Payload                                                   |
-| ------------------------ | --------------------------------------------------------- |
-| `zone.data.changed`      | `{ zoneId, aggregatedData: { motion, luminosity, ... } }` |
-| `equipment.data.changed` | `{ equipmentId, alias, value, category }`                 |
+| Event                    | Payload                                                                                                   |
+| ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `zone.data.changed`      | `{ zoneId, aggregatedData: { motion, luminosity, ... } }`                                                 |
+| `equipment.data.changed` | `{ equipmentId, alias, value, category }`                                                                 |
+| `sunlight.changed`       | (no payload) — sun times recomputed (new day / daylight transition); read via `ctx.helpers.getSunlight()` |
 
 ## Lifecycle
 

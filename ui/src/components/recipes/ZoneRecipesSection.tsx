@@ -8,7 +8,8 @@ import { useZoneAggregation } from "../../store/useZoneAggregation";
 import type { RecipeInfo, RecipeInstance, RecipeLogEntry, RecipeActionDef, EquipmentWithDetails, Zone, ZoneWithChildren } from "../../types";
 import type { EquipmentType } from "../../types";
 import { formatTime } from "../../lib/format";
-import { recipeName, recipeDescription, recipeSlotName, recipeSlotDescription, recipeGroupLabel } from "../../lib/recipe-i18n";
+import { recipeName, recipeDescription, recipeSlotName, recipeSlotDescription, recipeGroupLabel, recipeSlotOptionLabel } from "../../lib/recipe-i18n";
+import { isSlotHidden } from "../../lib/recipe-slots";
 import type { RecipeSlotDef } from "../../types";
 
 
@@ -780,9 +781,9 @@ function RecipeInstanceRow({
                           ))}
                           {/* Compact grid for non-list slots */}
                           {(() => {
-                            const compactSlots = chunk.slots.filter((s) => !(s.type === "equipment" && s.list));
+                            const compactSlots = chunk.slots.filter((s) => !(s.type === "equipment" && s.list) && !isSlotHidden(s, editParams, recipe.slots));
                             if (compactSlots.length === 0) return null;
-                            const cols = Math.min(compactSlots.length, 3);
+                            const cols = compactSlots.length <= 3 ? compactSlots.length : 2;
                             return (
                               <div className={`grid gap-1.5 ${cols === 1 ? "grid-cols-1" : cols === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
                                 {compactSlots.map((slot) => (
@@ -820,6 +821,18 @@ function RecipeInstanceRow({
                                           </select>
                                         );
                                       })()
+                                    ) : slot.type === "select" ? (
+                                      <select
+                                        value={String(editParams[slot.id] ?? slot.defaultValue ?? "")}
+                                        onChange={(e) => setEditParams({ ...editParams, [slot.id]: e.target.value })}
+                                        className="w-full px-3 py-1.5 text-[13px] bg-surface border border-border rounded-[6px] text-text"
+                                      >
+                                        {(slot.options ?? []).map((o) => (
+                                          <option key={o.value} value={o.value}>
+                                            {recipeSlotOptionLabel(recipe, slot, o.value, lang)}
+                                          </option>
+                                        ))}
+                                      </select>
                                     ) : slot.type === "time" ? (
                                       <TimeInput
                                         value={editParams[slot.id] ?? ""}
@@ -827,7 +840,9 @@ function RecipeInstanceRow({
                                       />
                                     ) : (
                                       <input
-                                        type="text"
+                                        type={slot.type === "number" ? "number" : "text"}
+                                        min={slot.constraints?.min}
+                                        max={slot.constraints?.max}
                                         value={editParams[slot.id] ?? ""}
                                         onChange={(e) => setEditParams({ ...editParams, [slot.id]: e.target.value })}
                                         placeholder={slot.constraints?.max ? `1-${slot.constraints.max}` : ""}
@@ -844,7 +859,7 @@ function RecipeInstanceRow({
                       );
                     }
                     // Ungrouped — render each slot individually (original logic)
-                    return chunk.slots.map((slot) => (
+                    return chunk.slots.map((slot) => isSlotHidden(slot, editParams, recipe.slots) ? null : (
                       <div key={slot.id} className={`mb-2.5 pl-2 border-l-2 transition-colors duration-150 ${isSlotChanged(slot.id) ? "border-success" : "border-transparent"}`}>
                         {slot.type === "boolean" ? (
                           <label className="flex items-center gap-2 px-3 py-1.5 text-[13px] bg-surface border border-border rounded-[6px] text-text cursor-pointer hover:bg-border-light/30 transition-colors duration-150">
@@ -931,6 +946,18 @@ function RecipeInstanceRow({
                             onChange={(v) => setEditParams({ ...editParams, [slot.id]: v })}
                             placeholder={slot.defaultValue ? String(durationToMinutes(String(slot.defaultValue))) : undefined}
                           />
+                        ) : slot.type === "select" ? (
+                          <select
+                            value={String(editParams[slot.id] ?? slot.defaultValue ?? "")}
+                            onChange={(e) => setEditParams({ ...editParams, [slot.id]: e.target.value })}
+                            className="w-full px-3 py-1.5 text-[13px] bg-surface border border-border rounded-[6px] text-text"
+                          >
+                            {(slot.options ?? []).map((o) => (
+                              <option key={o.value} value={o.value}>
+                                {recipeSlotOptionLabel(recipe, slot, o.value, lang)}
+                              </option>
+                            ))}
+                          </select>
                         ) : slot.type === "time" ? (
                           <TimeInput
                             value={editParams[slot.id] ?? ""}
@@ -939,7 +966,9 @@ function RecipeInstanceRow({
                           />
                         ) : (
                           <input
-                            type="text"
+                            type={slot.type === "number" ? "number" : "text"}
+                            min={slot.constraints?.min}
+                            max={slot.constraints?.max}
                             value={editParams[slot.id] ?? ""}
                             onChange={(e) => setEditParams({ ...editParams, [slot.id]: e.target.value })}
                             placeholder={slot.defaultValue ? String(slot.defaultValue) : recipeSlotDescription(recipe, slot, lang)}
@@ -1785,21 +1814,17 @@ function AddRecipeForm({
                         ))}
                         {/* Compact grid for non-list slots */}
                         {(() => {
-                          const compactSlots = chunk.slots.filter((s) => !(s.type === "equipment" && s.list));
+                          const compactSlots = chunk.slots.filter((s) => !(s.type === "equipment" && s.list) && !isSlotHidden(s, params, selectedRecipe.slots));
                           if (compactSlots.length === 0) return null;
                           const n = compactSlots.length;
                           const cols = n <= 3 ? n : n % 3 === 0 ? 3 : 2;
-                          // Use 1fr/auto only when a `number` slot wants a
-                          // narrow column (see per-slot w-[100px] below).
-                          // Otherwise give both columns equal width so two
-                          // time pickers (or any homogeneous pair) sit
-                          // side by side with the same size.
-                          const hasNarrowNumber = compactSlots.some((s) => s.type === "number");
-                          const twoColClass = hasNarrowNumber ? "grid-cols-[1fr_auto]" : "grid-cols-2";
+                          // Equal-width columns so a dropdown + its value field
+                          // (or two time pickers) sit side by side at the same
+                          // size and labels never wrap into a narrow column.
                           return (
-                            <div className={`grid gap-1.5 ${cols === 1 ? "grid-cols-1" : cols === 2 ? twoColClass : "grid-cols-3"}`}>
+                            <div className={`grid gap-1.5 ${cols === 1 ? "grid-cols-1" : cols === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
                               {compactSlots.map((slot) => (
-                                <div key={slot.id} className={slot.type === "number" ? "w-[100px]" : ""}>
+                                <div key={slot.id}>
                                   <label className="block text-[10px] tracking-wider mb-0.5 text-text-tertiary">
                                     {recipeSlotName(selectedRecipe, slot, lang)}{slot.required && <span className="text-error ml-0.5">*</span>}
                                   </label>
@@ -1833,6 +1858,18 @@ function AddRecipeForm({
                                         </select>
                                       );
                                     })()
+                                  ) : slot.type === "select" ? (
+                                    <select
+                                      value={String(params[slot.id] ?? slot.defaultValue ?? "")}
+                                      onChange={(e) => setParams({ ...params, [slot.id]: e.target.value })}
+                                      className="w-full px-3 py-1.5 text-[13px] bg-surface border border-border rounded-[6px] text-text"
+                                    >
+                                      {(slot.options ?? []).map((o) => (
+                                        <option key={o.value} value={o.value}>
+                                          {recipeSlotOptionLabel(selectedRecipe, slot, o.value, lang)}
+                                        </option>
+                                      ))}
+                                    </select>
                                   ) : slot.type === "time" ? (
                                     <TimeInput
                                       value={params[slot.id] ?? ""}
@@ -1840,7 +1877,9 @@ function AddRecipeForm({
                                     />
                                   ) : (
                                     <input
-                                      type="text"
+                                      type={slot.type === "number" ? "number" : "text"}
+                                      min={slot.constraints?.min}
+                                      max={slot.constraints?.max}
                                       value={params[slot.id] ?? ""}
                                       onChange={(e) => setParams({ ...params, [slot.id]: e.target.value })}
                                       placeholder={slot.constraints?.max ? `1-${slot.constraints.max}` : ""}
@@ -1856,7 +1895,7 @@ function AddRecipeForm({
                     );
                   }
                   // Ungrouped — render each slot individually
-                  return chunk.slots.map((slot) => (
+                  return chunk.slots.map((slot) => isSlotHidden(slot, params, selectedRecipe.slots) ? null : (
                     <div key={slot.id} className="mb-3">
                       {slot.type === "boolean" ? (
                         <label className="flex items-center gap-2 px-3 py-1.5 text-[13px] bg-surface border border-border rounded-[6px] text-text cursor-pointer hover:bg-border-light/30 transition-colors duration-150">
@@ -1943,6 +1982,18 @@ function AddRecipeForm({
                           onChange={(v) => setParams({ ...params, [slot.id]: v })}
                           placeholder={slot.defaultValue ? String(durationToMinutes(String(slot.defaultValue))) : undefined}
                         />
+                      ) : slot.type === "select" ? (
+                        <select
+                          value={String(params[slot.id] ?? slot.defaultValue ?? "")}
+                          onChange={(e) => setParams({ ...params, [slot.id]: e.target.value })}
+                          className="w-full px-3 py-1.5 text-[13px] bg-surface border border-border rounded-[6px] text-text"
+                        >
+                          {(slot.options ?? []).map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {recipeSlotOptionLabel(selectedRecipe, slot, o.value, lang)}
+                            </option>
+                          ))}
+                        </select>
                       ) : slot.type === "time" ? (
                         <TimeInput
                           value={params[slot.id] ?? ""}
@@ -1951,7 +2002,9 @@ function AddRecipeForm({
                         />
                       ) : (
                         <input
-                          type="text"
+                          type={slot.type === "number" ? "number" : "text"}
+                          min={slot.constraints?.min}
+                          max={slot.constraints?.max}
                           value={params[slot.id] ?? ""}
                           onChange={(e) => setParams({ ...params, [slot.id]: e.target.value })}
                           placeholder={slot.defaultValue ? String(slot.defaultValue) : recipeSlotDescription(selectedRecipe, slot, lang)}
