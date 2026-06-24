@@ -498,10 +498,18 @@ export interface RecipeSlotDef {
   id: string;
   name: string;
   description: string;
-  type: "zone" | "equipment" | "number" | "duration" | "time" | "boolean" | "text" | "data-key";
+  type: "zone" | "equipment" | "number" | "duration" | "time" | "boolean" | "text" | "data-key" | "select";
   required: boolean;
   list?: boolean;
   defaultValue?: unknown;
+  /** For `type: "select"` — the closed list of choices rendered as a dropdown.
+   *  `label` is the English fallback; per-language labels live in the recipe's
+   *  i18n under `slots[id].options[value]`. Spec 126. */
+  options?: { value: string; label: string }[];
+  /** Hide this slot in the recipe form (removed from the layout) when a sibling
+   *  slot's value matches (e.g. hide a fixed-time picker when a "kind" select is
+   *  sunrise/sunset). Spec 126. */
+  hiddenWhen?: { slot: string; equals: string | string[] };
   constraints?: {
     equipmentType?: EquipmentType | EquipmentType[];
     min?: number;
@@ -520,6 +528,8 @@ export interface RecipeSlotDef {
 export interface RecipeSlotI18n {
   name: string;
   description: string;
+  /** Per-language labels for a `select` slot's options, keyed by option value. Spec 126. */
+  options?: Record<string, string>;
 }
 
 export interface RecipeLangPack {
