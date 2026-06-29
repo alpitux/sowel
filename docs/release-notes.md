@@ -13,6 +13,12 @@ This page summarises every published version, newest first. For the full diff be
 
 ## 1.24.x: Web Push notifications
 
+### v1.24.2 — 2026-06-29 { #v1-24-2 }
+
+- Fix (notifications): the "Test channel" button now delivers a real notification for the Web Push channel. It previously only validated the VAPID keys without sending anything, so it looked like nothing happened. It also returns a clear error when no device has enabled push yet. (#288)
+- Fix (notifications): Web Push notifications no longer show a redundant "Sowel" title. The installed app (and the browser) already labels the notification with the Sowel name, so the message itself is now the notification heading. (#288)
+- Fix (ui): the Administration > Notifications page is now readable on mobile. The publisher actions move onto their own row, the channel (Telegram or Web Push) is labelled correctly instead of always showing "Telegram", and mapping rows wrap cleanly. (#288)
+
 ### v1.24.1 — 2026-06-29 { #v1-24-1 }
 
 - Fix (core): Web Push now works on iOS and Safari. Apple's push gateway rejected every notification (HTTP 403) because the default VAPID subject used a `.local` domain, which Apple refuses (Chrome and Android were unaffected). The default is now a valid contact, and existing instances self-heal the stored value on update without regenerating keys, so previously registered devices keep working. (#287)

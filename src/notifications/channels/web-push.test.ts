@@ -55,7 +55,7 @@ describe("WebPushChannel", () => {
       endpoint: "https://push/1",
       keys: { p256dh: "p", auth: "a" },
     });
-    expect(JSON.parse(payload as string)).toEqual({ title: "Sowel", body: "Hello world" });
+    expect(JSON.parse(payload as string)).toEqual({ title: "Hello world" });
     expect((options as { vapidDetails: VapidKeys }).vapidDetails).toEqual({
       subject: vapid.subject,
       publicKey: vapid.publicKey,
@@ -103,14 +103,27 @@ describe("WebPushChannel", () => {
     expect(sendNotification).toHaveBeenCalledTimes(2);
   });
 
-  it("testConnection resolves when VAPID keys are present", async () => {
+  it("testConnection delivers a real test push to every subscription", async () => {
+    const mgr = createMockManager([sub("https://push/1"), sub("https://push/2")]);
+    sendNotification.mockResolvedValue({ statusCode: 201 });
+
+    const channel = new WebPushChannel(mgr, vapid, logger);
+    await channel.testConnection({});
+
+    expect(sendNotification).toHaveBeenCalledTimes(2);
+    const [, payload] = sendNotification.mock.calls[0];
+    expect(JSON.parse(payload as string).title).toMatch(/test/i);
+  });
+
+  it("testConnection rejects when no device is subscribed", async () => {
     const channel = new WebPushChannel(createMockManager([]), vapid, logger);
-    await expect(channel.testConnection({})).resolves.toBeUndefined();
+    await expect(channel.testConnection({})).rejects.toThrow(/subscription/i);
+    expect(sendNotification).not.toHaveBeenCalled();
   });
 
   it("testConnection rejects when VAPID keys are missing", async () => {
     const channel = new WebPushChannel(
-      createMockManager([]),
+      createMockManager([sub("https://push/1")]),
       { publicKey: "", privateKey: "", subject: "" },
       logger,
     );
