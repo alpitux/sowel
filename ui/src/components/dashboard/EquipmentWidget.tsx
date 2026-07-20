@@ -349,6 +349,12 @@ function ShutterEquipmentWidget({
     [/^shutter\d*_state$/],
   );
   const hasState = !!moveBinding;
+  // Some bridges cannot actually stop the shutter mid-travel (e.g. Bubendorff
+  // shutters via an "iDiamant with Netatmo" bridge, sowel-plugin-legrand-
+  // control — confirmed live: a stop command only makes the motor pause
+  // briefly before it continues to its original target). The integration
+  // signals this by omitting "STOP" from the move order's enumValues.
+  const hasStop = !moveBinding?.enumValues || moveBinding.enumValues.some((v) => v.toUpperCase() === "STOP");
   const level = position !== null ? shutterLevel(position) : null;
 
   // Awning vocabulary swap (mirrors ShutterControl):
@@ -410,14 +416,16 @@ function ShutterEquipmentWidget({
           >
             {executing ? <Loader2 size={16} className="animate-spin" /> : <ChevronUp size={16} strokeWidth={2} />}
           </button>
-          <button
-            onClick={() => handleCommand("STOP")}
-            disabled={executing}
-            className="w-10 h-10 flex items-center justify-center rounded-[6px] transition-all duration-150 cursor-pointer border border-border bg-surface text-text-secondary hover:border-text-tertiary hover:text-text hover:bg-border-light active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-            title={t("controls.stop")}
-          >
-            <Square size={11} strokeWidth={2.5} />
-          </button>
+          {hasStop && (
+            <button
+              onClick={() => handleCommand("STOP")}
+              disabled={executing}
+              className="w-10 h-10 flex items-center justify-center rounded-[6px] transition-all duration-150 cursor-pointer border border-border bg-surface text-text-secondary hover:border-text-tertiary hover:text-text hover:bg-border-light active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+              title={t("controls.stop")}
+            >
+              <Square size={11} strokeWidth={2.5} />
+            </button>
+          )}
           <button
             onClick={() => handleCommand("CLOSE")}
             disabled={executing}
@@ -1277,6 +1285,13 @@ function PoolCoverEquipmentWidget({
   };
 
   const hasState = !!moveBinding;
+  // Some bridges cannot actually stop the cover/shutter mid-travel (e.g.
+  // Bubendorff shutters via an "iDiamant with Netatmo" bridge,
+  // sowel-plugin-legrand-control — confirmed live: a stop command only
+  // makes the motor pause briefly before it continues to its original
+  // target). The integration signals this by omitting "STOP" from the
+  // move order's enumValues.
+  const hasStop = !moveBinding?.enumValues || moveBinding.enumValues.some((v) => v.toUpperCase() === "STOP");
 
   return (
     <WidgetCard label={label}>
@@ -1320,14 +1335,16 @@ function PoolCoverEquipmentWidget({
           >
             {executing ? <Loader2 size={16} className="animate-spin" /> : <ChevronLeft size={16} strokeWidth={2} />}
           </button>
-          <button
-            onClick={() => handleCommand("STOP")}
-            disabled={executing}
-            className="w-10 h-10 flex items-center justify-center rounded-[6px] transition-all duration-150 cursor-pointer border border-border bg-surface text-text-secondary hover:border-text-tertiary hover:text-text hover:bg-border-light active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-            title={t("controls.stop")}
-          >
-            <Square size={11} strokeWidth={2.5} />
-          </button>
+          {hasStop && (
+            <button
+              onClick={() => handleCommand("STOP")}
+              disabled={executing}
+              className="w-10 h-10 flex items-center justify-center rounded-[6px] transition-all duration-150 cursor-pointer border border-border bg-surface text-text-secondary hover:border-text-tertiary hover:text-text hover:bg-border-light active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+              title={t("controls.stop")}
+            >
+              <Square size={11} strokeWidth={2.5} />
+            </button>
+          )}
           <button
             onClick={() => handleCommand("CLOSE")}
             disabled={executing}

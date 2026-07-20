@@ -132,6 +132,9 @@ export function computeBindingCandidates(
     case "awning":
     case "shutter": {
       // Group orders by shutter index (e.g. shutter_state + shutter_position).
+      // This key-name convention (Tasmota-style: shutter_state/shutterN_state)
+      // is what lets a single physical device expose several independent
+      // shutter channels.
       const byGroup = new Map<string, { dataKeys: string[]; orderKeys: string[] }>();
       for (const o of deviceOrders) {
         const g = extractShutterGroupKey(o.key);
@@ -147,6 +150,30 @@ export function computeBindingCandidates(
         entry.dataKeys.push(d.key);
         byGroup.set(g, entry);
       }
+
+      // Category-first fallback (mirrors ShutterControl.tsx's own resolver)
+      // for integrations that don't use the shutter_*/shutterN_* key naming
+      // convention at all — e.g. Legrand/Bubendorff Home+Control
+      // (sowel-plugin-legrand-control), whose device exposes
+      // current_position / target_position / state. Before this fallback,
+      // such a device produced ZERO candidates here, so the "Create
+      // equipment" picker had nothing to auto-bind and the equipment was
+      // created with no bindings at all (shows as offline — spec 116 has
+      // nothing to derive status from). A device using this convention only
+      // ever exposes one shutter channel, so everything collapses into a
+      // single group instead of being indexed like the Tasmota case above.
+      if (byGroup.size === 0) {
+        const dataKeys = deviceData
+          .filter((d) => d.category === "shutter_position")
+          .map((d) => d.key);
+        const orderKeys = deviceOrders
+          .filter((o) => o.category === "set_shutter_position" || o.category === "shutter_move")
+          .map((o) => o.key);
+        if (orderKeys.length > 0) {
+          byGroup.set("1", { dataKeys, orderKeys });
+        }
+      }
+
       const candidates: BindingCandidate[] = [];
       for (const [g, entry] of byGroup) {
         if (entry.orderKeys.length === 0) continue;
