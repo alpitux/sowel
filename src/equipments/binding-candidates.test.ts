@@ -75,6 +75,61 @@ describe("computeBindingCandidates", () => {
     expect(result[0].dataKeys.sort()).toEqual(["shutter_position", "shutter_state"]);
   });
 
+  // Regression test for the bug found while setting up Bubendorff shutters
+  // (sowel-plugin-legrand-control): that integration's device data/orders
+  // are named current_position/target_position/state — NOT shutter_state/
+  // shutter_position — so extractShutterGroupKey() matched nothing and the
+  // "Create equipment" manual picker had zero candidates to auto-bind,
+  // silently creating an equipment with no bindings at all (shown as
+  // offline). The category-based fallback below fixes this without
+  // affecting the Tasmota-style indexed convention tested above.
+  it("shutter with Legrand/Bubendorff-style keys (current_position/target_position/state) → one candidate via category fallback", () => {
+    const orders = [
+      order("target_position", "number", { category: "set_shutter_position", min: 0, max: 100 }),
+      order("state", "text", { category: "shutter_move", enumValues: ["OPEN", "CLOSE"] }),
+    ];
+    const datas = [data("current_position", "number", { category: "shutter_position" })];
+    const result = computeBindingCandidates("shutter", datas, orders);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("shutter1");
+    expect(result[0].orderKeys.sort()).toEqual(["state", "target_position"]);
+    expect(result[0].dataKeys).toEqual(["current_position"]);
+  });
+
+  it("shutter with Legrand/Bubendorff-style keys but no position data → still binds the order-only candidate", () => {
+    // Some modules (none currently, but defensive) might expose only an
+    // order with no matching position data — should not be dropped.
+    const orders = [
+      order("target_position", "number", { category: "set_shutter_position", min: 0, max: 100 }),
+    ];
+    const result = computeBindingCandidates("shutter", [], orders);
+    expect(result).toHaveLength(1);
+    expect(result[0].dataKeys).toEqual([]);
+    expect(result[0].orderKeys).toEqual(["target_position"]);
+  });
+
+  it("shutter with neither key-name nor category match → no candidates (unchanged behavior)", () => {
+    const orders = [order("foo", "number", { category: "generic" })];
+    const result = computeBindingCandidates("shutter", [], orders);
+    expect(result).toHaveLength(0);
+  });
+
+  it("shutter prefers the Tasmota-style key grouping over the category fallback when both are present", () => {
+    // If a device somehow matches the indexed key convention, that grouping
+    // wins and the category fallback never runs (byGroup.size > 0 guard).
+    const orders = [
+      order("shutter_state", "enum", { enumValues: ["OPEN", "CLOSE", "STOP"] }),
+      order("shutter_position", "number", { min: 0, max: 100 }),
+      // An unrelated category-matching order that would otherwise trigger
+      // the fallback if it ran — it must NOT be picked up here.
+      order("target_position", "number", { category: "set_shutter_position" }),
+    ];
+    const datas = [data("shutter_state", "enum"), data("shutter_position", "number")];
+    const result = computeBindingCandidates("shutter", datas, orders);
+    expect(result).toHaveLength(1);
+    expect(result[0].orderKeys.sort()).toEqual(["shutter_position", "shutter_state"]);
+  });
+
   it("switch on a single-relay device → one candidate", () => {
     const orders = [order("R1", "enum", { enumValues: ["ON", "OFF"] })];
     const datas = [data("R1", "enum")];

@@ -1041,6 +1041,12 @@ function ShutterDetailContent({
     );
   const hasState = !!moveBinding;
   const hasPosition = !!positionOrderBinding;
+  // Some bridges cannot actually stop the shutter mid-travel (e.g. Bubendorff
+  // shutters via an "iDiamant with Netatmo" bridge, sowel-plugin-legrand-
+  // control — confirmed live: a stop command only makes the motor pause
+  // briefly before it continues to its original target). The integration
+  // signals this by omitting "STOP" from the move order's enumValues.
+  const hasStop = !moveBinding?.enumValues || moveBinding.enumValues.some((v) => v.toUpperCase() === "STOP");
 
   const handleCommand = async (command: "OPEN" | "STOP" | "CLOSE") => {
     if (executing || !moveBinding) return;
@@ -1106,13 +1112,15 @@ function ShutterDetailContent({
             >
               <OpenIcon size={20} strokeWidth={2} />
             </button>
-            <button
-              onClick={() => handleCommand("STOP")}
-              disabled={executing}
-              className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
-            >
-              <Square size={14} strokeWidth={2.5} />
-            </button>
+            {hasStop && (
+              <button
+                onClick={() => handleCommand("STOP")}
+                disabled={executing}
+                className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
+              >
+                <Square size={14} strokeWidth={2.5} />
+              </button>
+            )}
             <button
               onClick={() => handleCommand("CLOSE")}
               disabled={executing}

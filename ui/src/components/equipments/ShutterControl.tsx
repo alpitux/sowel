@@ -44,6 +44,16 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
 
   const hasState = !!moveBinding;
   const hasPositionOrder = !!positionOrderBinding;
+  // Some bridges cannot actually stop the shutter mid-travel even though
+  // they otherwise support the OPEN/CLOSE move order — confirmed live on a
+  // Bubendorff shutter driven through an "iDiamant with Netatmo" bridge
+  // (sowel-plugin-legrand-control): sending a stop command only makes the
+  // motor pause briefly before it continues on to its original target, so a
+  // Stop button there would silently lie about what just happened. The
+  // integration signals "no real stop" by omitting "STOP" from the move
+  // order's enumValues; when enumValues is undefined we keep the historical
+  // behavior (always show Stop) so existing integrations are unaffected.
+  const hasStop = !moveBinding?.enumValues || moveBinding.enumValues.some((v) => v.toUpperCase() === "STOP");
 
   // Pool covers slide horizontally → ←/→ arrows. Window shutters and awnings keep ↑/↓.
   const isHorizontal = equipment.type === "pool_cover";
@@ -130,14 +140,16 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
             >
               <OpenIcon size={10} strokeWidth={2} />
             </button>
-            <button
-              onClick={(e) => handleCommand("STOP", e)}
-              disabled={executing}
-              className={sttClass}
-              title={t("controls.stop")}
-            >
-              <Square size={9} strokeWidth={0} fill="currentColor" />
-            </button>
+            {hasStop && (
+              <button
+                onClick={(e) => handleCommand("STOP", e)}
+                disabled={executing}
+                className={sttClass}
+                title={t("controls.stop")}
+              >
+                <Square size={9} strokeWidth={0} fill="currentColor" />
+              </button>
+            )}
             <button
               onClick={(e) => handleCommand("CLOSE", e)}
               disabled={executing}
@@ -197,14 +209,16 @@ export function ShutterControl({ equipment, onExecuteOrder, compact }: ShutterCo
             <OpenIcon size={16} strokeWidth={1.5} />
             {t(openKey)}
           </button>
-          <button
-            onClick={() => handleCommand("STOP")}
-            disabled={executing}
-            className="flex items-center gap-2 px-4 py-2 rounded-[6px] text-[13px] font-medium transition-colors duration-150 bg-border-light text-text-secondary hover:bg-border hover:text-text disabled:opacity-50"
-          >
-            <Square size={12} strokeWidth={2} />
-            {t("controls.stop")}
-          </button>
+          {hasStop && (
+            <button
+              onClick={() => handleCommand("STOP")}
+              disabled={executing}
+              className="flex items-center gap-2 px-4 py-2 rounded-[6px] text-[13px] font-medium transition-colors duration-150 bg-border-light text-text-secondary hover:bg-border hover:text-text disabled:opacity-50"
+            >
+              <Square size={12} strokeWidth={2} />
+              {t("controls.stop")}
+            </button>
+          )}
           <button
             onClick={() => handleCommand("CLOSE")}
             disabled={executing}
