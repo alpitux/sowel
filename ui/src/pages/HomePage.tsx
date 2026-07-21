@@ -25,7 +25,7 @@ import { ZoneModesSection } from "../components/home/ZoneModesSection";
 import { ActivityPanel } from "../components/zones/ActivityPanel";
 import { EquipmentForm } from "../components/equipments/EquipmentForm";
 import { autoCreateBindings } from "../components/equipments/bindingUtils";
-import { buildBoundOrderKeysByDevice, buildBoundDataKeysByDevice } from "../lib/binding-utils";
+import { buildBoundOrderKeysByDevice, buildBoundDataKeysByDevice, allSupportStop } from "../lib/binding-utils";
 import { useWsSubscription } from "../hooks/useWsSubscription";
 import type { EquipmentType, ZoneAggregatedData, ZoneWithChildren } from "../types";
 
@@ -83,6 +83,16 @@ export function HomePage() {
   }, [equipments, zoneId]);
 
   const aggData = zoneId ? aggregationData[zoneId] : undefined;
+
+  // Bulk zone commands (allShuttersOpen/Stop/Close) act on the whole subtree
+  // (see collectZoneAndDescendantIds) — the Stop button must be hidden if
+  // any shutter in that scope can't really stop mid-travel (e.g. Bubendorff).
+  const hasStoppableShutters = useMemo(() => {
+    if (!currentZone) return true;
+    const scopeIds = new Set(collectZoneAndDescendantIds(currentZone));
+    const shutters = equipments.filter((eq) => eq.type === "shutter" && scopeIds.has(eq.zoneId));
+    return allSupportStop(shutters);
+  }, [currentZone, equipments]);
   const [commandLoading, setCommandLoading] = useState<ZoneOrder | null>(null);
 
   const handleZoneCommand = useCallback(async (orderKey: ZoneOrder) => {
@@ -164,6 +174,7 @@ export function HomePage() {
             <ZoneCommands
               hasLights={aggData.lightsTotal > 0}
               hasShutters={aggData.shuttersTotal > 0}
+              hasStoppableShutters={hasStoppableShutters}
               loading={commandLoading}
               onCommand={handleZoneCommand}
             />
@@ -483,6 +494,22 @@ function findZoneById(zones: ZoneWithChildren[], id: string): ZoneWithChildren |
     if (found) return found;
   }
   return null;
+}
+
+/** Zone ids reachable from `zone` itself plus every descendant, matching
+ *  the backend's own `zoneManager.getDescendantIds` scope used by
+ *  POST /zones/:id/orders/:orderKey — the bulk zone commands act on the
+ *  whole subtree, not just the exact zone. */
+function collectZoneAndDescendantIds(zone: ZoneWithChildren): string[] {
+  const ids = [zone.id];
+  const walk = (z: ZoneWithChildren) => {
+    for (const child of z.children ?? []) {
+      ids.push(child.id);
+      walk(child);
+    }
+  };
+  walk(zone);
+  return ids;
 }
 
 function getFirstLeafZone(zones: ZoneWithChildren[]): ZoneWithChildren | null {

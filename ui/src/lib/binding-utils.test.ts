@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { freeCandidates, buildBoundDataKeysByDevice } from "./binding-utils";
+import { freeCandidates, buildBoundDataKeysByDevice, allSupportStop } from "./binding-utils";
 import type { BindingCandidate } from "./binding-candidates";
 import type { EquipmentWithDetails } from "../types";
 
@@ -66,5 +66,42 @@ describe("buildBoundDataKeysByDevice", () => {
     ] as unknown as EquipmentWithDetails[];
     const map = buildBoundDataKeysByDevice(equipments);
     expect([...map.inv].sort()).toEqual(["ch1_power", "inverter_temp"]);
+  });
+});
+
+describe("allSupportStop", () => {
+  it("true when no equipment has a move order at all", () => {
+    const equipments = [{ orderBindings: [] }] as unknown as EquipmentWithDetails[];
+    expect(allSupportStop(equipments)).toBe(true);
+  });
+
+  it("true when every move order's enumValues includes STOP", () => {
+    const equipments = [
+      { orderBindings: [{ alias: "state", category: "shutter_move", enumValues: ["OPEN", "CLOSE", "STOP"] }] },
+      { orderBindings: [{ alias: "state", category: "shutter_move", enumValues: ["OPEN", "CLOSE", "STOP"] }] },
+    ] as unknown as EquipmentWithDetails[];
+    expect(allSupportStop(equipments)).toBe(true);
+  });
+
+  it("true when enumValues is undefined (legacy/no-declaration integrations default to supporting Stop)", () => {
+    const equipments = [
+      { orderBindings: [{ alias: "state", category: "shutter_move" }] },
+    ] as unknown as EquipmentWithDetails[];
+    expect(allSupportStop(equipments)).toBe(true);
+  });
+
+  it("false when at least one equipment's enumValues omits STOP (e.g. Bubendorff/NBR)", () => {
+    const equipments = [
+      { orderBindings: [{ alias: "state", category: "shutter_move", enumValues: ["OPEN", "CLOSE", "STOP"] }] },
+      { orderBindings: [{ alias: "state", category: "shutter_move", enumValues: ["OPEN", "CLOSE"] }] },
+    ] as unknown as EquipmentWithDetails[];
+    expect(allSupportStop(equipments)).toBe(false);
+  });
+
+  it("resolves the move binding by alias/regex fallback when no shutter_move category is set", () => {
+    const equipments = [
+      { orderBindings: [{ alias: "shutter2_state", enumValues: ["OPEN", "CLOSE"] }] },
+    ] as unknown as EquipmentWithDetails[];
+    expect(allSupportStop(equipments)).toBe(false);
   });
 });

@@ -20,6 +20,11 @@ type Category = "light" | "light-off" | "shutter";
 interface ZoneCommandsProps {
   hasLights: boolean;
   hasShutters: boolean;
+  /** False if at least one shutter in the zone can't really stop
+   *  mid-travel (e.g. a Bubendorff shutter) — hides the bulk Stop
+   *  button entirely rather than letting it silently fail for that
+   *  one shutter while working for the rest. Defaults to true. */
+  hasStoppableShutters?: boolean;
   loading: ZoneOrder | null;
   onCommand: (order: ZoneOrder) => void;
 }
@@ -58,7 +63,13 @@ function ZCmdsBtn({ cat, title, loading, disabled, onClick, children }: ZCmdsBtn
   );
 }
 
-export function ZoneCommands({ hasLights, hasShutters, loading, onCommand }: ZoneCommandsProps) {
+export function ZoneCommands({
+  hasLights,
+  hasShutters,
+  hasStoppableShutters = true,
+  loading,
+  onCommand,
+}: ZoneCommandsProps) {
   const { t } = useTranslation();
   const busy = loading !== null;
 
@@ -108,15 +119,17 @@ export function ZoneCommands({ hasLights, hasShutters, loading, onCommand }: Zon
           >
             <ChevronUp size={16} strokeWidth={2} />
           </ZCmdsBtn>
-          <ZCmdsBtn
-            cat="shutter"
-            title={t("zones.commands.allShuttersStop", { defaultValue: "Stop" })}
-            loading={loading === "allShuttersStop"}
-            disabled={busy}
-            onClick={() => onCommand("allShuttersStop")}
-          >
-            <Square size={14} strokeWidth={1.5} fill="currentColor" />
-          </ZCmdsBtn>
+          {hasStoppableShutters && (
+            <ZCmdsBtn
+              cat="shutter"
+              title={t("zones.commands.allShuttersStop", { defaultValue: "Stop" })}
+              loading={loading === "allShuttersStop"}
+              disabled={busy}
+              onClick={() => onCommand("allShuttersStop")}
+            >
+              <Square size={14} strokeWidth={1.5} fill="currentColor" />
+            </ZCmdsBtn>
+          )}
           <ZCmdsBtn
             cat="shutter"
             title={t("zones.commands.allShuttersClose")}

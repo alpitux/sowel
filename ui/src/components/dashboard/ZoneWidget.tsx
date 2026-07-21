@@ -14,6 +14,7 @@ import {
 import type { DashboardWidget, EquipmentWithDetails, ZoneWithChildren, WidgetFamily } from "../../types";
 import { executeZoneOrder, executeEquipmentOrder } from "../../api";
 import { findOrderByCategory } from "../equipments/bindingUtils";
+import { allSupportStop } from "../../lib/binding-utils";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
 import {
   LightBulbIcon,
@@ -315,6 +316,9 @@ function ZoneShutterWidget({
   }, [filteredEquipments]);
 
   const level = avgPosition !== null ? shutterLevel(avgPosition) : null;
+  // Hide the bulk Stop button if any shutter in this zone/subtree can't
+  // really stop mid-travel (e.g. Bubendorff) — see allSupportStop().
+  const hasStop = useMemo(() => allSupportStop(filteredEquipments), [filteredEquipments]);
 
   return (
     <ZoneWidgetCard label={label} empty={filteredEquipments.length === 0}>
@@ -348,14 +352,16 @@ function ZoneShutterWidget({
         >
           {commandLoading === "allShuttersOpen" ? <Loader2 size={16} className="animate-spin" /> : <ChevronUp size={16} strokeWidth={2} />}
         </button>
-        <button
-          onClick={() => onCommand("allShuttersStop")}
-          disabled={commandLoading !== null}
-          className="w-10 h-10 flex items-center justify-center rounded-[6px] transition-all duration-150 cursor-pointer border border-border bg-surface text-text-secondary hover:border-text-tertiary hover:text-text hover:bg-border-light active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-          title={t("zones.commands.allShuttersStop")}
-        >
-          {commandLoading === "allShuttersStop" ? <Loader2 size={16} className="animate-spin" /> : <Square size={11} strokeWidth={2.5} />}
-        </button>
+        {hasStop && (
+          <button
+            onClick={() => onCommand("allShuttersStop")}
+            disabled={commandLoading !== null}
+            className="w-10 h-10 flex items-center justify-center rounded-[6px] transition-all duration-150 cursor-pointer border border-border bg-surface text-text-secondary hover:border-text-tertiary hover:text-text hover:bg-border-light active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+            title={t("zones.commands.allShuttersStop")}
+          >
+            {commandLoading === "allShuttersStop" ? <Loader2 size={16} className="animate-spin" /> : <Square size={11} strokeWidth={2.5} />}
+          </button>
+        )}
         <button
           onClick={() => onCommand("allShuttersClose")}
           disabled={commandLoading !== null}
@@ -396,6 +402,7 @@ function ZoneAwningWidget({
     }
     return { deployedCount: deployed, total: filteredEquipments.length };
   }, [filteredEquipments]);
+  const hasStop = useMemo(() => allSupportStop(filteredEquipments), [filteredEquipments]);
 
   return (
     <ZoneWidgetCard label={label} empty={filteredEquipments.length === 0}>
@@ -435,14 +442,16 @@ function ZoneAwningWidget({
         >
           {commandLoading === "allAwningsRetract" ? <Loader2 size={16} className="animate-spin" /> : <ChevronUp size={16} strokeWidth={2} />}
         </button>
-        <button
-          onClick={() => onCommand("allAwningsStop")}
-          disabled={commandLoading !== null}
-          className="w-10 h-10 flex items-center justify-center rounded-[6px] transition-all duration-150 cursor-pointer border border-border bg-surface text-text-secondary hover:border-text-tertiary hover:text-text hover:bg-border-light active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-          title={t("zones.commands.allAwningsStop")}
-        >
-          {commandLoading === "allAwningsStop" ? <Loader2 size={16} className="animate-spin" /> : <Square size={11} strokeWidth={2.5} />}
-        </button>
+        {hasStop && (
+          <button
+            onClick={() => onCommand("allAwningsStop")}
+            disabled={commandLoading !== null}
+            className="w-10 h-10 flex items-center justify-center rounded-[6px] transition-all duration-150 cursor-pointer border border-border bg-surface text-text-secondary hover:border-text-tertiary hover:text-text hover:bg-border-light active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+            title={t("zones.commands.allAwningsStop")}
+          >
+            {commandLoading === "allAwningsStop" ? <Loader2 size={16} className="animate-spin" /> : <Square size={11} strokeWidth={2.5} />}
+          </button>
+        )}
         <button
           onClick={() => onCommand("allAwningsExtend")}
           disabled={commandLoading !== null}
