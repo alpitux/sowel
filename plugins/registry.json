@@ -495,7 +495,7 @@
     "icon": "ShieldAlert",
     "author": "alpitux",
     "repo": "alpitux/sowel-recipe-runtime-guard",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "tags": ["safety", "pump", "motor", "power", "protection", "automation"],
     "i18n": {
       "fr": {
@@ -505,6 +505,6 @@
     },
     "sowelVersion": ">=1.2.12",
     "owner": "alpitux",
-    "sha256": "7dda57b8f2f8aad295add8e03560d0f68f9ab0b2f765934ed8fce557d58dabbe"
+    "sha256": "6f50d7950c1157066090bd03e59a9898cd204d900b72d20a449ed62e8c84c11d"
   }
 ]
