@@ -1,6 +1,39 @@
 import type { EquipmentWithDetails } from "../types";
 import type { BindingCandidate } from "./binding-candidates";
 
+/** The minimal shape `allSupportStop` needs — deliberately looser than
+ *  `EquipmentWithDetails` so callers with a narrower/local equipment type
+ *  (e.g. a button-action form's own prop shape) don't need to cast. */
+interface EquipmentLikeForStopCheck {
+  orderBindings: readonly { alias: string; category?: string; enumValues?: string[] }[];
+}
+
+/**
+ * True unless at least one of the given equipments' shutter/pool-cover
+ * move order signals "no real Stop" by omitting "STOP" from its
+ * enumValues (see ShutterControl.tsx's own per-equipment `hasStop`
+ * check for the underlying convention — some bridges, e.g. Bubendorff
+ * shutters via an "iDiamant with Netatmo" bridge, cannot actually stop
+ * the motor mid-travel). Used to gate bulk "Stop all shutters"/"Stop
+ * all awnings" commands (zone toolbar, dashboard zone widget, zone
+ * widget detail sheet, and the button-action zone-order picker): if any
+ * one shutter in the group can't really stop, the bulk button/option is
+ * hidden entirely rather than silently failing for that one equipment
+ * while working for the rest.
+ */
+export function allSupportStop(equipments: readonly EquipmentLikeForStopCheck[]): boolean {
+  for (const eq of equipments) {
+    const moveBinding =
+      eq.orderBindings.find((ob) => ob.category === "pool_cover_move" || ob.category === "shutter_move") ??
+      eq.orderBindings.find((ob) => ob.alias === "state" || /shutter\d*_state/.test(ob.alias));
+    if (!moveBinding) continue; // no move order at all — irrelevant to Stop
+    if (moveBinding.enumValues && !moveBinding.enumValues.some((v) => v.toUpperCase() === "STOP")) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /** Build { deviceId → Set<device_order.key> } from all existing equipments.
  * Used by DeviceSelector to hide candidates whose order keys are already
  * consumed by another equipment. */

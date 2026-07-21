@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Zap, Trash2, Plus, Pencil } from "lucide-react";
 import { getButtonActionBindings, addButtonActionBinding, updateButtonActionBinding, removeButtonActionBinding } from "../../api";
@@ -7,6 +7,7 @@ import { useEquipments } from "../../store/useEquipments";
 import { useRecipes } from "../../store/useRecipes";
 import { useZones } from "../../store/useZones";
 import type { ButtonActionBinding, ButtonEffectType, ZoneWithChildren } from "../../types";
+import { allSupportStop } from "../../lib/binding-utils";
 
 const DEFAULT_BUTTON_ACTIONS = ["single", "double", "hold"];
 
@@ -32,6 +33,31 @@ function flattenZones(tree: ZoneWithChildren[]): { id: string; name: string }[] 
   };
   walk(tree);
   return result;
+}
+
+/** Zone id itself plus every descendant, matching the backend's own
+ *  zone-order scope (POST /zones/:id/orders/:orderKey acts on the whole
+ *  subtree, not just the exact zone — see zoneManager.getDescendantIds). */
+function findZoneAndDescendantIds(tree: ZoneWithChildren[], zoneId: string): string[] {
+  const find = (nodes: ZoneWithChildren[]): ZoneWithChildren | null => {
+    for (const z of nodes) {
+      if (z.id === zoneId) return z;
+      const found = find(z.children);
+      if (found) return found;
+    }
+    return null;
+  };
+  const target = find(tree);
+  if (!target) return [zoneId];
+  const ids = [target.id];
+  const walk = (z: ZoneWithChildren) => {
+    for (const child of z.children ?? []) {
+      ids.push(child.id);
+      walk(child);
+    }
+  };
+  walk(target);
+  return ids;
 }
 
 interface ButtonActionsSectionProps {
@@ -176,6 +202,7 @@ export function ButtonActionsSection({ equipmentId }: ButtonActionsSectionProps)
                     modes={modes}
                     equipments={equipments}
                     zones={zones}
+                    zoneTree={zoneTree}
                     instances={instances}
                     actionValues={actionValues}
                     initial={binding}
@@ -215,6 +242,7 @@ export function ButtonActionsSection({ equipmentId }: ButtonActionsSectionProps)
           modes={modes}
           equipments={equipments}
           zones={zones}
+          zoneTree={zoneTree}
           instances={instances}
           actionValues={actionValues}
           onSubmit={handleAdd}
@@ -229,6 +257,7 @@ function AddEffectForm({
   modes,
   equipments,
   zones,
+  zoneTree,
   instances,
   actionValues,
   initial,
@@ -236,8 +265,9 @@ function AddEffectForm({
   onCancel,
 }: {
   modes: { id: string; name: string; active: boolean }[];
-  equipments: { id: string; name: string; type: string; zoneId: string; orderBindings: { alias: string; type?: string; enumValues?: string[]; min?: number; max?: number }[] }[];
+  equipments: { id: string; name: string; type: string; zoneId: string; orderBindings: { alias: string; type?: string; category?: string; enumValues?: string[]; min?: number; max?: number }[] }[];
   zones: { id: string; name: string }[];
+  zoneTree: ZoneWithChildren[];
   instances: { id: string; recipeId: string }[];
   actionValues: string[];
   initial?: ButtonActionBinding;
@@ -294,6 +324,23 @@ function AddEffectForm({
   const [zoValue, setZoValue] = useState(
     initial?.effectType === "zone_order" && initial.config.value != null ? String(initial.config.value) : "",
   );
+  // Hide allShuttersStop/allAwningsStop from the picker if the selected
+  // zone (+ its subtree, matching the backend's own zone-order scope)
+  // contains a shutter/awning that can't really stop mid-travel (e.g.
+  // Bubendorff) — assigning that action to a physical button would just
+  // fail at press time for that one equipment. See allSupportStop().
+  const visibleZoneOrderOptions = useMemo(() => {
+    if (!zoZoneId) return ZONE_ORDER_OPTIONS;
+    const scopeIds = new Set(findZoneAndDescendantIds(zoneTree, zoZoneId));
+    const inScope = equipments.filter((eq) => scopeIds.has(eq.zoneId));
+    const shutterStopOk = allSupportStop(inScope.filter((eq) => eq.type === "shutter"));
+    const awningStopOk = allSupportStop(inScope.filter((eq) => eq.type === "awning"));
+    return ZONE_ORDER_OPTIONS.filter((opt) => {
+      if (opt.key === "allShuttersStop") return shutterStopOk;
+      if (opt.key === "allAwningsStop") return awningStopOk;
+      return true;
+    });
+  }, [zoZoneId, zoneTree, equipments]);
   // recipe_toggle
   const [instanceId, setInstanceId] = useState(
     initial?.effectType === "recipe_toggle" ? String(initial.config.instanceId ?? "") : "",
@@ -659,7 +706,7 @@ function AddEffectForm({
                 className="w-full px-3 py-1.5 text-[13px] bg-surface border border-border rounded-[6px] text-text"
               >
                 <option value="">{t("common.select")}</option>
-                {ZONE_ORDER_OPTIONS.map((opt) => (
+                {visibleZoneOrderOptions.map((opt) => (
                   <option key={opt.key} value={opt.key}>
                     {t(`buttonActions.zoneOrder.${opt.key}`)}
                   </option>

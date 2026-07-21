@@ -27,6 +27,7 @@ import type {
 import { executeZoneOrder } from "../../api";
 import { useEquipmentState } from "../equipments/useEquipmentState";
 import { findOrderByCategory } from "../equipments/bindingUtils";
+import { allSupportStop } from "../../lib/binding-utils";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
 import { SensorValues } from "../equipments/SensorValues";
 import {
@@ -605,6 +606,7 @@ function ZoneShuttersDetail({
   }, [equipments]);
 
   const level = avgPosition !== null ? shutterLevel(avgPosition) : null;
+  const hasStop = useMemo(() => allSupportStop(equipments), [equipments]);
 
   if (equipments.length === 0) return null;
 
@@ -633,14 +635,16 @@ function ZoneShuttersDetail({
         >
           {commandLoading === "allShuttersOpen" ? <Loader2 size={18} className="animate-spin" /> : <ChevronUp size={20} strokeWidth={2} />}
         </button>
-        <button
-          onClick={() => onCommand("allShuttersStop")}
-          disabled={commandLoading !== null}
-          className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
-          title={t("zones.commands.allShuttersStop")}
-        >
-          {commandLoading === "allShuttersStop" ? <Loader2 size={18} className="animate-spin" /> : <Square size={14} strokeWidth={2.5} />}
-        </button>
+        {hasStop && (
+          <button
+            onClick={() => onCommand("allShuttersStop")}
+            disabled={commandLoading !== null}
+            className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
+            title={t("zones.commands.allShuttersStop")}
+          >
+            {commandLoading === "allShuttersStop" ? <Loader2 size={18} className="animate-spin" /> : <Square size={14} strokeWidth={2.5} />}
+          </button>
+        )}
         <button
           onClick={() => onCommand("allShuttersClose")}
           disabled={commandLoading !== null}
@@ -677,6 +681,7 @@ function ZoneAwningsDetail({
     }
     return { deployedCount: deployed, total: equipments.length };
   }, [equipments]);
+  const hasStop = useMemo(() => allSupportStop(equipments), [equipments]);
 
   if (total === 0) return null;
 
@@ -704,14 +709,16 @@ function ZoneAwningsDetail({
         >
           {commandLoading === "allAwningsRetract" ? <Loader2 size={18} className="animate-spin" /> : <ChevronUp size={20} strokeWidth={2} />}
         </button>
-        <button
-          onClick={() => onCommand("allAwningsStop")}
-          disabled={commandLoading !== null}
-          className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
-          title={t("zones.commands.allAwningsStop")}
-        >
-          {commandLoading === "allAwningsStop" ? <Loader2 size={18} className="animate-spin" /> : <Square size={14} strokeWidth={2.5} />}
-        </button>
+        {hasStop && (
+          <button
+            onClick={() => onCommand("allAwningsStop")}
+            disabled={commandLoading !== null}
+            className="flex-1 h-12 flex items-center justify-center rounded-[6px] border border-border bg-surface text-text-secondary hover:bg-border-light transition-colors cursor-pointer active:scale-[0.97]"
+            title={t("zones.commands.allAwningsStop")}
+          >
+            {commandLoading === "allAwningsStop" ? <Loader2 size={18} className="animate-spin" /> : <Square size={14} strokeWidth={2.5} />}
+          </button>
+        )}
         <button
           onClick={() => onCommand("allAwningsExtend")}
           disabled={commandLoading !== null}
