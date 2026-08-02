@@ -218,6 +218,20 @@ Vanne d'arrosage connectée pour le jardin. Conçue pour des devices comme la SO
 - **Agrégation de zone :** compte les vannes ouvertes/totales et somme le débit live sur l'arbre des zones
 - **Base pour** de futures recettes d'arrosage automatique (planification consciente de la pluie)
 
+### Caméras
+
+#### Caméra
+
+Type générique, indépendant du fabricant : tout plugin caméra qui remonte les bonnes données peut s'y lier.
+
+- **Contrôles (si liés) :** vue en direct, actualisation de l'aperçu, activer/désactiver la surveillance, spot lumineux, sirène
+- **Données attendues (si liées) :** aperçu, flux en direct, état de surveillance, mode du spot, dernière détection
+
+!!! tip "Chaque fonctionnalité est activée à la carte, par caméra"
+Qu'une caméra propose un flux en direct, un bouton de surveillance ou remonte des détections dépend uniquement des données/ordres que vous liez — le même mécanisme de liaison que pour tous les autres types d'équipement. Créer une caméra à partir d'un device détecté lie automatiquement l'aperçu, le flux en direct et la bascule de surveillance ; le spot, la sirène et les détections restent à activer manuellement depuis la page de détail ("Ajouter une liaison") si vous le souhaitez. Une fonctionnalité non liée reste inaccessible même via l'API, pas seulement masquée dans l'interface — c'est un choix de confidentialité délibéré, pas qu'une préférence d'affichage.
+
+L'aperçu et le flux en direct passent par le backend de Sowel — votre navigateur ne parle jamais directement à la caméra et n'apprend jamais son adresse réseau.
+
 ### Autre
 
 #### Interrupteur / Prise

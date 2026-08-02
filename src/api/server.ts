@@ -42,6 +42,7 @@ import { registerDeviceRoutes } from "./routes/devices.js";
 import { registerHealthRoutes } from "./routes/health.js";
 import { registerZoneRoutes } from "./routes/zones.js";
 import { registerEquipmentRoutes } from "./routes/equipments.js";
+import { registerCameraRoutes } from "./routes/camera.js";
 import { registerRecipeRoutes } from "./routes/recipes.js";
 import { registerAuthRoutes } from "./routes/auth.js";
 import { registerMeRoutes } from "./routes/me.js";
@@ -250,6 +251,7 @@ export async function createServer(deps: ServerDeps) {
   registerDeviceRoutes(app, { deviceManager, logger });
   registerZoneRoutes(app, { zoneManager, zoneAggregator, equipmentManager, logger });
   registerEquipmentRoutes(app, { equipmentManager, logger });
+  registerCameraRoutes(app, { equipmentManager, logger });
   registerRecipeRoutes(app, { recipeManager, logger });
   registerModeRoutes(app, { modeManager, buttonActionManager, auditLogger, userManager, logger });
   registerCalendarRoutes(app, { calendarManager, logger });

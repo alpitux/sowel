@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Camera } from "lucide-react";
 import type { EquipmentType, EquipmentWithDetails } from "../../types";
+import { useCameraSnapshot } from "../../hooks/useCameraSnapshot";
 import { useEquipmentState, formatValue } from "../equipments/useEquipmentState";
 import { SensorValues } from "../equipments/SensorValues";
 import { LightControl } from "../equipments/LightControl";
@@ -54,6 +56,8 @@ const TYPE_TINTS: Record<EquipmentType, Tint> = {
   appliance:               { bg: "bg-border-light", text: "text-text-secondary" },
   // Spec 120 — displays use the muted "info-only" tint, matching sensors.
   display:                 { bg: "bg-sensor-50",    text: "text-sensor-500" },
+  // Spec 133 — cameras use the same muted "info-only" tint.
+  camera:                  { bg: "bg-sensor-50",    text: "text-sensor-500" },
 };
 
 export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: CompactEquipmentCardProps) {
@@ -83,12 +87,16 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
   const isPoolCover = equipment.type === "pool_cover";
   const isPoolHeatPump = equipment.type === "pool_heat_pump";
   const isSolar = equipment.type === "solar_panel";
+  const isCamera = equipment.type === "camera";
 
   // Find primary data value for generic equipments
   const isKnownType =
     isLight || isSwitch || isSensor || isShutterFamily || isThermostat || isHeater || isGate ||
     isEnergyMeter || isWeatherForecast || isMediaPlayer || isAppliance ||
-    isWaterValve || isPoolPump || isPoolCover || isPoolHeatPump || isSolar;
+    isWaterValve || isPoolPump || isPoolCover || isPoolHeatPump || isSolar || isCamera;
+
+  const hasCameraSnapshot =
+    isCamera && equipment.dataBindings.some((b) => b.category === "camera_snapshot_url");
 
   // Solar panel: show the produced DC power (W/kW) as the headline value.
   const solarPowerW = isSolar
@@ -196,6 +204,10 @@ export function CompactEquipmentCard({ equipment, onExecuteOrder, zoneName }: Co
               : `${Math.round(solarPowerW)} W`}
         </span>
       )}
+
+      {/* Camera compact — snapshot thumbnail, blob-fetched (an <img src>
+       * can't carry the Authorization header the media-proxy route needs). */}
+      {isCamera && hasCameraSnapshot && <CompactCameraThumbnail equipmentId={equipment.id} />}
 
       {/* Media player compact */}
       {isMediaPlayer && <CompactMediaPlayer equipment={equipment} />}
@@ -426,6 +438,24 @@ function CompactMediaPlayer({ equipment }: { equipment: EquipmentWithDetails }) 
     <div className="flex items-center gap-2 flex-shrink-0">
       {source && (
         <span className="text-[12px] text-text-secondary font-medium">{source}</span>
+      )}
+    </div>
+  );
+}
+
+const COMPACT_SNAPSHOT_REFRESH_MS = 60_000;
+
+/** Small snapshot thumbnail for the zone row, refreshed less often than the
+ * equipment detail page's own view since many rows may be visible at once. */
+function CompactCameraThumbnail({ equipmentId }: { equipmentId: string }) {
+  const { url } = useCameraSnapshot(equipmentId, true, COMPACT_SNAPSHOT_REFRESH_MS);
+
+  return (
+    <div className="w-11 h-8 rounded-[4px] bg-black/80 overflow-hidden flex items-center justify-center flex-shrink-0">
+      {url ? (
+        <img src={url} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <Camera size={14} strokeWidth={1.5} className="text-white/40" />
       )}
     </div>
   );

@@ -53,6 +53,12 @@ export type DataCategory =
   | "rssi"
   | "language"
   | "display_brightness"
+  // Spec 133 — camera equipment. Vendor-agnostic.
+  | "camera_snapshot_url"
+  | "camera_stream_url"
+  | "camera_monitoring"
+  | "camera_light_mode"
+  | "camera_detection"
   | "generic";
 
 export type OrderCategory =
@@ -78,7 +84,11 @@ export type OrderCategory =
   // Spec 122 — display wake action. No value: the firmware restores its
   // own last user-chosen brightness. Used by presence-driven recipes so
   // the recipe does not need to know the user's preferred level.
-  | "display_wake";
+  | "display_wake"
+  // Spec 133 — camera equipment.
+  | "set_camera_monitoring"
+  | "set_camera_light_mode"
+  | "trigger_camera_siren";
 
 // ============================================================
 // Device
@@ -222,7 +232,9 @@ export type EquipmentType =
   | "pool_cover"
   | "pool_heat_pump"
   // Spec 120 — Sowel-supervised display (energy display, e-paper, ...).
-  | "display";
+  | "display"
+  // Spec 133 — surveillance camera (vendor-agnostic).
+  | "camera";
 
 export interface Equipment {
   id: string;

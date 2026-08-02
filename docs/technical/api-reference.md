@@ -63,14 +63,14 @@ endpoint not in the allowlist is admin-only.
 
 **Standard write allowlist** (the only mutations a `standard` may perform):
 
-| Method        | Path                                                          | Purpose                |
-| ------------- | ------------------------------------------------------------- | ---------------------- |
-| POST          | `/api/v1/equipments/:id/orders/:alias`                        | Actuate an equipment   |
-| POST          | `/api/v1/zones/:id/orders/:orderKey`                          | Zone command           |
-| PUT           | `/api/v1/me`, `/api/v1/me/preferences`, `/api/v1/me/password` | Own account            |
-| POST / DELETE | `/api/v1/me/tokens[/:id]`                                     | Own API tokens         |
-| POST / DELETE | `/api/v1/push/subscriptions`                                  | Own push subscription  |
-| POST          | `/api/v1/auth/logout`                                         | End own session        |
+| Method        | Path                                                          | Purpose               |
+| ------------- | ------------------------------------------------------------- | --------------------- |
+| POST          | `/api/v1/equipments/:id/orders/:alias`                        | Actuate an equipment  |
+| POST          | `/api/v1/zones/:id/orders/:orderKey`                          | Zone command          |
+| PUT           | `/api/v1/me`, `/api/v1/me/preferences`, `/api/v1/me/password` | Own account           |
+| POST / DELETE | `/api/v1/me/tokens[/:id]`                                     | Own API tokens        |
+| POST / DELETE | `/api/v1/push/subscriptions`                                  | Own push subscription |
+| POST          | `/api/v1/auth/logout`                                         | End own session       |
 
 An API token inherits its creator's role, so a standard-scoped token is subject to
 the same gate (no privilege escalation).
@@ -153,6 +153,31 @@ Each entry of `dataBindings[]` also gains `stale: boolean`. Only streaming categ
 | -------- | -------------------------------------------------- | ------------------------------------------------------ |
 | `POST`   | `/api/v1/equipments/:id/order-bindings`            | Add an OrderBinding. Body: `{ deviceOrderId, alias }`. |
 | `DELETE` | `/api/v1/equipments/:id/order-bindings/:bindingId` | Remove an OrderBinding. Returns 204.                   |
+
+### Camera media proxy (spec 133)
+
+Introduced with the `camera` equipment type. A camera plugin resolves a
+`camera_snapshot_url` / `camera_stream_url` device data value (which may be
+a LAN-local address the plugin alone can reach); these routes fetch that
+URL server-side and stream the bytes back to the authenticated client. The
+browser never learns the camera's real address or the plugin's upstream
+credentials — no plugin code runs on this path at all, it is a plain HTTP
+proxy over whatever URL is currently bound.
+
+| Method | Path                                                   | Description                                                                                                                                                                                    |
+| ------ | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/v1/equipments/:id/camera/snapshot`               | Current still frame. Binary passthrough of the upstream `Content-Type`.                                                                                                                        |
+| `GET`  | `/api/v1/equipments/:id/camera/stream`                 | Live stream. HLS manifests are rewritten to route segments through the sub-resource proxy below; other content types are passed through as-is (e.g. MJPEG).                                    |
+| `GET`  | `/api/v1/equipments/:id/camera/stream/segment?u=<url>` | Sub-resource proxy for HLS segments/child playlists referenced by a rewritten manifest. `u` must resolve to the same origin as the camera's current `camera_stream_url` value — 403 otherwise. |
+
+**Binding-gated, enforced server-side, not just hidden in the UI:**
+
+- `404` if the equipment doesn't exist, or if the requested category (`camera_snapshot_url` / `camera_stream_url`) isn't bound on it — even when the underlying device technically exposes it. Binding a category is how an admin opts a specific camera into a specific feature (see [Equipments guide](../user/equipments.md#cameras)).
+- `400` if the equipment isn't of type `camera`.
+- `409` if the category is bound but the equipment's derived `status` is `offline`, or the bound value is empty.
+- `502` if the upstream fetch fails or returns a non-2xx status.
+
+No separate auth scheme — these routes sit behind the same JWT/API-token middleware as every other `/api/v1/*` route.
 
 ---
 
