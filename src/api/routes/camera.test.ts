@@ -246,6 +246,56 @@ describe("GET /api/v1/equipments/:id/camera/stream — binding gate mirrors snap
     );
     expect(body.split("\n")).not.toContain("segment1.ts");
   });
+
+  it("rewrites the manifest by sniffing the body even when Content-Type is generic — confirmed live against a real Netatmo Presence (2026-08-04), which serves its HLS manifest as application/octet-stream", async () => {
+    const manifest = ["#EXTM3U", "#EXT-X-VERSION:7", "#EXTINF:2.0,", "live0001.ts"].join("\n");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(manifest, {
+            status: 200,
+            headers: { "content-type": "application/octet-stream" },
+          }),
+      ),
+    );
+
+    app = Fastify({ logger: false });
+    registerCameraRoutes(app, {
+      equipmentManager: makeManager({
+        cam1: cameraFixture({
+          dataBindings: [
+            {
+              id: "b2",
+              equipmentId: "cam1",
+              deviceDataId: "dd2",
+              alias: "stream",
+              deviceId: "d1",
+              deviceName: "Front door camera",
+              key: "stream_url",
+              type: "text",
+              category: "camera_stream_url",
+              value: "https://camera.example.invalid/live/index.m3u8",
+              lastUpdated: new Date().toISOString(),
+              lastChanged: new Date().toISOString(),
+              stale: false,
+            } as unknown as EquipmentWithDetails["dataBindings"][number],
+          ],
+        }),
+      }),
+      logger: createLogger("silent").logger,
+    });
+    await app.ready();
+
+    const res = await app.inject({ method: "GET", url: "/api/v1/equipments/cam1/camera/stream" });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers["content-type"]).toBe("application/vnd.apple.mpegurl");
+    expect(res.body).toContain(
+      "/api/v1/equipments/cam1/camera/stream/segment?u=" +
+        encodeURIComponent("https://camera.example.invalid/live/live0001.ts"),
+    );
+  });
 });
 
 describe("GET /api/v1/equipments/:id/camera/stream/segment — origin allowlist", () => {

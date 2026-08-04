@@ -10,7 +10,10 @@ interface CameraDeps {
 }
 
 const FETCH_TIMEOUT_MS = 10_000;
-const HLS_CONTENT_TYPES = new Set(["application/vnd.apple.mpegurl", "application/x-mpegurl"]);
+// What we declare back to the browser for a rewritten manifest — the
+// upstream's own Content-Type isn't trusted (see fetchAndPipe), so this is
+// the one the player actually sees.
+const HLS_CONTENT_TYPE = "application/vnd.apple.mpegurl";
 
 /**
  * Media-proxy routes for the `camera` equipment type (spec 133).
@@ -145,11 +148,23 @@ async function fetchAndPipe(
     const contentType = upstream.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
     reply.header("cache-control", "no-store");
 
-    if (opts?.rewriteHls && HLS_CONTENT_TYPES.has(contentType)) {
-      const manifest = await upstream.text();
-      const rewritten = rewriteHlsManifest(manifest, parsed, opts.equipmentId!);
-      reply.header("content-type", contentType);
-      return reply.send(rewritten);
+    // Confirmed live against a real Netatmo Presence (2026-08-04): the
+    // camera serves its HLS manifest as `application/octet-stream`, not a
+    // standard HLS mime type — Content-Type alone is not a reliable
+    // signal. Sniff the body instead: `#EXTM3U` is the one thing every
+    // HLS manifest starts with, regardless of vendor/Content-Type.
+    if (opts?.rewriteHls) {
+      const body = await upstream.text();
+      if (body.startsWith("#EXTM3U")) {
+        const rewritten = rewriteHlsManifest(body, parsed, opts.equipmentId!);
+        reply.header("content-type", HLS_CONTENT_TYPE);
+        return reply.send(rewritten);
+      }
+      // Not actually HLS on this call (e.g. a vendor-specific fallback
+      // format) — pass the already-buffered text through as-is rather
+      // than silently dropping it.
+      reply.header("content-type", contentType || "application/octet-stream");
+      return reply.send(body);
     }
 
     reply.header("content-type", contentType || "application/octet-stream");
