@@ -10,6 +10,7 @@ import {
   ShieldOff,
   Siren,
   Lightbulb,
+  WifiOff,
 } from "lucide-react";
 import type {
   DataBindingWithValue,
@@ -29,6 +30,11 @@ interface CameraPanelProps {
 }
 
 const SNAPSHOT_REFRESH_MS = 30_000;
+// How long to wait for the first frame before treating live view as
+// failed, even if neither hls.js nor the <video> element raised an
+// error — added 2026-08-04 after live view stayed on an indefinite black
+// frame on Android Chrome with no error signal at all.
+const LIVE_START_TIMEOUT_MS = 12_000;
 // Static browser capability check — doesn't change during the session, so
 // it's computed once at module scope rather than inside the effect (an
 // unsupported browser must not be reported via a synchronous setState in
@@ -171,6 +177,7 @@ function CameraView({ equipmentId, hasSnapshot, hasStream }: CameraViewProps) {
   const { t } = useTranslation();
   const [live, setLive] = useState(false);
   const [liveError, setLiveError] = useState(false);
+  const [liveRetryTick, setLiveRetryTick] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const {
@@ -182,6 +189,9 @@ function CameraView({ equipmentId, hasSnapshot, hasStream }: CameraViewProps) {
   useEffect(() => {
     if (!live || !videoRef.current || !HLS_SUPPORTED) return;
 
+    const video = videoRef.current;
+    let startedPlaying = false;
+
     const hls = new Hls({
       xhrSetup: (xhr) => {
         const token = getAccessToken();
@@ -189,33 +199,103 @@ function CameraView({ equipmentId, hasSnapshot, hasStream }: CameraViewProps) {
       },
     });
     hlsRef.current = hls;
+
+    // Log every hls.js error, not just fatal ones — on Android this
+    // reportedly stays on a black frame with no visible error at all,
+    // which only happens if hls.js is hitting something it doesn't
+    // consider fatal (or the video never starts for an unrelated
+    // reason the ERROR event never fires for). Logging non-fatal errors
+    // costs nothing and is the only lead we have without direct device
+    // console access.
     hls.on(Hls.Events.ERROR, (_event, data) => {
+      console.warn("[camera] hls.js error", {
+        equipmentId,
+        type: data.type,
+        details: data.details,
+        fatal: data.fatal,
+        reason: (data as { response?: { code?: number } }).response?.code,
+      });
       if (data.fatal) setLiveError(true);
     });
+
+    // The <video> element's own error event catches failures below
+    // hls.js's abstraction (e.g. a codec/decode error MSE surfaces
+    // directly on the element) that the ERROR event above might not.
+    const onVideoError = () => {
+      console.error("[camera] <video> element error", {
+        equipmentId,
+        code: video.error?.code,
+        message: video.error?.message,
+      });
+      setLiveError(true);
+    };
+    video.addEventListener("error", onVideoError);
+
+    const onPlaying = () => {
+      startedPlaying = true;
+    };
+    video.addEventListener("playing", onPlaying);
+
     hls.loadSource(getCameraStreamUrl(equipmentId));
-    hls.attachMedia(videoRef.current);
+    hls.attachMedia(video);
+
+    // Belt-and-suspenders: if nothing has actually started playing within
+    // this window, treat it as failed even if neither hls.js nor the
+    // <video> element ever raised an error — better an explicit retry
+    // affordance than an indefinite black frame.
+    const startTimeout = setTimeout(() => {
+      if (!startedPlaying) {
+        console.warn("[camera] live view: no frame started playing within timeout", {
+          equipmentId,
+          timeoutMs: LIVE_START_TIMEOUT_MS,
+        });
+        setLiveError(true);
+      }
+    }, LIVE_START_TIMEOUT_MS);
 
     return () => {
+      clearTimeout(startTimeout);
+      video.removeEventListener("error", onVideoError);
+      video.removeEventListener("playing", onPlaying);
       hls.destroy();
       hlsRef.current = null;
     };
-  }, [equipmentId, live]);
+  }, [equipmentId, live, liveRetryTick]);
 
   return (
     <div className="space-y-2">
       <div className="relative bg-black rounded-[6px] overflow-hidden aspect-video flex items-center justify-center">
         {live ? (
           liveError || !HLS_SUPPORTED ? (
-            <p className="text-[13px] text-white/70 px-4 text-center">
-              {t("cameras.live.error")}
-            </p>
+            <div className="flex flex-col items-center gap-2 px-4 text-center">
+              <WifiOff size={28} strokeWidth={1.5} className="text-error" />
+              <p className="text-[13px] font-medium text-white">{t("cameras.live.error")}</p>
+              <button
+                onClick={() => {
+                  setLiveError(false);
+                  setLiveRetryTick((n) => n + 1);
+                }}
+                className="text-[12px] font-medium text-primary hover:underline"
+              >
+                {t("cameras.live.retry")}
+              </button>
+            </div>
           ) : (
             <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain" />
           )
         ) : snapshotUrl ? (
           <img src={snapshotUrl} alt="" className="w-full h-full object-contain" />
         ) : snapshotError ? (
-          <p className="text-[13px] text-white/70 px-4 text-center">{t("cameras.snapshot.error")}</p>
+          <div className="flex flex-col items-center gap-2 px-4 text-center">
+            <WifiOff size={28} strokeWidth={1.5} className="text-error" />
+            <p className="text-[13px] font-medium text-white">{t("cameras.snapshot.error")}</p>
+            <button
+              onClick={refreshSnapshot}
+              className="text-[12px] font-medium text-primary hover:underline"
+            >
+              {t("cameras.snapshot.retry")}
+            </button>
+          </div>
         ) : (
           <Camera size={28} strokeWidth={1.5} className="text-white/40" />
         )}
