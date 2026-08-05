@@ -237,3 +237,34 @@ describe("gate equipment type relevance (blind single-button RTS gate)", () => {
     expect(isRelevantOrder("color", "gate")).toBe(false);
   });
 });
+
+// Spec 133 — camera equipment. Auto-binding is a deliberate SUBSET of what
+// the device may expose: snapshot/stream/monitoring auto-bind, light_mode/
+// siren/detection are opt-in only (privacy/bandwidth). Order relevance is
+// category-driven (isRelevantOrder's 3rd arg), not key-driven, because a
+// vendor plugin's raw order key names aren't standardised.
+describe("camera equipment type relevance (spec 133 default auto-binding split)", () => {
+  it("auto-binds snapshot, stream and monitoring data", () => {
+    expect(isRelevantData("camera_snapshot_url", "camera")).toBe(true);
+    expect(isRelevantData("camera_stream_url", "camera")).toBe(true);
+    expect(isRelevantData("camera_monitoring", "camera")).toBe(true);
+  });
+
+  it("does NOT auto-bind light_mode or detection data — opt-in only", () => {
+    expect(isRelevantData("camera_light_mode", "camera")).toBe(false);
+    expect(isRelevantData("camera_detection", "camera")).toBe(false);
+  });
+
+  it("auto-binds the set_camera_monitoring order by category, regardless of the plugin's raw key name", () => {
+    expect(isRelevantOrder("any_vendor_key", "camera", "set_camera_monitoring")).toBe(true);
+  });
+
+  it("does NOT auto-bind set_camera_light_mode or trigger_camera_siren orders — opt-in only", () => {
+    expect(isRelevantOrder("any_vendor_key", "camera", "set_camera_light_mode")).toBe(false);
+    expect(isRelevantOrder("any_vendor_key", "camera", "trigger_camera_siren")).toBe(false);
+  });
+
+  it("without a category, falls back to the (empty) key whitelist — no accidental auto-bind", () => {
+    expect(isRelevantOrder("monitoring", "camera")).toBe(false);
+  });
+});

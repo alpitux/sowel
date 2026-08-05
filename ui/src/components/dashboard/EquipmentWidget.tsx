@@ -14,10 +14,12 @@ import {
   Snowflake,
   WashingMachine,
   Timer,
+  Camera,
 } from "lucide-react";
 import type { EquipmentWithDetails } from "../../types";
 import type { DashboardWidget } from "../../types";
 import { useEquipmentState, formatValue } from "../equipments/useEquipmentState";
+import { useCameraSnapshot } from "../../hooks/useCameraSnapshot";
 import { findOrderByCategory } from "../equipments/bindingUtils";
 import { findTempIndoor, findTempOutdoor } from "../equipments/weather-utils";
 import { useSliderOverride } from "../../hooks/useSliderOverride";
@@ -100,6 +102,7 @@ export function EquipmentWidget({ widget, equipment, onExecuteOrder, onOpenDetai
   if (isPoolPump) return <PoolPumpEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} iconKey={widget.icon} />;
   if (isPoolCover) return <PoolCoverEquipmentWidget label={label} equipment={equipment} onExecuteOrder={execOrder} iconKey={widget.icon} />;
   if (isSensor) return <SensorEquipmentWidget label={label} equipment={equipment} iconKey={widget.icon} visibleBindings={widget.config?.visibleBindings} />;
+  if (equipment.type === "camera") return <CameraEquipmentWidget label={label} equipment={equipment} />;
 
   return <GenericEquipmentWidget label={label} equipment={equipment} />;
 }
@@ -1354,6 +1357,49 @@ function PoolCoverEquipmentWidget({
             <ChevronRight size={16} strokeWidth={2} />
           </button>
         </div>
+      )}
+    </WidgetCard>
+  );
+}
+
+// ============================================================
+// Camera widget (spec 133)
+// ============================================================
+
+function CameraEquipmentWidget({
+  label,
+  equipment,
+}: {
+  label: string;
+  equipment: EquipmentWithDetails;
+}) {
+  const { t } = useTranslation();
+  const hasSnapshot = equipment.dataBindings.some((b) => b.category === "camera_snapshot_url");
+  const monitoringBinding = equipment.dataBindings.find((b) => b.category === "camera_monitoring");
+  // Deliberately does NOT use GenericEquipmentWidget's primaryBinding fallback —
+  // that would print the raw camera_snapshot_url/camera_stream_url string,
+  // leaking an address the media-proxy route exists specifically to hide.
+  const { url } = useCameraSnapshot(equipment.id, hasSnapshot, 60_000);
+
+  return (
+    <WidgetCard label={label}>
+      <div className="flex-1 min-h-0 rounded-[4px] bg-black overflow-hidden flex items-center justify-center">
+        {url ? (
+          <img src={url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <Camera size={32} strokeWidth={1.5} className="text-white/40" />
+        )}
+      </div>
+      {monitoringBinding && (
+        <span
+          className={`text-[11px] font-medium px-2 py-0.5 rounded-full mt-2 self-center ${
+            monitoringBinding.value === true
+              ? "bg-success/10 text-success"
+              : "bg-border-light text-text-tertiary"
+          }`}
+        >
+          {monitoringBinding.value === true ? t("cameras.monitoring.on") : t("cameras.monitoring.off")}
+        </span>
       )}
     </WidgetCard>
   );

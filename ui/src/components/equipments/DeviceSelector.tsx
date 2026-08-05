@@ -35,6 +35,16 @@ const EQUIPMENT_TYPE_CATEGORIES: Partial<Record<EquipmentType, DataCategory[]>> 
   // ships a passive single-screen display reporting only uptime, the
   // user can still pick it via "Show all" toggle.
   display: ["display_brightness", "language", "rssi"],
+  // Spec 133 — cameras. Any of the 5 categories signals a camera-capable
+  // device; which ones a given device actually exposes is vendor-specific
+  // (see spec 133 "Vendor neutrality").
+  camera: [
+    "camera_snapshot_url",
+    "camera_stream_url",
+    "camera_monitoring",
+    "camera_light_mode",
+    "camera_detection",
+  ],
 };
 
 /** Maps EquipmentType to required data keys for filtering (when category alone is too broad). */

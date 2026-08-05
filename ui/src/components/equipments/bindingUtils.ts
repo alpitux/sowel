@@ -141,6 +141,12 @@ const RELEVANT_DATA: Record<string, string[]> = {
     "display_brightness",
     "generic",
   ],
+  // Spec 133 — cameras. Deliberately a SUBSET of the 5 camera categories:
+  // snapshot/stream/monitoring are auto-bound (the "just show me the
+  // camera" default), but camera_light_mode and camera_detection are
+  // opt-in only — the admin adds them later via AddBindingModal. See
+  // "Per-equipment feature enablement" in spec 133.
+  camera: ["camera_snapshot_url", "camera_stream_url", "camera_monitoring"],
 };
 
 /** Maps equipment types to relevant order keys for auto-binding. */
@@ -203,6 +209,17 @@ const RELEVANT_ORDERS: Record<string, string[]> = {
   // topic.  Without this whitelist entry, the UI auto-binding would
   // drop the wake order during equipment creation.
   display: ["language", "brightness", "wake"],
+};
+
+/**
+ * Maps equipment types to relevant order *categories* for auto-binding —
+ * used instead of `RELEVANT_ORDERS` (raw key names) when the order key is
+ * vendor/plugin-specific and only the typed `OrderCategory` is stable
+ * across plugins. Spec 133: only `set_camera_monitoring` auto-binds;
+ * `set_camera_light_mode` / `trigger_camera_siren` are opt-in only.
+ */
+const RELEVANT_ORDER_CATEGORIES: Partial<Record<EquipmentType, OrderCategory[]>> = {
+  camera: ["set_camera_monitoring"],
 };
 
 /**
@@ -301,7 +318,10 @@ export function isRelevantData(category: string, equipmentType: string): boolean
   return RELEVANT_DATA[equipmentType]?.includes(category) ?? false;
 }
 
-export function isRelevantOrder(key: string, equipmentType: string): boolean {
+export function isRelevantOrder(key: string, equipmentType: string, category?: OrderCategory): boolean {
+  if (category && RELEVANT_ORDER_CATEGORIES[equipmentType as EquipmentType]?.includes(category)) {
+    return true;
+  }
   return RELEVANT_ORDERS[equipmentType]?.includes(key) ?? false;
 }
 
@@ -414,7 +434,7 @@ export async function autoCreateBindings(
       }
 
       for (const order of device.orders) {
-        if (isRelevantOrder(order.key, equipmentType)) {
+        if (isRelevantOrder(order.key, equipmentType, order.category)) {
           const alias = uniqueAlias(
             resolveAlias(order.key, equipmentType, ORDER_CATEGORY_ALIASES, order.category),
             usedOrderAliases,

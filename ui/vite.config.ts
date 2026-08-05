@@ -38,7 +38,15 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
-            urlPattern: /^\/api\//,
+            // A bare RegExp here is matched against the full request URL
+            // (including origin), not just the pathname — `/^\/api\//`
+            // never actually matched anything, since `url.href` always
+            // starts with `http://…`, never `/api/`. Found 2026-08-04
+            // investigating why camera HLS segment requests seemed to
+            // bypass normal fetch handling on Android. A matcher function
+            // is unambiguous: it receives the parsed URL and is tested
+            // against `pathname` explicitly.
+            urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
             handler: "NetworkOnly",
           },
         ],

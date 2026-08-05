@@ -24,7 +24,7 @@ import { SolarPanelIcon } from "../icons/SolarPanelIcon";
 import { solarWidgetState } from "./solarWidget";
 import { parseForecastDays, CONDITION_ICONS, CONDITION_COLORS } from "../equipments/weatherForecastUtils";
 import { findTempIndoor, findTempOutdoor } from "../equipments/weather-utils";
-import { Cloud, WashingMachine, Tv } from "lucide-react";
+import { Cloud, WashingMachine, Tv, Camera } from "lucide-react";
 
 interface MobileWidgetCardProps {
   widget: DashboardWidget;
@@ -400,6 +400,17 @@ function useMobileState(
         ? createElement(customEntry.component, customEntry.previewProps)
         : <PoolCoverIcon position={position} />,
       stateLines: text ? [text] : [],
+    };
+  }
+
+  if (equipment.type === "camera") {
+    const monitoring = equipment.dataBindings.find((b) => b.category === "camera_monitoring");
+    return {
+      icon: <Camera size={96} strokeWidth={1.4} className="text-text-tertiary" />,
+      stateLines:
+        monitoring !== undefined
+          ? [monitoring.value === true ? t("cameras.monitoring.on") : t("cameras.monitoring.off")]
+          : [],
     };
   }
 

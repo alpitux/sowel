@@ -296,14 +296,16 @@ This is a non-exhaustive index. See [API Reference](api-reference.md) for the fu
 
 ### Equipments
 
-| Method | Route                                  | Description                        |
-| ------ | -------------------------------------- | ---------------------------------- |
-| GET    | `/api/v1/equipments`                   | List all equipments                |
-| GET    | `/api/v1/equipments/:id`               | Get equipment with bindings + data |
-| POST   | `/api/v1/equipments`                   | Create equipment                   |
-| PUT    | `/api/v1/equipments/:id`               | Update equipment                   |
-| DELETE | `/api/v1/equipments/:id`               | Delete equipment                   |
-| POST   | `/api/v1/equipments/:id/orders/:alias` | Execute an equipment order         |
+| Method | Route                                    | Description                                                  |
+| ------ | ---------------------------------------- | ------------------------------------------------------------ |
+| GET    | `/api/v1/equipments`                     | List all equipments                                          |
+| GET    | `/api/v1/equipments/:id`                 | Get equipment with bindings + data                           |
+| POST   | `/api/v1/equipments`                     | Create equipment                                             |
+| PUT    | `/api/v1/equipments/:id`                 | Update equipment                                             |
+| DELETE | `/api/v1/equipments/:id`                 | Delete equipment                                             |
+| POST   | `/api/v1/equipments/:id/orders/:alias`   | Execute an equipment order                                   |
+| GET    | `/api/v1/equipments/:id/camera/snapshot` | Camera media proxy — current frame (binding-gated, spec 133) |
+| GET    | `/api/v1/equipments/:id/camera/stream`   | Camera media proxy — live stream (binding-gated, spec 133)   |
 
 ### Devices, Plugins, History
 

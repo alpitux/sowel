@@ -212,6 +212,18 @@ describe("EquipmentManager", () => {
       expect(eq.name).toBe("Cadran énergie");
     });
 
+    // Spec 133 — camera equipment.
+    it("creates a camera equipment", () => {
+      const zone = zoneManager.create({ name: "Entrée" });
+      const eq = manager.create({
+        name: "Caméra entrée",
+        type: "camera",
+        zoneId: zone.id,
+      });
+      expect(eq.type).toBe("camera");
+      expect(eq.name).toBe("Caméra entrée");
+    });
+
     it("rejects non-existent zone", () => {
       expect(() => {
         manager.create({ name: "Test", type: "light_onoff", zoneId: "non-existent" });
@@ -801,6 +813,40 @@ describe("EquipmentManager", () => {
         expect(eqEvents[0].alias).toBe("state");
         expect(eqEvents[0].value).toBe(true);
         expect(eqEvents[0].previous).toBe(false);
+      }
+    });
+
+    // Spec 133 — camera_detection reuses the button "action" pattern: a
+    // momentary event reflected as a normal bound data category, riding
+    // the existing equipment.data.changed pipeline with zero bespoke
+    // EventBus wiring. This is the acceptance criterion that a recipe can
+    // trigger on a camera detection the same way it triggers on a button.
+    it("emits equipment.data.changed for a camera_detection binding, same as any other bound category", () => {
+      const zone = zoneManager.create({ name: "Entrée" });
+      const eq = manager.create({ name: "Caméra entrée", type: "camera", zoneId: zone.id });
+      const { dataIds } = seedDevice(db, {
+        dataKeys: [{ id: "data-detect", key: "last_event", category: "camera_detection" }],
+      });
+      manager.addDataBinding(eq.id, dataIds[0], "detection");
+
+      events = [];
+      eventBus.emit({
+        type: "device.data.updated",
+        deviceId: "any",
+        deviceName: "any",
+        dataId: "data-detect",
+        key: "last_event",
+        value: "person",
+        previous: null,
+        timestamp: new Date().toISOString(),
+      });
+
+      const eqEvents = events.filter((e) => e.type === "equipment.data.changed");
+      expect(eqEvents).toHaveLength(1);
+      if (eqEvents[0].type === "equipment.data.changed") {
+        expect(eqEvents[0].equipmentId).toBe(eq.id);
+        expect(eqEvents[0].alias).toBe("detection");
+        expect(eqEvents[0].value).toBe("person");
       }
     });
 

@@ -13,7 +13,8 @@ async function buildAppWithHelmet(): Promise<FastifyInstance> {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        imgSrc: ["'self'", "data:"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        mediaSrc: ["'self'", "blob:"],
         connectSrc: ["'self'", "ws:", "wss:"],
         fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         manifestSrc: ["'self'"],
@@ -71,6 +72,32 @@ describe("Security headers", () => {
     const csp = res.headers["content-security-policy"] as string;
     expect(csp).toMatch(/style-src[^;]*https:\/\/fonts\.googleapis\.com/);
     expect(csp).toMatch(/font-src[^;]*https:\/\/fonts\.gstatic\.com/);
+  });
+
+  // Spec 133 — camera snapshots are fetched as a Blob (the media-proxy
+  // route needs an Authorization header a plain <img src> can't carry)
+  // and rendered via URL.createObjectURL(blob). Without "blob:" here that
+  // <img> is silently blocked — no console error, it just never paints.
+  // Confirmed live (2026-08-04) against a real Netatmo camera: this exact
+  // regression happened, traced via "open image in new tab" (bypasses
+  // page CSP) rendering fine while the inline <img> stayed blank.
+  it("allows blob: in img-src for camera snapshot rendering (spec 133)", async () => {
+    const res = await app.inject({ method: "GET", url: "/health" });
+    const csp = res.headers["content-security-policy"] as string;
+    expect(csp).toMatch(/img-src[^;]*\bblob:/);
+  });
+
+  // Same bug class as img-src above, one layer up: hls.js/MediaSource
+  // assigns a blob: URL to the <video> element itself. Without an
+  // explicit media-src this fell back to default-src (no blob:), and
+  // Chrome enforces that fallback strictly while Firefox doesn't — live
+  // view worked in Firefox and failed silently, instantly, with zero
+  // network requests in Chrome (desktop and Android alike). Confirmed
+  // live 2026-08-04.
+  it("allows blob: in media-src for camera live view rendering (spec 133)", async () => {
+    const res = await app.inject({ method: "GET", url: "/health" });
+    const csp = res.headers["content-security-policy"] as string;
+    expect(csp).toMatch(/media-src[^;]*\bblob:/);
   });
 
   it("allows data: URIs in font-src (Inter font is inlined by Vite as data: woff2)", async () => {
