@@ -135,6 +135,22 @@ Designed for devices like the SONOFF SWV. Standard aliases: `state`, `flow`, `ba
 
 Pool equipments work with the **Pool Pump Schedule** recipe (daily runtime tied to water temperature) and feed the pool widgets on the dashboard.
 
+### Cameras
+
+| Type       | Controls                                                          | Expected data                                                            |
+| ---------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Camera** | Live view, snapshot refresh, monitoring on/off, spot light, siren | snapshot, live stream, monitoring state, spot light mode, last detection |
+
+The **Camera** type is vendor-agnostic — any camera plugin that reports the
+right data can bind to it. None of these are required; the detail page only
+shows the controls the bound camera actually offers.
+
+!!! tip "Every feature is opt-in, per camera"
+Whether a given camera shows a live stream, lets you toggle monitoring, or reports detections is entirely down to which data/orders you bind to it — the same binding mechanism used by every other equipment type. Creating a camera from a discovered device auto-binds the snapshot, live stream and monitoring toggle; the spot light control, siren, and detection events are opt-in — add them later from the equipment's detail page ("Add binding") if you want them. A feature you don't bind is unreachable even via the API, not just hidden — this is a deliberate privacy control, not only a display preference.
+
+Live view and snapshots are proxied through Sowel's backend — your browser
+never talks to the camera directly, and never learns its network address.
+
 ### Other
 
 | Type              | Controls                    | Expected data                         |

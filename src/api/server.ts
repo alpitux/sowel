@@ -42,6 +42,7 @@ import { registerDeviceRoutes } from "./routes/devices.js";
 import { registerHealthRoutes } from "./routes/health.js";
 import { registerZoneRoutes } from "./routes/zones.js";
 import { registerEquipmentRoutes } from "./routes/equipments.js";
+import { registerCameraRoutes } from "./routes/camera.js";
 import { registerRecipeRoutes } from "./routes/recipes.js";
 import { registerAuthRoutes } from "./routes/auth.js";
 import { registerMeRoutes } from "./routes/me.js";
@@ -176,7 +177,29 @@ export async function createServer(deps: ServerDeps) {
         // Google Fonts CSS (`fonts.googleapis.com`) is loaded as a stylesheet
         // from ui/index.html for the Nunito heading font.
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        imgSrc: ["'self'", "data:"],
+        // blob: added for spec 133 camera snapshots — the media-proxy
+        // route requires the Authorization header, so a plain <img
+        // src="/api/..."> can't be used; the UI fetches the JPEG as a
+        // Blob and renders it via URL.createObjectURL(blob) instead
+        // (useCameraSnapshot.ts). Without blob: here, that <img> is
+        // silently blocked by CSP — no console error surfaced on the
+        // element itself, it just never paints. Confirmed live
+        // (2026-08-04): opening the same blob: URL via "open image in
+        // new tab" bypassed the page's CSP entirely and rendered fine,
+        // which is what pointed at CSP rather than a fetch/data bug.
+        imgSrc: ["'self'", "data:", "blob:"],
+        // Same underlying issue as imgSrc's blob: above, one layer up the
+        // stack: hls.js/MediaSource assigns a blob: URL to the <video>
+        // element itself (not just the segments it fetches over
+        // connect-src). Without an explicit media-src, this fell back to
+        // default-src, which lacks blob: — and CSP enforcement here is
+        // stricter in Chrome than Firefox, so live view failed silently
+        // and *only* in Chrome (desktop and Android alike), never
+        // Firefox, with zero network requests — confirmed live
+        // (2026-08-04): Firefox played the stream fine, Chrome failed
+        // instantly on both platforms, which is what pointed here rather
+        // than at anything platform-specific.
+        mediaSrc: ["'self'", "blob:"],
         connectSrc: ["'self'", "ws:", "wss:"],
         // Font files: own bundle (Inter is inlined as `data:` URIs by Vite)
         // plus `fonts.gstatic.com` for the Nunito heading font loaded by index.html.
@@ -250,6 +273,7 @@ export async function createServer(deps: ServerDeps) {
   registerDeviceRoutes(app, { deviceManager, logger });
   registerZoneRoutes(app, { zoneManager, zoneAggregator, equipmentManager, logger });
   registerEquipmentRoutes(app, { equipmentManager, logger });
+  registerCameraRoutes(app, { equipmentManager, logger });
   registerRecipeRoutes(app, { recipeManager, logger });
   registerModeRoutes(app, { modeManager, buttonActionManager, auditLogger, userManager, logger });
   registerCalendarRoutes(app, { calendarManager, logger });

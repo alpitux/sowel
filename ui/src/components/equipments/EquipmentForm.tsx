@@ -30,6 +30,7 @@ const EQUIPMENT_TYPE_KEYS: { value: EquipmentType; labelKey: string }[] = [
   { value: "pool_cover", labelKey: "equipments.type.pool_cover" },
   { value: "pool_heat_pump", labelKey: "equipments.type.pool_heat_pump" },
   { value: "display", labelKey: "equipments.type.display" },
+  { value: "camera", labelKey: "equipments.type.camera" },
 ];
 
 interface EquipmentFormProps {

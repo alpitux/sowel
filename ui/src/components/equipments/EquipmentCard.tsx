@@ -16,6 +16,7 @@ import {
   Monitor,
   WashingMachine,
   Waves,
+  Camera,
 } from "lucide-react";
 import { ShutterClosedIcon } from "../icons/ShutterIcons";
 import { WaterValveIcon } from "../icons/WaterValveIcon";
@@ -55,6 +56,7 @@ const TYPE_ICONS: Record<EquipmentType, React.ReactNode> = {
   pool_cover: <ShutterClosedIcon size={18} strokeWidth={1.5} />,
   pool_heat_pump: <Thermometer size={18} strokeWidth={1.5} />,
   display: <Monitor size={18} strokeWidth={1.5} />,
+  camera: <Camera size={18} strokeWidth={1.5} />,
 };
 
 const TYPE_LABELS: Record<EquipmentType, string> = {
@@ -82,6 +84,7 @@ const TYPE_LABELS: Record<EquipmentType, string> = {
   pool_cover: "equipments.type.pool_cover",
   pool_heat_pump: "equipments.type.pool_heat_pump",
   display: "equipments.type.display",
+  camera: "equipments.type.camera",
 };
 
 interface EquipmentCardProps {

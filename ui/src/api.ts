@@ -488,6 +488,43 @@ export async function executeEquipmentOrder(
 }
 
 // ============================================================
+// Camera media proxy (spec 133)
+// ============================================================
+
+/**
+ * Fetch the current snapshot for a camera equipment as a Blob — used to
+ * build an object URL for an <img>. A plain <img src="..."> can't carry
+ * the Authorization header, so the caller must fetch + createObjectURL.
+ */
+export async function fetchCameraSnapshot(equipmentId: string): Promise<Blob> {
+  const headers: Record<string, string> = {};
+  if (_accessToken) headers["Authorization"] = `Bearer ${_accessToken}`;
+  const response = await fetch(`${API_BASE}/equipments/${equipmentId}/camera/snapshot`, {
+    headers,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(
+      (body as { error?: string }).error ?? `HTTP ${response.status}: ${response.statusText}`,
+    );
+  }
+  return response.blob();
+}
+
+/** Same-origin path for the live stream — consumed by hls.js, which
+ * attaches the Authorization header per-request via xhrSetup (see
+ * CameraPanel.tsx). Not fetched directly here. */
+export function getCameraStreamUrl(equipmentId: string): string {
+  return `${API_BASE}/equipments/${equipmentId}/camera/stream`;
+}
+
+/** Current access token — used by hls.js's xhrSetup to authenticate
+ * manifest/segment requests (see CameraPanel.tsx). */
+export function getAccessToken(): string | null {
+  return _accessToken;
+}
+
+// ============================================================
 // DataBindings
 // ============================================================
 
