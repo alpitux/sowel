@@ -5,21 +5,39 @@ import type { InfluxClient } from "../core/influx-client.js";
 import type { TariffClassifier } from "./tariff-classifier.js";
 import { Point } from "../core/influx-client.js";
 
-/**
- * Maximum time skew (seconds) between the latest Grid energy tick and
- * the latest Solar energy tick we accept as "same window". Shelly
- * publishes em1data:0 and em1data:1 in immediate succession (a few ms
- * apart), so 30s is generous. A wider window risks pairing a stale tick
- * from one channel with a fresh one from the other when one channel
- * temporarily drops a minute (e.g. brief MQTT hiccup).
- */
-const MATCH_WINDOW_S = 30;
+/** How often a bucket left open by a silent stream is swept out (ms). */
+const FLUSH_INTERVAL_MS = 60_000;
 
-interface LatestTick {
-  /** Signed energy delta (Wh) over the last sampling window. */
-  value: number;
-  /** Epoch seconds. Source timestamp when present, else Date.now()/1000. */
-  t: number;
+/** Tariff window of a live per-minute bucket (s). */
+const LIVE_WINDOW_S = 60;
+
+/** Tariff window of a plugin-supplied aligned historical window (s). */
+const ALIGNED_WINDOW_S = 1800;
+
+/**
+ * One minute of paired Grid + Solar energy, accumulated.
+ *
+ * The minute is both the aggregation window and the pairing window: ticks
+ * that land in the same minute belong to the same physical window whatever
+ * the meter's reporting cadence. `hasGrid` / `hasSolar` record which sides
+ * reported: a minute with a grid tick is always written (a missing solar
+ * tick means autoconso = 0, i.e. pure grid import), while a solar-only
+ * minute is dropped — injection is undefined without the grid side.
+ */
+interface MinuteBucket {
+  /** Epoch-second of the minute start these deltas belong to. */
+  minuteS: number;
+  gridWh: number;
+  solarWh: number;
+  hasGrid: boolean;
+  hasSolar: boolean;
+  /**
+   * Window length handed to the TariffClassifier, in seconds. A live stream
+   * accumulates one minute; a plugin posting aligned historical windows
+   * (Netatmo / Legrand, `sourceTimestamp` set) already covers 30 minutes, and
+   * classifying it as one minute would mis-prorate a tariff transition.
+   */
+  windowS: number;
 }
 
 /**
@@ -28,6 +46,13 @@ interface LatestTick {
  * Inputs (signed energy deltas, Wh, per minute):
  *   gridΔ  = main_energy_meter `energy`        (positive = imported, negative = exported)
  *   solarΔ = energy_production_meter `energy`  (≥ 0 in normal operation)
+ *
+ * Both are ADDITIVE deltas: a meter may emit one tick a minute (Shelly EM)
+ * or thirty (Tuya PJ-1203A, where a single tick in the burst carries the
+ * 10 Wh counter jump and the rest are 0). So a minute of ticks is summed,
+ * not sampled — sampling one pair per minute is what used to pin
+ * `autoconso` / `injection` to 0 on burst-reporting meters and leave the
+ * Production chart empty.
  *
  * The plugin emits the raw signed grid delta on the main_energy_meter,
  * which the HistoryWriter writes to Influx and uses to classify HP/HC.
@@ -39,35 +64,37 @@ interface LatestTick {
  *             autoconso ⊂ hp + hc (the share covered by solar)
  *
  * With Shelly delivering raw counters, the household total has to be
- * recomposed from `max(0, gridΔ) + autoconsoΔ`. This writer does it,
- * and overwrites the HistoryWriter's per-minute Influx points to match
- * the legacy semantic so the existing charts (Consumption + Production)
- * keep rendering correctly with no UI change. InfluxDB keys points by
- * (measurement, tag set, timestamp) — same source timestamp + same
- * equipmentId/alias tags ⇒ upsert wins last. Both writers commit a
- * couple of milliseconds apart on the same physical tick, so the
- * SelfConsumptionWriter's value always lands second and wins.
+ * recomposed from `max(0, gridΔ) + autoconsoΔ`. This writer does it, and
+ * it is the SOLE writer of the grid meter's `energy` / `energy_hp` /
+ * `energy_hc` series whenever an energy_production_meter is configured:
+ * the HistoryWriter skips those three aliases for the main_energy_meter
+ * in that case (see HistoryWriter.refreshCache). One authority per
+ * series — no upsert over another writer's points, no dependency on
+ * subscription order or on both writers closing their minute on the same
+ * trigger.
  *
- * Outputs per matched (Grid, Solar) tick, all timestamped at the source
- * minute:
+ * Outputs per accumulated minute, all timestamped at the minute start.
+ * Every minute that saw a grid tick is written — a missing solar tick
+ * just means autoconso = 0 (pure grid import), so the household series
+ * has no holes:
  *   On the production_meter:
  *     - autoconso = max(0, solarΔ - injection)   (solar consumed in-house)
  *     - injection = max(0, -gridΔ)               (excess solar pushed to grid)
- *   On the main_energy_meter (overwriting HistoryWriter):
- *     - energy    = household                    (was: signed grid delta)
+ *   On the main_energy_meter:
+ *     - energy    = household                    (grid emits the signed delta)
  *     - energy_hp = TariffClassifier(household).hp
  *     - energy_hc = TariffClassifier(household).hc
  *
  * Properties:
- *   - autoconso + injection ≤ solarΔ
+ *   - autoconso + injection ≤ solarΔ (when the solar side reported)
  *   - household = max(0, gridΔ) + autoconso = max(0, gridΔ) + max(0, solarΔ - max(0, -gridΔ))
  *
  * Discovery: equipment ids are resolved by `type` on every relevant event,
  * so users can add/remove the meters at runtime without restarting Sowel.
  *
  * Solo Grid (no production_meter): the writer is inert and the
- * HistoryWriter's grid-only hp/hc values stand — that's the right answer
- * when there's no solar to overlay.
+ * HistoryWriter writes the grid `energy` / hp / hc as before — that's the
+ * right answer when there's no solar to overlay.
  */
 export class SelfConsumptionWriter {
   private readonly logger: Logger;
@@ -76,13 +103,11 @@ export class SelfConsumptionWriter {
   private readonly influxClient: InfluxClient;
   private readonly tariffClassifier: TariffClassifier;
 
-  private latestGrid: LatestTick | null = null;
-  private latestSolar: LatestTick | null = null;
-  /** Epoch-minute of the last write — prevents double-writes when both
-   *  events fire close in time and re-trigger compute. */
-  private lastWrittenMinute = 0;
+  /** The minute currently being accumulated, or null before the first tick. */
+  private bucket: MinuteBucket | null = null;
 
   private unsubscribe: (() => void) | null = null;
+  private flushTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     eventBus: EventBus,
@@ -108,24 +133,54 @@ export class SelfConsumptionWriter {
         const role = this.resolveEquipmentRole(event.equipmentId);
         if (!role) return;
 
-        const tick: LatestTick = {
-          value: event.value,
-          t: event.sourceTimestamp ?? Math.floor(Date.now() / 1000),
-        };
-        if (role === "grid") this.latestGrid = tick;
-        else this.latestSolar = tick;
-
-        this.tryCompute();
+        this.accumulate(
+          role,
+          event.value,
+          event.sourceTimestamp ?? Math.floor(Date.now() / 1000),
+          event.sourceTimestamp !== undefined,
+        );
       } catch (err) {
         this.logger.error({ err }, "Error in self-consumption writer event handler");
       }
     });
+
+    // A minute only closes when a tick from the next one arrives. If the
+    // stream goes quiet (device offline, integration restart) the last minute
+    // would sit in memory forever — sweep it out on its own.
+    this.flushTimer = setInterval(() => {
+      try {
+        this.flushPending();
+      } catch (err) {
+        this.logger.error({ err }, "Error flushing self-consumption bucket");
+      }
+    }, FLUSH_INTERVAL_MS);
+    this.flushTimer.unref?.();
+
     this.logger.info({}, "Self-consumption writer initialized");
   }
 
   destroy(): void {
     this.unsubscribe?.();
     this.unsubscribe = null;
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer);
+      this.flushTimer = null;
+    }
+    this.flushPending(true);
+  }
+
+  /**
+   * Write out the accumulated minute once it has elapsed.
+   *
+   * Also the shutdown / test hook: `force` flushes the still-open minute.
+   */
+  flushPending(force = false): void {
+    if (!this.bucket) return;
+    const currentMinuteS = Math.floor(Date.now() / 60_000) * 60;
+    if (!force && this.bucket.minuteS >= currentMinuteS) return;
+    const bucket = this.bucket;
+    this.bucket = null;
+    this.writeBucket(bucket);
   }
 
   /**
@@ -141,22 +196,60 @@ export class SelfConsumptionWriter {
     return null;
   }
 
-  private tryCompute(): void {
-    if (!this.latestGrid || !this.latestSolar) return;
-    if (Math.abs(this.latestGrid.t - this.latestSolar.t) > MATCH_WINDOW_S) return;
+  /** Fold one tick into the open minute, closing the previous one first. */
+  private accumulate(role: "grid" | "solar", value: number, t: number, aligned: boolean): void {
+    const minuteS = Math.floor(t / 60) * 60;
+    const windowS = aligned ? ALIGNED_WINDOW_S : LIVE_WINDOW_S;
 
-    const ts = Math.max(this.latestGrid.t, this.latestSolar.t);
-    const minuteBucket = Math.floor(ts / 60);
-    if (minuteBucket === this.lastWrittenMinute) return;
-    this.lastWrittenMinute = minuteBucket;
+    if (this.bucket && minuteS > this.bucket.minuteS) {
+      const closed = this.bucket;
+      this.bucket = null;
+      this.writeBucket(closed);
+    }
+    // A tick for an already-closed minute (out-of-order source timestamps)
+    // folds into the open one: misattributing a few Wh across a minute
+    // boundary beats dropping them.
+    if (!this.bucket) {
+      this.bucket = { minuteS, gridWh: 0, solarWh: 0, hasGrid: false, hasSolar: false, windowS };
+    }
 
-    const grid = this.latestGrid.value;
-    const solar = this.latestSolar.value;
-    const injection = Math.max(0, -grid);
-    const autoconso = Math.max(0, solar - injection);
-    const household = Math.max(0, grid) + autoconso;
+    if (role === "grid") {
+      this.bucket.gridWh += value;
+      this.bucket.hasGrid = true;
+      // HP/HC is classified on the household total, whose window is the grid
+      // side's: it is the meter that says how much time this bucket covers.
+      this.bucket.windowS = windowS;
+    } else {
+      this.bucket.solarWh += value;
+      this.bucket.hasSolar = true;
+    }
+  }
 
-    this.writePoints({ autoconso, injection, household, sourceTimestamp: ts });
+  /** Derive autoconso / injection / household from a closed minute and write them. */
+  private writeBucket(bucket: MinuteBucket): void {
+    // As sole writer of the grid series we must cover every minute the grid
+    // reported: no solar tick simply means autoconso = 0 (pure import).
+    // A solar-only minute stays undefined — injection needs the grid side —
+    // so it is dropped rather than guessed.
+    if (!bucket.hasGrid) {
+      this.logger.debug(
+        { minuteS: bucket.minuteS, hasSolar: bucket.hasSolar },
+        "Energy minute without grid tick — no self-consumption split written",
+      );
+      return;
+    }
+
+    const injection = Math.max(0, -bucket.gridWh);
+    const autoconso = Math.max(0, bucket.solarWh - injection);
+    const household = Math.max(0, bucket.gridWh) + autoconso;
+
+    this.writePoints({
+      autoconso,
+      injection,
+      household,
+      sourceTimestamp: bucket.minuteS,
+      windowS: bucket.windowS,
+    });
   }
 
   private writePoints(args: {
@@ -164,6 +257,7 @@ export class SelfConsumptionWriter {
     injection: number;
     household: number;
     sourceTimestamp: number;
+    windowS: number;
   }): void {
     if (!this.influxClient.isConnected()) return;
 
@@ -171,7 +265,7 @@ export class SelfConsumptionWriter {
     const gridEquipment = this.findGridEquipment();
     if (!prodEquipment) return;
 
-    const { autoconso, injection, household, sourceTimestamp } = args;
+    const { autoconso, injection, household, sourceTimestamp, windowS } = args;
 
     // Production-side aliases (autoconso, injection) — new points.
     for (const [alias, value] of [
@@ -187,12 +281,11 @@ export class SelfConsumptionWriter {
       });
     }
 
-    // Grid-side overwrites — replace HistoryWriter's grid-only values
-    // with the legacy household semantic (energy = total house, hp/hc =
-    // TariffClassifier(household)). Same equipmentId + alias + timestamp
-    // ⇒ Influx upsert.
+    // Grid-side series — this writer is their sole author when a production
+    // meter is configured (energy = total house, hp/hc =
+    // TariffClassifier(household) over the bucket's real duration).
     if (gridEquipment) {
-      const split = this.tariffClassifier.classify(household, sourceTimestamp);
+      const split = this.tariffClassifier.classify(household, sourceTimestamp, windowS);
       for (const [alias, value] of [
         ["energy", household],
         ["energy_hp", split.hp],

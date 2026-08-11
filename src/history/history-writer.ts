@@ -85,9 +85,25 @@ const DEFAULT_MIN_WRITE_INTERVAL = 30_000;
 /** Maximum interval between writes in ms — forces a write even if value unchanged (default 5 min). */
 const DEFAULT_MAX_WRITE_INTERVAL = 5 * 60_000;
 
+/** How often stale energy minute buckets are swept out (ms). */
+const ENERGY_FLUSH_INTERVAL_MS = 60_000;
+
+/** Duration an energy bucket covers (s) — the window HP/HC is classified over. */
+const ENERGY_BUCKET_WINDOW_S = 60;
+
 interface LastWritten {
   value: unknown;
   timestamp: number;
+}
+
+/**
+ * Open per-minute accumulator for one live energy-delta binding.
+ * `minuteS` is the epoch-second of the minute start the deltas belong to.
+ */
+interface EnergyBucket {
+  minuteS: number;
+  wh: number;
+  meta: BindingMeta;
 }
 
 // ============================================================
@@ -111,6 +127,24 @@ export class HistoryWriter {
 
   /** Last written value per binding for deduplication. */
   private lastWritten: Map<string, LastWritten> = new Map();
+
+  /** Open energy accumulators (one per live energy-delta binding). */
+  private energyBuckets: Map<string, EnergyBucket> = new Map();
+
+  /**
+   * main_energy_meter ids whose `energy` / `energy_hp` / `energy_hc` series
+   * are owned by the SelfConsumptionWriter. One authority per series: when an
+   * energy_production_meter is configured, the SelfConsumptionWriter writes
+   * the grid meter's household-semantic energy and this writer must not
+   * touch those three aliases — two writers upserting the same points on
+   * different flush triggers is a last-write-wins race. Refreshed with the
+   * equipment cache, so adding/removing the production meter at runtime
+   * hands ownership over without a restart.
+   */
+  private gridEnergyOwnedElsewhere: Set<string> = new Set();
+
+  /** Sweeper for energy buckets whose minute has elapsed without new ticks. */
+  private energyFlushTimer: ReturnType<typeof setInterval> | null = null;
 
   /** Resolved min write interval. */
   private minWriteInterval = DEFAULT_MIN_WRITE_INTERVAL;
@@ -174,6 +208,17 @@ export class HistoryWriter {
       }
     });
 
+    // Sweep energy buckets that stopped receiving ticks (device offline, or a
+    // meter that only reports on change) so their minute still gets written.
+    this.energyFlushTimer = setInterval(() => {
+      try {
+        this.flushEnergyBuckets();
+      } catch (err) {
+        this.logger.error({ err }, "Error flushing energy buckets");
+      }
+    }, ENERGY_FLUSH_INTERVAL_MS);
+    this.energyFlushTimer.unref?.();
+
     this.logger.info(
       { historizedBindings: this.historizedBindings.size },
       "History writer initialized",
@@ -184,6 +229,11 @@ export class HistoryWriter {
   destroy(): void {
     this.unsubscribe?.();
     this.unsubscribe = null;
+    if (this.energyFlushTimer) {
+      clearInterval(this.energyFlushTimer);
+      this.energyFlushTimer = null;
+    }
+    this.flushEnergyBuckets(true);
   }
 
   /** Get the count of effectively historized bindings. */
@@ -224,8 +274,21 @@ export class HistoryWriter {
   private refreshCache(): void {
     this.historizedBindings.clear();
     this.bindingMeta.clear();
+    this.gridEnergyOwnedElsewhere.clear();
 
     const equipments = this.equipmentManager.getAll();
+
+    const hasProductionMeter = equipments.some(
+      (eq) => eq.type === "energy_production_meter" && eq.enabled,
+    );
+    if (hasProductionMeter) {
+      for (const eq of equipments) {
+        if (eq.type === "main_energy_meter" && eq.enabled) {
+          this.gridEnergyOwnedElsewhere.add(eq.id);
+        }
+      }
+    }
+
     for (const eq of equipments) {
       if (!eq.enabled) continue;
       const bindings = this.equipmentManager.getDataBindingsWithValues(eq.id);
@@ -269,6 +332,19 @@ export class HistoryWriter {
     if (!this.influxClient.isConnected()) return;
     if (value === null || value === undefined) return;
 
+    // One authority per series: when a production meter is configured, the
+    // SelfConsumptionWriter is the sole writer of the grid meter's `energy` /
+    // `energy_hp` / `energy_hc` (household semantic) — for live deltas and
+    // sourceTimestamp'd windows alike. Everything else (power, voltage,
+    // energy_forward/reverse, sub-meters, the solar meter's own energy)
+    // still flows through here.
+    if (
+      this.gridEnergyOwnedElsewhere.has(equipmentId) &&
+      (alias === "energy" || alias === "energy_hp" || alias === "energy_hc")
+    ) {
+      return;
+    }
+
     // Find binding by equipmentId + alias
     let bindingId: string | null = null;
     let meta: BindingMeta | null = null;
@@ -282,6 +358,23 @@ export class HistoryWriter {
 
     if (!bindingId || !meta) return;
     if (!this.historizedBindings.has(bindingId)) return;
+
+    // Live energy ticks are ADDITIVE deltas, not samples: each one carries the
+    // Wh accumulated since the previous tick. Dropping one (deadband or
+    // min-interval) silently loses that energy for good — and meters like the
+    // Tuya PJ-1203A emit ~30 ticks a minute of which a single one carries the
+    // 10 Wh counter jump, so the dedup was throwing away most of the energy.
+    // Accumulate the whole minute and write one point aligned on the minute
+    // start instead: nothing is lost and the point rate actually drops.
+    if (
+      sourceTimestamp === undefined &&
+      meta.category === "energy" &&
+      alias === "energy" &&
+      typeof value === "number"
+    ) {
+      this.accumulateEnergyDelta(bindingId, meta, value);
+      return;
+    }
 
     // Skip deduplication for aligned historical writes (e.g. energy 30-min windows).
     // These are idempotent by design (same tags + timestamp = overwrite in InfluxDB).
@@ -329,6 +422,75 @@ export class HistoryWriter {
   }
 
   // ============================================================
+  // Private: live energy accumulation
+  // ============================================================
+
+  /** Fold one live energy delta into its minute bucket, flushing the previous one. */
+  private accumulateEnergyDelta(bindingId: string, meta: BindingMeta, value: number): void {
+    const minuteS = Math.floor(Date.now() / 60_000) * 60;
+    const bucket = this.energyBuckets.get(bindingId);
+
+    if (!bucket) {
+      this.energyBuckets.set(bindingId, { minuteS, wh: value, meta });
+      return;
+    }
+    // Same minute, or a straggler for a minute we already closed over: fold it
+    // into the open bucket rather than losing it. Wh is Wh — a few seconds of
+    // misattribution beats a hole in the series.
+    if (minuteS <= bucket.minuteS) {
+      bucket.wh += value;
+      bucket.meta = meta;
+      return;
+    }
+
+    this.flushEnergyBucket(bindingId, bucket);
+    this.energyBuckets.set(bindingId, { minuteS, wh: value, meta });
+  }
+
+  /**
+   * Write out energy buckets whose minute has elapsed.
+   *
+   * Also the shutdown / test hook: `force` flushes the still-open minute too,
+   * so a stopping engine does not drop the Wh it has already accumulated.
+   */
+  flushEnergyBuckets(force = false): void {
+    const currentMinuteS = Math.floor(Date.now() / 60_000) * 60;
+    for (const [bindingId, bucket] of this.energyBuckets) {
+      if (!force && bucket.minuteS >= currentMinuteS) continue;
+      this.flushEnergyBucket(bindingId, bucket);
+      this.energyBuckets.delete(bindingId);
+    }
+  }
+
+  /** Write one accumulated minute (energy + HP/HC split) at the aligned timestamp. */
+  private flushEnergyBucket(bindingId: string, bucket: EnergyBucket): void {
+    if (!this.influxClient.isConnected()) return;
+    // Ownership may have moved to the SelfConsumptionWriter while this
+    // bucket was open (production meter added at runtime) — dropping the
+    // partial minute beats racing its writes on the same series.
+    if (this.gridEnergyOwnedElsewhere.has(bucket.meta.equipmentId)) return;
+
+    const { meta, minuteS, wh } = bucket;
+    const point = new Point("equipment_data")
+      .tag("equipmentId", meta.equipmentId)
+      .tag("alias", meta.alias)
+      .tag("category", meta.category)
+      .tag("zoneId", meta.zoneId)
+      .tag("type", meta.type)
+      .floatField("value_number", wh)
+      .timestamp(minuteS);
+
+    this.influxClient.writePoint(point);
+    this.writeEnergyHpHc(meta.equipmentId, meta, wh, minuteS, ENERGY_BUCKET_WINDOW_S);
+
+    this.lastWritten.set(bindingId, { value: wh, timestamp: Date.now() });
+    this.logger.trace(
+      { equipmentId: meta.equipmentId, wh, minuteS },
+      "Energy minute accumulated and written",
+    );
+  }
+
+  // ============================================================
   // Private: energy HP/HC classification
   // ============================================================
 
@@ -341,9 +503,10 @@ export class HistoryWriter {
     meta: BindingMeta,
     totalWh: number,
     sourceTimestamp?: number,
+    windowSeconds?: number,
   ): void {
     const windowEpoch = sourceTimestamp ?? Math.floor(Date.now() / 1000);
-    const split = this.tariffClassifier.classify(totalWh, windowEpoch);
+    const split = this.tariffClassifier.classify(totalWh, windowEpoch, windowSeconds);
 
     for (const [alias, value] of [
       ["energy_hp", split.hp],
