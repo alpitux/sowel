@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { ActivityItem, ActivityMessage } from "../types";
 import { getActivity } from "../api";
+import { loadWithRetry } from "../lib/load-with-retry";
 
 const CAPACITY = 100;
 const COALESCE_WINDOW_MS = 500;
@@ -31,11 +32,23 @@ interface ActivityState {
   /** Zone IDs whose items are accepted (current zone + descendants if toggle ON). Global items (zoneId=null) always accepted. */
   scopeZoneIds: Set<string>;
   includeDescendants: boolean;
+  /** Descendants of the zone currently displayed — kept so retry() can re-issue the same load. */
+  descendantIds: string[];
   loadForZone: (zoneId: string, descendantIds: string[]) => Promise<void>;
   setIncludeDescendants: (v: boolean, descendantIds: string[]) => Promise<void>;
+  retry: () => Promise<void>;
   addItem: (item: ActivityItem) => void;
   reset: () => void;
 }
+
+/**
+ * Monotonic load counter. A load only writes to the store if it is still the latest one —
+ * without it, a slow request that fails (rate limit, token refresh turbulence, sleeping tab)
+ * can flip a newer, successful load into the error state.
+ */
+let loadSeq = 0;
+
+const RETRY_DELAYS_MS = [700, 2500];
 
 export const useActivity = create<ActivityState>((set, get) => ({
   items: [],
@@ -43,17 +56,26 @@ export const useActivity = create<ActivityState>((set, get) => ({
   zoneId: null,
   scopeZoneIds: new Set(),
   includeDescendants: loadPref(),
+  descendantIds: [],
 
   loadForZone: async (zoneId: string, descendantIds: string[]) => {
     const includeDescendants = get().includeDescendants;
     const scope = new Set<string>([zoneId]);
     if (includeDescendants) for (const id of descendantIds) scope.add(id);
-    set({ status: "loading", zoneId, items: [], scopeZoneIds: scope });
-    try {
-      const data = await getActivity(zoneId, { includeDescendants, limit: CAPACITY });
-      set({ items: data.items.slice(0, CAPACITY), status: "ready" });
-    } catch (err) {
-      console.error("Failed to load activity", err);
+    const seq = ++loadSeq;
+    set({ status: "loading", zoneId, items: [], scopeZoneIds: scope, descendantIds });
+
+    // A single blip used to leave the panel stuck on "Impossible de charger l'activité"
+    // until the user navigated away and back — retry a couple of times before giving up.
+    const outcome = await loadWithRetry(
+      () => getActivity(zoneId, { includeDescendants, limit: CAPACITY }),
+      { retryDelaysMs: RETRY_DELAYS_MS, isCurrent: () => seq === loadSeq },
+    );
+
+    if (outcome.status === "ok") {
+      set({ items: outcome.value.items.slice(0, CAPACITY), status: "ready" });
+    } else if (outcome.status === "failed") {
+      console.error("Failed to load activity", outcome.error);
       set({ status: "error" });
     }
   },
@@ -63,6 +85,12 @@ export const useActivity = create<ActivityState>((set, get) => ({
     set({ includeDescendants: v });
     const { zoneId } = get();
     if (zoneId) await get().loadForZone(zoneId, descendantIds);
+  },
+
+  retry: async () => {
+    const { zoneId, descendantIds } = get();
+    if (!zoneId) return;
+    await get().loadForZone(zoneId, descendantIds);
   },
 
   addItem: (item: ActivityItem) => {
@@ -82,8 +110,10 @@ export const useActivity = create<ActivityState>((set, get) => ({
     }
   },
 
-  reset: () =>
-    set({ items: [], status: "idle", zoneId: null, scopeZoneIds: new Set() }),
+  reset: () => {
+    loadSeq++; // drop any in-flight load
+    set({ items: [], status: "idle", zoneId: null, scopeZoneIds: new Set(), descendantIds: [] });
+  },
 }));
 
 /**
