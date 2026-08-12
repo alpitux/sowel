@@ -47,6 +47,7 @@ import {
   repeatFieldsFor,
   type RepeatMode,
 } from "../lib/notif-mapping";
+import { equipmentLabelMap, flattenZonesWithPath, zoneChainMap, type ZoneOption } from "../lib/zone-path";
 
 const ZONE_AGG_KEYS = [
   "temperature",
@@ -403,7 +404,7 @@ function PublisherCard({
   const [testChannelOk, setTestChannelOk] = useState(false);
   const [testResult, setTestResult] = useState<number | null>(null);
 
-  const flatZones = flattenZones(zones);
+  const flatZones = flattenZonesWithPath(zones);
 
   if (editing) {
     return (
@@ -476,7 +477,7 @@ function PublisherCard({
       const eq = equipments.find((e) => e.id === mapping.sourceId);
       if (!eq) return `??? → ${mapping.sourceKey}`;
       const zone = flatZones.find((z) => z.id === eq.zoneId);
-      const zoneName = zone ? zone.name : "";
+      const zoneName = zone ? zone.label : "";
       return zoneName
         ? `${eq.name} (${zoneName}) → ${mapping.sourceKey}`
         : `${eq.name} → ${mapping.sourceKey}`;
@@ -488,11 +489,11 @@ function PublisherCard({
       const zoneId = inst?.params?.zone as string | undefined;
       const zone = zoneId ? flatZones.find((z) => z.id === zoneId) : undefined;
       return zone
-        ? `${label} (${zone.name}) → ${mapping.sourceKey}`
+        ? `${label} (${zone.label}) → ${mapping.sourceKey}`
         : `${label} → ${mapping.sourceKey}`;
     }
     const zone = flatZones.find((z) => z.id === mapping.sourceId);
-    return zone ? `${zone.name} → ${mapping.sourceKey}` : `??? → ${mapping.sourceKey}`;
+    return zone ? `${zone.label} → ${mapping.sourceKey}` : `??? → ${mapping.sourceKey}`;
   };
 
   return (
@@ -702,7 +703,7 @@ function MappingRow({
   mapping: NotificationPublisherMapping;
   label: string;
   equipments: EquipmentWithDetails[];
-  zones: FlatZone[];
+  zones: ZoneOption[];
   recipeInstances: RecipeInstance[];
   recipes: RecipeInfo[];
   onRefresh: () => void;
@@ -728,6 +729,10 @@ function MappingRow({
   const filteredEquipments = filterZoneId
     ? equipments.filter((e) => e.zoneId === filterZoneId)
     : equipments;
+
+  // Homonym equipments get a "name - zone" label (spec 139), qualified only
+  // against the other candidates in this dropdown.
+  const eqLabels = equipmentLabelMap(filteredEquipments, zoneChainMap(zones));
 
   const filteredRecipeInstances = filterZoneId
     ? recipeInstances.filter((i) => i.params.zone === filterZoneId)
@@ -859,7 +864,7 @@ function MappingRow({
               </option>
               {zones.map((z) => (
                 <option key={z.id} value={z.id}>
-                  {z.name}
+                  {z.label}
                 </option>
               ))}
             </select>
@@ -881,7 +886,7 @@ function MappingRow({
                 <option value="">{t("notifPublishers.selectSource")}</option>
                 {filteredEquipments.map((eq) => (
                   <option key={eq.id} value={eq.id}>
-                    {eq.name}
+                    {eqLabels.get(eq.id) ?? eq.name}
                   </option>
                 ))}
               </select>
@@ -1020,24 +1025,6 @@ function MappingRow({
 
 // ── Add mapping form ─────────────────────────────────────────
 
-interface FlatZone {
-  id: string;
-  name: string;
-}
-
-function flattenZones(zones: ZoneWithChildren[]): FlatZone[] {
-  const result: FlatZone[] = [];
-  const recurse = (list: ZoneWithChildren[], parentLabel?: string) => {
-    for (const z of list) {
-      const label = parentLabel ? `${parentLabel} › ${z.name}` : z.name;
-      result.push({ id: z.id, name: label });
-      if (z.children.length > 0) recurse(z.children, label);
-    }
-  };
-  recurse(zones, undefined);
-  return result;
-}
-
 function AddMappingForm({
   publisherId,
   equipments,
@@ -1049,7 +1036,7 @@ function AddMappingForm({
 }: {
   publisherId: string;
   equipments: EquipmentWithDetails[];
-  zones: FlatZone[];
+  zones: ZoneOption[];
   recipeInstances: RecipeInstance[];
   recipes: RecipeInfo[];
   onAdded: () => void;
@@ -1071,6 +1058,10 @@ function AddMappingForm({
   const filteredEquipments = filterZoneId
     ? equipments.filter((e) => e.zoneId === filterZoneId)
     : equipments;
+
+  // Homonym equipments get a "name - zone" label (spec 139), qualified only
+  // against the other candidates in this dropdown.
+  const eqLabels = equipmentLabelMap(filteredEquipments, zoneChainMap(zones));
 
   const filteredRecipeInstances = filterZoneId
     ? recipeInstances.filter((i) => i.params.zone === filterZoneId)
@@ -1179,7 +1170,7 @@ function AddMappingForm({
             </option>
             {zones.map((z) => (
               <option key={z.id} value={z.id}>
-                {z.name}
+                {z.label}
               </option>
             ))}
           </select>
@@ -1201,7 +1192,7 @@ function AddMappingForm({
               <option value="">{t("notifPublishers.selectSource")}</option>
               {filteredEquipments.map((eq) => (
                 <option key={eq.id} value={eq.id}>
-                  {eq.name}
+                  {eqLabels.get(eq.id) ?? eq.name}
                 </option>
               ))}
             </select>
