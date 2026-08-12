@@ -13,6 +13,22 @@ export type TimeRange = "6h" | "24h" | "7d" | "30d";
 
 export type ChartFamily = "measurements" | "cumulative" | "states";
 
+/**
+ * Default Analyse series palette (spec 118). A series with no explicit colour
+ * takes the entry at its position in the list — the pre-145 behaviour, and what
+ * keeps untouched charts rendering exactly as before.
+ */
+export const SERIES_COLORS = [
+  "#1A4F6E", // primary (ocean blue)
+  "#D4963F", // accent (amber)
+  "#2D8B59", // green
+  "#9B59B6", // purple
+  "#E74C3C", // red
+  "#17A2B8", // teal
+  "#F39C12", // orange
+  "#8E44AD", // deep purple
+];
+
 const CUMULATIVE_CATEGORIES = new Set<string>(["rain", "energy"]);
 
 export const BOOLEAN_CATEGORIES = new Set<string>([
@@ -90,6 +106,60 @@ export function familiesCompatible(a: ChartFamily | null, b: ChartFamily | null)
   // cumulative owns the plot as bars and never mixes — including with a null
   // (unclassified) family, which otherwise charts as a measurement line.
   return a !== "cumulative" && b !== "cumulative";
+}
+
+/** Display unit per data category. Empty when the category carries none. */
+export const CATEGORY_UNITS: Record<string, string> = {
+  temperature: "°C",
+  humidity: "%",
+  pressure: "hPa",
+  luminosity: "lx",
+  power: "W",
+  energy: "kWh",
+  voltage: "V",
+  current: "A",
+  battery: "%",
+  noise: "dB",
+  co2: "ppm",
+  rain: "mm",
+  wind: "km/h",
+  shutter_position: "%",
+};
+
+export type ChartAxisId = "left" | "right" | "state";
+
+/**
+ * The distinct quantities plotted on the measurement axis, in the order the
+ * series were added (spec 145 F3).
+ *
+ * Grouping is by unit, not by category: two temperatures — or a humidity and a
+ * battery, both `%` — keep sharing one scale, because putting same-unit series
+ * on separate axes would make them look comparable when they are not. State
+ * categories are excluded; they own the fixed `[0, 1]` axis.
+ */
+export function measurementUnits(categories: string[]): string[] {
+  const units: string[] = [];
+  for (const category of categories) {
+    if (isBooleanCategory(category)) continue;
+    const unit = CATEGORY_UNITS[category] ?? "";
+    if (!units.includes(unit)) units.push(unit);
+  }
+  return units;
+}
+
+/**
+ * Which Y axis a category belongs to, given the units present on the chart
+ * (spec 145 F3).
+ *
+ * Exactly two quantities get one axis each, left and right — a temperature and
+ * a humidity on one shared scale means reading a 21 °C curve flattened under a
+ * 60 % one. Three or more would need three scales for two sides, so they stay
+ * on the shared left axis as before.
+ */
+export function axisForCategory(category: string, units: string[]): ChartAxisId {
+  if (isBooleanCategory(category)) return "state";
+  if (units.length !== 2) return "left";
+  return (CATEGORY_UNITS[category] ?? "") === units[1] ? "right" : "left";
 }
 
 /** Whether `category` qualifies for the min/max envelope. */
