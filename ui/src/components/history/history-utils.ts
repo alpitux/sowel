@@ -6,8 +6,10 @@ export type TimeRange = "6h" | "24h" | "7d" | "30d";
 // Chart families (spec 118)
 // ============================================================
 //
-// Every chartable DataCategory belongs to one family. A chart contains
-// series from a single family (see F7 — family-locked picker in AnalyseView).
+// Every chartable DataCategory belongs to one family. Spec 144 relaxed the
+// single-family rule: `measurements` and `states` share a chart through a
+// secondary 0/1 axis (see `familiesCompatible`), `cumulative` stays alone
+// because it renders as bars.
 
 export type ChartFamily = "measurements" | "cumulative" | "states";
 
@@ -19,6 +21,13 @@ export const BOOLEAN_CATEGORIES = new Set<string>([
   "contact_window",
   "water_leak",
   "smoke",
+  // Spec 144 — actuator feedback. Only strictly binary ON/OFF relays go on the
+  // 0/1 state axis. cover/gate/lock are excluded on purpose: they can carry a
+  // third value (a cover's OPEN/CLOSED/STOP), which HistoryWriter encodes by
+  // declared index (#434), so forcing them onto a two-label [0,1] axis would
+  // clip and mislabel them. They chart as a plain numeric series instead.
+  "light_state",
+  "appliance_state",
 ]);
 
 const MEASUREMENT_CATEGORIES = new Set<string>([
@@ -62,6 +71,21 @@ export function familyOf(category: string): ChartFamily | null {
   if (BOOLEAN_CATEGORIES.has(category)) return "states";
   if (MEASUREMENT_CATEGORIES.has(category)) return "measurements";
   return null;
+}
+
+/**
+ * Whether two families can share one chart (spec 144).
+ *
+ * `measurements` and `states` do: the states go on their own 0/1 axis on the
+ * right, so a temperature curve and the relay driving it read together. A
+ * `cumulative` series never mixes — it owns the plot as bars. A `null` family
+ * (category with no classification) is charted as a measurement and accepted
+ * anywhere, which is the pre-144 behaviour.
+ */
+export function familiesCompatible(a: ChartFamily | null, b: ChartFamily | null): boolean {
+  if (a === null || b === null) return true;
+  if (a === b) return true;
+  return a !== "cumulative" && b !== "cumulative";
 }
 
 /** Whether `category` qualifies for the min/max envelope. */
@@ -108,6 +132,9 @@ export function booleanTickLabels(category: string): [string, string] {
       return ["analyse.bool.leak.dry", "analyse.bool.leak.wet"];
     case "smoke":
       return ["analyse.bool.smoke.clear", "analyse.bool.smoke.detected"];
+    case "light_state":
+    case "appliance_state":
+      return ["analyse.bool.power.off", "analyse.bool.power.on"];
     default:
       return ["analyse.bool.generic.off", "analyse.bool.generic.on"];
   }
