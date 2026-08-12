@@ -68,6 +68,7 @@ import { registerSystemRoutes } from "./routes/system.js";
 import { registerAuditRoutes } from "./routes/audit.js";
 import type { AuditLogger } from "../core/audit-logger.js";
 import { registerWebSocket } from "./websocket.js";
+import { installValidationErrorHandler, validationAjvOptions } from "./error-handler.js";
 
 interface ServerDeps {
   db: Database.Database;
@@ -171,7 +172,11 @@ export async function createServer(deps: ServerDeps) {
 
   const app = Fastify({
     logger: false,
+    ajv: validationAjvOptions,
   });
+
+  // Schema-validation failures answer as { error } / 400 (issue #452).
+  installValidationErrorHandler(app);
 
   // CORS
   await app.register(cors, {
