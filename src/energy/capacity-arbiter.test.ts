@@ -242,6 +242,19 @@ describe("capacity arbiter", () => {
     expect(h.arbiter.getPublicState().pending[0]?.reasonWaiting).toContain("insufficient-surplus");
   });
 
+  it("publishes the surplus a pending claim waits for, not the load's own draw", () => {
+    // The two differ by whatever grid the claim tolerates, and the UI quotes
+    // this figure: a 600 W load willing to buy 400 W engages at 300 W, and
+    // showing 600 there reads as "it will never start".
+    const h = makeHarness();
+    h.claim("i1", { equipmentId: "pump", toleratedImportW: 400 });
+    h.feedMeter(-200);
+    h.run(-200, 300);
+    const [pending] = h.arbiter.getPublicState().pending;
+    expect(pending?.watts).toBe(600);
+    expect(pending?.needW).toBe(300); // 600 + 100 margin - 400 tolerated
+  });
+
   it("does NOT revoke when its own grant collapses the export (reservation accounting)", () => {
     const h = makeHarness();
     h.claim("i1", { equipmentId: "pump" });
@@ -539,6 +552,29 @@ describe("capacity arbiter", () => {
     h.order("pump", true, { kind: "recipe", instanceId: "i1" }); // repeat: no dup
     const entries = h.arbiter.getPublicState().journal.filter((j) => j.kind === "unclaimed-run");
     expect(entries).toHaveLength(1);
+  });
+
+  it("closes an unclaimed run when the load stops, so it reads as a span", () => {
+    // Without the end the timeline can only show where the run started, which
+    // says nothing about how long the load held power outside arbitration.
+    const h = makeHarness();
+    h.feedMeter(-100);
+    h.order("pump", true, { kind: "recipe", instanceId: "i1" });
+    h.order("pump", false, { kind: "recipe", instanceId: "i1" });
+    const kinds = h.arbiter
+      .getPublicState()
+      .journal.filter((j) => j.kind.startsWith("unclaimed-run"))
+      .map((j) => j.kind);
+    expect(kinds).toEqual(["unclaimed-run-ended", "unclaimed-run"]); // newest-first
+  });
+
+  it("does not close a run that was never flagged as unclaimed", () => {
+    const h = makeHarness({ priority: ["pump"] });
+    h.claim("i1", { equipmentId: "pump" });
+    h.run(-1000, 150); // granted, so the run is arbitrated
+    h.order("pump", false, { kind: "recipe", instanceId: "i1" });
+    const kinds = h.arbiter.getPublicState().journal.map((j) => j.kind);
+    expect(kinds).not.toContain("unclaimed-run-ended");
   });
 
   // ── Tolerated import & slack (FR-3) ───────────────────────

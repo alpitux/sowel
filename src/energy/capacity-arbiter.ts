@@ -444,6 +444,14 @@ export class CapacityArbiter {
       }
       if (isOffLike(value) && this.unclaimedRunning.has(equipmentId)) {
         this.unclaimedRunning.delete(equipmentId);
+        // Journaled so the run reads as a span on the timeline. Without an end
+        // the lane could only ever show where it started, which says nothing
+        // about how long the load held power outside arbitration.
+        this.journal({
+          kind: "unclaimed-run-ended",
+          equipmentId,
+          reason: "run outside arbitration finished",
+        });
         this.finishLearnerRun(equipmentId);
       }
     }
@@ -586,6 +594,8 @@ export class CapacityArbiter {
         equipmentName: this.nameOf(c.equipmentId),
         instanceId: c.instanceId,
         watts: c.watts,
+        needW: Math.round(this.engageNeedW(c)),
+        toleratedImportW: c.toleratedImportW,
         reasonWaiting: this.pendingReason(c, accounting.headroomW),
       }));
     const suspensions = [...this.overridesUntil.entries()]
@@ -728,7 +738,7 @@ export class CapacityArbiter {
       // watts+margin is explicitly willing to run while importing that much,
       // which is the whole point of the tolerance (FR-3). Flooring needW would
       // silently refuse it during any import.
-      const needW = claim.watts + this.config.engageMarginW - claim.toleratedImportW;
+      const needW = this.engageNeedW(claim);
       if (headroomW + ownDrawW >= needW) {
         claim.engageSince ??= now;
         if (now - claim.engageSince >= this.config.engageHoldS * 1000) {
@@ -1067,6 +1077,17 @@ export class CapacityArbiter {
   private isSuspended(equipmentId: string): boolean {
     const until = this.overridesUntil.get(equipmentId);
     return until !== undefined && until > Date.now();
+  }
+
+  /**
+   * Surplus this claim has to see before it can engage.
+   *
+   * No floor at 0 (review #6): a claim whose `toleratedImportW` exceeds
+   * `watts + engageMarginW` is explicitly willing to run while importing that
+   * much, so a negative need is meaningful and must survive to the caller.
+   */
+  private engageNeedW(claim: ClaimRecord): number {
+    return claim.watts + this.config.engageMarginW - claim.toleratedImportW;
   }
 
   private pendingReason(claim: ClaimRecord, headroomW: number): string {
