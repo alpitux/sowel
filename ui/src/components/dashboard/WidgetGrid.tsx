@@ -31,6 +31,7 @@ import { needsDetailSheet } from "./widget-utils";
 import { useDashboard } from "../../store/useDashboard";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { getSensorBindings } from "../equipments/sensorUtils";
+import { EQUIPMENT_ZONE_SEPARATOR } from "../../lib/zone-path";
 
 interface WidgetGridProps {
   widgets: DashboardWidget[];
@@ -38,6 +39,8 @@ interface WidgetGridProps {
   zoneMap: Map<string, ZoneWithChildren>;
   /** zoneId → path-aware label (spec 139), used wherever a widget shows a zone name. */
   zoneLabels: Map<string, string>;
+  /** equipmentId → zone qualifier (spec 139) for the homonyms on this dashboard. */
+  equipmentZones: Map<string, string>;
   equipments: EquipmentWithDetails[];
   editMode: boolean;
   onExecuteOrder: (equipmentId: string, alias: string, value: unknown) => Promise<void>;
@@ -50,6 +53,7 @@ export function WidgetGrid({
   equipmentMap,
   zoneMap,
   zoneLabels,
+  equipmentZones,
   equipments,
   editMode,
   onExecuteOrder,
@@ -96,6 +100,7 @@ export function WidgetGrid({
               equipmentMap={equipmentMap}
               zoneMap={zoneMap}
               zoneLabels={zoneLabels}
+              equipmentZones={equipmentZones}
               equipments={equipments}
               onExecuteOrder={onExecuteOrder}
               isMobile={isMobile}
@@ -109,6 +114,7 @@ export function WidgetGrid({
           <EquipmentDetailSheet
             widget={detailWidget}
             equipment={equipmentMap.get(detailWidget.equipmentId)!}
+            equipmentZone={equipmentZones.get(detailWidget.equipmentId)}
             onExecuteOrder={onExecuteOrder}
             onClose={() => setDetailWidgetId(null)}
           />
@@ -137,6 +143,7 @@ export function WidgetGrid({
               equipmentMap={equipmentMap}
               zoneMap={zoneMap}
               zoneLabels={zoneLabels}
+              equipmentZones={equipmentZones}
               equipments={equipments}
               onExecuteOrder={onExecuteOrder}
               onDelete={onDelete}
@@ -147,6 +154,15 @@ export function WidgetGrid({
       </SortableContext>
     </DndContext>
   );
+}
+
+/** The card's two title lines as one string, for the rename field. */
+function equipmentLabel(
+  equipment: EquipmentWithDetails | undefined,
+  zone: string | undefined,
+): string | undefined {
+  if (!equipment) return undefined;
+  return zone ? `${equipment.name}${EQUIPMENT_ZONE_SEPARATOR}${zone}` : equipment.name;
 }
 
 function getEquipmentType(widget: DashboardWidget, equipmentMap: Map<string, EquipmentWithDetails>): string | undefined {
@@ -164,6 +180,7 @@ function SortableWidget({
   equipmentMap,
   zoneMap,
   zoneLabels,
+  equipmentZones,
   equipments,
   onExecuteOrder,
   onDelete,
@@ -173,6 +190,7 @@ function SortableWidget({
   equipmentMap: Map<string, EquipmentWithDetails>;
   zoneMap: Map<string, ZoneWithChildren>;
   zoneLabels: Map<string, string>;
+  equipmentZones: Map<string, string>;
   equipments: EquipmentWithDetails[];
   onExecuteOrder: (equipmentId: string, alias: string, value: unknown) => Promise<void>;
   onDelete: (id: string) => void;
@@ -209,8 +227,13 @@ function SortableWidget({
     : undefined;
   const sensorBindings = sensorEquipment ? getSensorBindings(sensorEquipment.dataBindings) : [];
 
+  // The rename field opens on everything the card is showing, zone line
+  // included: a manual label replaces both, so dropping the zone here would
+  // silently throw away the only thing separating this widget from its twin.
   const currentLabel = widget.label
-    || (widget.type === "equipment" && widget.equipmentId ? equipmentMap.get(widget.equipmentId)?.name : undefined)
+    || (widget.type === "equipment" && widget.equipmentId
+      ? equipmentLabel(equipmentMap.get(widget.equipmentId), equipmentZones.get(widget.equipmentId))
+      : undefined)
     || (widget.type === "zone" && widget.zoneId ? zoneLabels.get(widget.zoneId) : undefined)
     || "";
 
@@ -327,6 +350,7 @@ function SortableWidget({
         equipmentMap={equipmentMap}
         zoneMap={zoneMap}
         zoneLabels={zoneLabels}
+        equipmentZones={equipmentZones}
         equipments={equipments}
         onExecuteOrder={onExecuteOrder}
         isMobile={isMobile}
@@ -341,6 +365,7 @@ function WidgetRenderer({
   equipmentMap,
   zoneMap,
   zoneLabels,
+  equipmentZones,
   equipments,
   onExecuteOrder,
   isMobile,
@@ -351,6 +376,7 @@ function WidgetRenderer({
   equipmentMap: Map<string, EquipmentWithDetails>;
   zoneMap: Map<string, ZoneWithChildren>;
   zoneLabels: Map<string, string>;
+  equipmentZones: Map<string, string>;
   equipments: EquipmentWithDetails[];
   onExecuteOrder: (equipmentId: string, alias: string, value: unknown) => Promise<void>;
   isMobile?: boolean;
@@ -360,6 +386,7 @@ function WidgetRenderer({
   if (widget.type === "equipment" && widget.equipmentId) {
     const equipment = equipmentMap.get(widget.equipmentId);
     if (!equipment) return null;
+    const equipmentZone = equipmentZones.get(widget.equipmentId);
 
     // On mobile: ALL equipment widgets use compact MobileWidgetCard
     if (isMobile) {
@@ -368,6 +395,7 @@ function WidgetRenderer({
         <MobileWidgetCard
           widget={widget}
           equipment={equipment}
+          equipmentZone={equipmentZone}
           onClick={mobileClick}
           editMode={editMode}
         />
@@ -378,6 +406,7 @@ function WidgetRenderer({
       <EquipmentWidget
         widget={widget}
         equipment={equipment}
+        equipmentZone={equipmentZone}
         onExecuteOrder={onExecuteOrder}
         onOpenDetail={editMode ? undefined : onOpenDetail}
       />

@@ -61,6 +61,8 @@ function resolveWidgetIcon(iconKey: string | undefined, fallback: ReactNode): Re
 interface EquipmentWidgetProps {
   widget: DashboardWidget;
   equipment: EquipmentWithDetails;
+  /** Zone qualifier (spec 139), set only when a homonym shares the dashboard. */
+  equipmentZone?: string;
   onExecuteOrder: (equipmentId: string, alias: string, value: unknown) => Promise<void>;
   /** Click handler that opens the desktop detail drawer. Currently consumed only by the weather widget. */
   onOpenDetail?: () => void;
@@ -69,6 +71,7 @@ interface EquipmentWidgetProps {
 export function EquipmentWidget({
   widget,
   equipment,
+  equipmentZone,
   onExecuteOrder,
   onOpenDetail,
 }: EquipmentWidgetProps) {
@@ -89,13 +92,17 @@ export function EquipmentWidget({
     isMediaPlayer,
   } = useEquipmentState(equipment);
 
+  // A hand-picked label replaces the whole thing, zone line included: the user
+  // named this card themselves, so we have nothing left to disambiguate.
   const label = widget.label || equipment.name;
+  const sublabel = widget.label ? undefined : equipmentZone;
   const execOrder = (alias: string, value: unknown) => onExecuteOrder(equipment.id, alias, value);
 
   if (isLight)
     return (
       <LightEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
@@ -108,6 +115,7 @@ export function EquipmentWidget({
     return (
       <ShutterEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
@@ -117,6 +125,7 @@ export function EquipmentWidget({
     return (
       <ThermostatEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
@@ -126,6 +135,7 @@ export function EquipmentWidget({
     return (
       <GateEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
@@ -135,18 +145,20 @@ export function EquipmentWidget({
     return (
       <HeaterEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
       />
     );
-  if (isEnergyMeter) return <EnergyMeterEquipmentWidget label={label} equipment={equipment} />;
+  if (isEnergyMeter) return <EnergyMeterEquipmentWidget label={label} sublabel={sublabel} equipment={equipment} />;
   if (equipment.type === "solar_panel")
-    return <SolarPanelEquipmentWidget label={label} equipment={equipment} />;
+    return <SolarPanelEquipmentWidget label={label} sublabel={sublabel} equipment={equipment} />;
   if (equipment.type === "switch")
     return (
       <SwitchEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
@@ -156,19 +168,21 @@ export function EquipmentWidget({
     return (
       <WaterHeaterEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
       />
     );
-  if (isWeatherForecast) return <WeatherForecastWidget label={label} equipment={equipment} />;
+  if (isWeatherForecast) return <WeatherForecastWidget label={label} sublabel={sublabel} equipment={equipment} />;
   if (equipment.type === "weather")
-    return <WeatherStationWidget label={label} equipment={equipment} onOpenDetail={onOpenDetail} />;
-  if (isAppliance) return <ApplianceEquipmentWidget label={label} equipment={equipment} />;
+    return <WeatherStationWidget label={label} sublabel={sublabel} equipment={equipment} onOpenDetail={onOpenDetail} />;
+  if (isAppliance) return <ApplianceEquipmentWidget label={label} sublabel={sublabel} equipment={equipment} />;
   if (isWaterValve)
     return (
       <WaterValveEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
@@ -178,6 +192,7 @@ export function EquipmentWidget({
     return (
       <PoolPumpEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
@@ -187,6 +202,7 @@ export function EquipmentWidget({
     return (
       <PoolCoverEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
@@ -196,24 +212,26 @@ export function EquipmentWidget({
     return (
       <SensorEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         iconKey={widget.icon}
         visibleBindings={widget.config?.visibleBindings}
       />
     );
   if (equipment.type === "camera")
-    return <CameraEquipmentWidget label={label} equipment={equipment} />;
+    return <CameraEquipmentWidget label={label} sublabel={sublabel} equipment={equipment} />;
   if (isMediaPlayer)
     return (
       <MediaPlayerEquipmentWidget
         label={label}
+        sublabel={sublabel}
         equipment={equipment}
         onExecuteOrder={execOrder}
         iconKey={widget.icon}
       />
     );
 
-  return <GenericEquipmentWidget label={label} equipment={equipment} />;
+  return <GenericEquipmentWidget label={label} sublabel={sublabel} equipment={equipment} />;
 }
 
 // ============================================================
@@ -224,11 +242,13 @@ export function EquipmentWidget({
 
 function LightEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -279,7 +299,7 @@ function LightEquipmentWidget({
   const handleBrightnessCommit = () => slider.onCommit((v) => onExecuteOrder("brightness", v));
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {/* Zone 2: Picto + État horizontal */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
@@ -350,11 +370,13 @@ function LightEquipmentWidget({
 
 function SwitchEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -390,7 +412,7 @@ function SwitchEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {/* Zone 2: Picto + état */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
@@ -435,11 +457,13 @@ function SwitchEquipmentWidget({
 
 function WaterHeaterEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -482,7 +506,7 @@ function WaterHeaterEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
         {resolveWidgetIcon(iconKey, <WaterHeaterIcon on={isOn} />)}
@@ -537,11 +561,13 @@ function WaterHeaterEquipmentWidget({
 
 function ShutterEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -596,7 +622,7 @@ function ShutterEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {/* Zone 2: Picto + État horizontal */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
@@ -675,11 +701,13 @@ function ShutterEquipmentWidget({
 
 function ThermostatEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -738,7 +766,7 @@ function ThermostatEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {/* Zone 2: Picto + temp + power */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
@@ -813,11 +841,13 @@ const GATE_ICON_MAP: Record<string, typeof GateWidgetIcon> = {
 
 function GateEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -855,6 +885,7 @@ function GateEquipmentWidget({
   return (
     <WidgetCard
       label={label}
+      sublabel={sublabel}
       onClick={hasSingleAction ? handleCommand : undefined}
       className={hasSingleAction ? "cursor-pointer active:scale-[0.98] transition-transform" : ""}
     >
@@ -891,11 +922,13 @@ function GateEquipmentWidget({
 
 function HeaterEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -930,7 +963,7 @@ function HeaterEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {/* Zone 2: Picto + État horizontal */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
@@ -979,11 +1012,13 @@ function HeaterEquipmentWidget({
 
 function SensorEquipmentWidget({
   label,
+  sublabel,
   equipment,
   iconKey,
   visibleBindings,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   iconKey?: string;
   visibleBindings?: string[];
@@ -1006,7 +1041,7 @@ function SensorEquipmentWidget({
       : sensorBindings;
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {/* Zone 2: Picto + État — centered vertically (no bottom controls) */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center flex-1 min-h-0">
         <div />
@@ -1030,10 +1065,12 @@ function SensorEquipmentWidget({
 
 function WeatherStationWidget({
   label,
+  sublabel,
   equipment,
   onOpenDetail,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onOpenDetail?: () => void;
 }) {
@@ -1056,7 +1093,7 @@ function WeatherStationWidget({
   const both = !!outdoor && !!indoor;
 
   return (
-    <WidgetCard label={label} onClick={onOpenDetail} className={clickClass}>
+    <WidgetCard label={label} sublabel={sublabel} onClick={onOpenDetail} className={clickClass}>
       <div className="flex items-stretch justify-center flex-1 min-h-0">
         {both ? (
           <div className="flex items-stretch gap-4 sm:gap-6">
@@ -1127,9 +1164,11 @@ function WeatherTempColumn({
 
 function EnergyMeterEquipmentWidget({
   label,
+  sublabel,
   equipment,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
 }) {
   const { t } = useTranslation();
@@ -1159,7 +1198,7 @@ function EnergyMeterEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {/* Zone 2: Icon + primary value (today) */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
@@ -1217,9 +1256,11 @@ function EnergyMeterEquipmentWidget({
 
 function SolarPanelEquipmentWidget({
   label,
+  sublabel,
   equipment,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
 }) {
   const { t } = useTranslation();
@@ -1230,7 +1271,7 @@ function SolarPanelEquipmentWidget({
   const { producing, lines } = solarWidgetState(equipment, t);
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <SolarPanelIcon
           strokeWidth={1.5}
@@ -1252,9 +1293,11 @@ function SolarPanelEquipmentWidget({
 
 function ApplianceEquipmentWidget({
   label,
+  sublabel,
   equipment,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
 }) {
   const { t } = useTranslation();
@@ -1275,7 +1318,7 @@ function ApplianceEquipmentWidget({
   const isRunning = state === "running";
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {/* Icon + state */}
       <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-1">
         <WashingMachine
@@ -1323,11 +1366,13 @@ function ApplianceEquipmentWidget({
 
 function WaterValveEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -1361,7 +1406,7 @@ function WaterValveEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
         {resolveWidgetIcon(iconKey, <WaterValveWidgetIcon open={isOpen} />)}
@@ -1412,11 +1457,13 @@ function formatRuntime(seconds: number): string {
 
 function PoolPumpEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -1462,7 +1509,7 @@ function PoolPumpEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
         {resolveWidgetIcon(iconKey, <PoolPumpIcon on={isOn} />)}
@@ -1508,11 +1555,13 @@ function PoolPumpEquipmentWidget({
 
 function PoolCoverEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -1575,7 +1624,7 @@ function PoolCoverEquipmentWidget({
     !moveBinding?.enumValues || moveBinding.enumValues.some((v) => v.toUpperCase() === "STOP");
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
         {/* Nudge up only here — the icon is intrinsically centered in its
@@ -1650,9 +1699,11 @@ function PoolCoverEquipmentWidget({
 
 function CameraEquipmentWidget({
   label,
+  sublabel,
   equipment,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
 }) {
   const { t } = useTranslation();
@@ -1664,7 +1715,7 @@ function CameraEquipmentWidget({
   const { url } = useCameraSnapshot(equipment.id, hasSnapshot, 60_000);
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       <div className="flex-1 min-h-0 rounded-[4px] bg-black overflow-hidden flex items-center justify-center">
         {url ? (
           <img src={url} alt="" className="w-full h-full object-cover" />
@@ -1697,11 +1748,13 @@ function CameraEquipmentWidget({
 
 function MediaPlayerEquipmentWidget({
   label,
+  sublabel,
   equipment,
   onExecuteOrder,
   iconKey,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
   onExecuteOrder: (alias: string, value: unknown) => Promise<void>;
   iconKey?: string;
@@ -1727,7 +1780,7 @@ function MediaPlayerEquipmentWidget({
   };
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center h-[104px] my-auto">
         <div />
         {resolveWidgetIcon(
@@ -1772,9 +1825,11 @@ function MediaPlayerEquipmentWidget({
 
 function GenericEquipmentWidget({
   label,
+  sublabel,
   equipment,
 }: {
   label: string;
+  sublabel?: string;
   equipment: EquipmentWithDetails;
 }) {
   const { t } = useTranslation();
@@ -1782,7 +1837,7 @@ function GenericEquipmentWidget({
   const primaryBinding = equipment.dataBindings[0] ?? null;
 
   return (
-    <WidgetCard label={label}>
+    <WidgetCard label={label} sublabel={sublabel}>
       {equipment.dataBindings.length === 0 ? (
         <span className="text-[12px] text-text-tertiary text-center">{t("dashboard.noData")}</span>
       ) : (
