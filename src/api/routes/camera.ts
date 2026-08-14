@@ -75,14 +75,23 @@ export function registerCameraRoutes(app: FastifyInstance, deps: CameraDeps): vo
         return reply.code(403).send({ error: "Segment URL origin mismatch" });
       }
 
-      return fetchAndPipe(request, reply, targetUrl.toString(), log, equipmentId);
+      // Re-apply the same #EXTM3U sniff/rewrite here: a variant/child
+      // playlist referenced by a master manifest (e.g. go2rtc's HLS
+      // output) is itself proxied through this same route, and its own
+      // relative segment URIs need rewriting too, or the browser resolves
+      // them against this route's own URL and 404s. Real segment bytes
+      // (.ts/.m4s) never start with #EXTM3U, so this is a no-op for them.
+      return fetchAndPipe(request, reply, targetUrl.toString(), log, equipmentId, {
+        rewriteHls: true,
+        equipmentId,
+      });
     },
   );
 
   function resolveCameraBinding(
     equipmentId: string,
     category: DataCategory,
-  ): { value: string } | { status: number; error: string } {
+  ): { value: string; unit?: string } | { status: number; error: string } {
     const equipment = equipmentManager.getByIdWithDetails(equipmentId);
     if (!equipment) return { status: 404, error: "Equipment not found" };
     if (equipment.type !== "camera") return { status: 400, error: "Not a camera equipment" };
@@ -97,7 +106,7 @@ export function registerCameraRoutes(app: FastifyInstance, deps: CameraDeps): vo
     if (equipment.status === "offline") {
       return { status: 409, error: "Camera is offline" };
     }
-    return { value: binding.value };
+    return { value: binding.value, unit: binding.unit };
   }
 
   async function proxyCameraMedia(
@@ -109,8 +118,14 @@ export function registerCameraRoutes(app: FastifyInstance, deps: CameraDeps): vo
     const gated = resolveCameraBinding(equipmentId, category);
     if ("error" in gated) return reply.code(gated.status).send({ error: gated.error });
 
+    // spec 133's own "Open questions" flagged `unit` as the signal for
+    // stream kind once a plugin actually needed it (mjpeg vs hls) — this is
+    // that plugin. An MJPEG source is never HLS, so the manifest-sniff/
+    // `.text()`-buffering path must be skipped entirely: buffering an
+    // indefinite multipart stream as text would just hang until
+    // FETCH_TIMEOUT_MS aborts it.
     return fetchAndPipe(request, reply, gated.value, log, equipmentId, {
-      rewriteHls: category === "camera_stream_url",
+      rewriteHls: category === "camera_stream_url" && gated.unit !== "mjpeg",
       equipmentId,
     });
   }

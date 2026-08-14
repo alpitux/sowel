@@ -36,6 +36,17 @@ export function isPublicRoute(url: string): boolean {
   return false;
 }
 
+// Test-only, not yet proposed upstream (2026-08-13, see
+// sowel-plugin-foscam-camera spec 001): routes an <img>/<video src> tag can
+// embed directly, which can't carry an Authorization header. Scoped to the
+// camera live-stream route only — snapshot stays on the header+blob-fetch
+// pattern (see useCameraSnapshot), which needs no such exception.
+const QUERY_TOKEN_ROUTES = [/^\/api\/v1\/equipments\/[^/]+\/camera\/stream$/];
+
+function isQueryTokenRoute(path: string): boolean {
+  return QUERY_TOKEN_ROUTES.some((re) => re.test(path));
+}
+
 // ============================================================
 // Role gate (spec 131): config is admin-only, standard = usage
 // ============================================================
@@ -109,11 +120,18 @@ export function registerAuthMiddleware(
     }
 
     const authHeader = request.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    const path = request.url.split("?")[0];
+    let token: string;
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.slice(7);
+    } else if (
+      isQueryTokenRoute(path) &&
+      typeof (request.query as { token?: string })?.token === "string"
+    ) {
+      token = (request.query as { token: string }).token;
+    } else {
       return reply.code(401).send({ error: "Authentication required" });
     }
-
-    const token = authHeader.slice(7);
 
     try {
       let payload: JwtPayload;

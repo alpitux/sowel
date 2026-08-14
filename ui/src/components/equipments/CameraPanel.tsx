@@ -18,7 +18,7 @@ import type {
   DataCategory,
   OrderCategory,
 } from "../../types";
-import { getCameraStreamUrl, getAccessToken } from "../../api";
+import { getCameraStreamUrl, getCameraMjpegStreamUrl, getAccessToken } from "../../api";
 import { useCameraSnapshot } from "../../hooks/useCameraSnapshot";
 import { RelativeTime } from "../RelativeTime";
 
@@ -59,7 +59,12 @@ export function CameraPanel({
   }
 
   const hasSnapshot = dataByCategory.has("camera_snapshot_url");
-  const hasStream = dataByCategory.has("camera_stream_url");
+  const streamBinding = dataByCategory.get("camera_stream_url");
+  const hasStream = streamBinding !== undefined;
+  // Test-only (2026-08-13, not yet proposed upstream): spec 133 flagged
+  // `unit` as the signal for stream kind once a plugin needed it — see
+  // sowel-plugin-foscam-camera spec 001.
+  const isMjpegStream = streamBinding?.unit === "mjpeg";
   const monitoringBinding = dataByCategory.get("camera_monitoring");
   const monitoringOrder = orderByCategory.get("set_camera_monitoring");
   const lightModeBinding = dataByCategory.get("camera_light_mode");
@@ -90,7 +95,12 @@ export function CameraPanel({
       </h3>
 
       {(hasSnapshot || hasStream) && (
-        <CameraView equipmentId={equipmentId} hasSnapshot={hasSnapshot} hasStream={hasStream} />
+        <CameraView
+          equipmentId={equipmentId}
+          hasSnapshot={hasSnapshot}
+          hasStream={hasStream}
+          isMjpegStream={isMjpegStream}
+        />
       )}
 
       {(monitoringOrder || (lightModeOrder && lightModeBinding) || sirenOrder) && (
@@ -164,6 +174,7 @@ interface CameraViewProps {
   equipmentId: string;
   hasSnapshot: boolean;
   hasStream: boolean;
+  isMjpegStream: boolean;
 }
 
 /**
@@ -173,7 +184,7 @@ interface CameraViewProps {
  * to stay polite on bandwidth — matches spec 133's "no server-side
  * transcoding, revisit if a vendor needs it" stance.
  */
-function CameraView({ equipmentId, hasSnapshot, hasStream }: CameraViewProps) {
+function CameraView({ equipmentId, hasSnapshot, hasStream, isMjpegStream }: CameraViewProps) {
   const { t } = useTranslation();
   const [live, setLive] = useState(false);
   const [liveError, setLiveError] = useState(false);
@@ -187,7 +198,9 @@ function CameraView({ equipmentId, hasSnapshot, hasStream }: CameraViewProps) {
   } = useCameraSnapshot(equipmentId, hasSnapshot && !live, SNAPSHOT_REFRESH_MS);
 
   useEffect(() => {
-    if (!live || !videoRef.current || !HLS_SUPPORTED) return;
+    // MJPEG live view is a plain <img src>, not hls.js — see the render
+    // branch below. Test-only (2026-08-13, not yet proposed upstream).
+    if (!live || isMjpegStream || !videoRef.current || !HLS_SUPPORTED) return;
 
     const video = videoRef.current;
     let startedPlaying = false;
@@ -260,13 +273,13 @@ function CameraView({ equipmentId, hasSnapshot, hasStream }: CameraViewProps) {
       hls.destroy();
       hlsRef.current = null;
     };
-  }, [equipmentId, live, liveRetryTick]);
+  }, [equipmentId, live, liveRetryTick, isMjpegStream]);
 
   return (
     <div className="space-y-2">
       <div className="relative bg-black rounded-[6px] overflow-hidden aspect-video flex items-center justify-center">
         {live ? (
-          liveError || !HLS_SUPPORTED ? (
+          liveError || (!isMjpegStream && !HLS_SUPPORTED) ? (
             <div className="flex flex-col items-center gap-2 px-4 text-center">
               <WifiOff size={28} strokeWidth={1.5} className="text-error" />
               <p className="text-[13px] font-medium text-white">{t("cameras.live.error")}</p>
@@ -280,6 +293,19 @@ function CameraView({ equipmentId, hasSnapshot, hasStream }: CameraViewProps) {
                 {t("cameras.live.retry")}
               </button>
             </div>
+          ) : isMjpegStream ? (
+            // Test-only (2026-08-13, not yet proposed upstream): the
+            // browser natively parses multipart/x-mixed-replace MJPEG
+            // through a plain <img src>, no client library needed. The
+            // token-in-query-string URL is what makes this possible
+            // without an Authorization header — see getCameraMjpegStreamUrl.
+            <img
+              key={liveRetryTick}
+              src={getCameraMjpegStreamUrl(equipmentId)}
+              onError={() => setLiveError(true)}
+              alt=""
+              className="w-full h-full object-contain"
+            />
           ) : (
             <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain" />
           )

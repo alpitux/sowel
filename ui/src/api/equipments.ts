@@ -112,6 +112,16 @@ export function getCameraStreamUrl(equipmentId: string): string {
   return `${API_BASE}/equipments/${equipmentId}/camera/stream`;
 }
 
+/** Test-only (2026-08-13, not yet proposed upstream): same route as
+ * getCameraStreamUrl, but with the access token in the query string so it
+ * can be used directly as an <img src> for an MJPEG live view — an <img>
+ * tag can't carry an Authorization header, unlike hls.js's xhrSetup. See
+ * the matching QUERY_TOKEN_ROUTES exception in auth-middleware.ts. */
+export function getCameraMjpegStreamUrl(equipmentId: string): string {
+  const token = getAccessToken() ?? "";
+  return `${API_BASE}/equipments/${equipmentId}/camera/stream?token=${encodeURIComponent(token)}`;
+}
+
 // getAccessToken (used by hls.js's xhrSetup, see CameraPanel.tsx) lives in ./client.
 
 // ============================================================
