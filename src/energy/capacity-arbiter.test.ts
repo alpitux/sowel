@@ -34,6 +34,7 @@ function makeHarness(opts?: {
   priority?: string[];
   settings?: Record<string, string>;
   profiles?: Record<string, EnergyLoadProfile | undefined>;
+  bindings?: Record<string, Array<{ alias: string; category: string; value?: unknown }>>;
   shadow?: boolean;
 }) {
   const settingsMap = new Map<string, string>(
@@ -81,12 +82,34 @@ function makeHarness(opts?: {
     ["lamp", base("lamp", "Lampe", "light_onoff")],
   ]);
 
-  const bindings = new Map<string, Array<{ alias: string; category: string }>>([
+  // Loads expose their power measurement plus a conventional "state" binding
+  // (plugs/switches categorise state as generic) — isStateAlias resolves the
+  // latter, so feedState() drives the arbiter's on/off observation (#535).
+  const bindings = new Map<string, Array<{ alias: string; category: string; value?: unknown }>>([
     ["grid", [{ alias: "power", category: "power" }]],
-    ["pac", [{ alias: "power", category: "power" }]],
-    ["pump", [{ alias: "power", category: "power" }]],
-    ["heater", [{ alias: "power", category: "power" }]],
+    [
+      "pac",
+      [
+        { alias: "power", category: "power" },
+        { alias: "state", category: "generic" },
+      ],
+    ],
+    [
+      "pump",
+      [
+        { alias: "power", category: "power" },
+        { alias: "state", category: "generic" },
+      ],
+    ],
+    [
+      "heater",
+      [
+        { alias: "power", category: "power" },
+        { alias: "state", category: "generic" },
+      ],
+    ],
   ]);
+  for (const [id, list] of Object.entries(opts?.bindings ?? {})) bindings.set(id, list);
 
   const learnedCalls: Array<{ id: string; watts: number; runs: number }> = [];
   const equipmentManager = {
@@ -597,6 +620,131 @@ describe("capacity arbiter", () => {
     h.order("pump", false, { kind: "recipe", instanceId: "i1" });
     const kinds = h.arbiter.getPublicState().journal.map((j) => j.kind);
     expect(kinds).not.toContain("unclaimed-run-ended");
+  });
+
+  // ── Issue #535 — OFF loads must not stay "on outside arbitration" ──
+
+  it("a manual OFF order closes an unclaimed run and journals suspended with running=false", () => {
+    const h = makeHarness();
+    h.feedMeter(-100);
+    h.order("pump", true, { kind: "recipe", instanceId: "i1" }); // unclaimed run starts
+    h.order("pump", false, { kind: "manual" }); // human switches it off
+    const journal = h.arbiter.getPublicState().journal;
+    // The run is closed even though the OFF came from a manual order, and the
+    // suspension records that the load is stopped — both feed the timeline.
+    expect(journal.map((j) => j.kind)).toContain("unclaimed-run-ended");
+    expect(journal.find((j) => j.kind === "suspended")?.running).toBe(false);
+  });
+
+  it("a manual ON order journals suspended with running=true", () => {
+    const h = makeHarness();
+    h.order("pump", true, { kind: "manual" });
+    expect(h.arbiter.getPublicState().journal.find((j) => j.kind === "suspended")?.running).toBe(
+      true,
+    );
+  });
+
+  it("a reported OFF state closes an unclaimed run (load stopping on its own)", () => {
+    const h = makeHarness();
+    h.feedMeter(-100);
+    h.order("pump", true, { kind: "recipe", instanceId: "i1" });
+    h.feedState("pump", false); // the load's own regulation stopped it — no order
+    expect(h.arbiter.getPublicState().journal.map((j) => j.kind)).toContain("unclaimed-run-ended");
+  });
+
+  it("a wall-switch-off suspension journals running=false", () => {
+    const h = makeHarness();
+    h.claim("i1", { equipmentId: "pump" });
+    h.run(-1000, 150);
+    h.order("pump", true, { kind: "recipe", instanceId: "i1" });
+    h.feedState("pump", false); // flipped off at the box
+    h.run(-400, 80); // > divergenceConfirmS
+    const suspended = h.arbiter.getPublicState().journal.find((j) => j.kind === "suspended");
+    expect(suspended?.reason).toBe("wall-switch-off");
+    expect(suspended?.running).toBe(false);
+  });
+
+  it("suspension TTL expiry journals a resumed hand-back with the load state", () => {
+    const h = makeHarness({ settings: { "energy.arbiter.overrideTtlS": "60" } });
+    h.feedState("pump", false);
+    h.order("pump", false, { kind: "manual" }); // suspends for 60 s
+    h.run(-100, 80); // ticks past the TTL
+    const resumed = h.arbiter.getPublicState().journal.find((j) => j.kind === "resumed");
+    // A silent lapse left the timeline painting the pre-expiry state forever.
+    expect(resumed?.reason).toBe("override-expired");
+    expect(resumed?.running).toBe(false);
+    expect(h.arbiter.getPublicState().suspensions).toHaveLength(0);
+  });
+
+  it("an explicit resume journals the observed load state", () => {
+    const h = makeHarness();
+    h.feedState("pump", true);
+    h.order("pump", true, { kind: "manual" });
+    h.arbiter.resumeEquipment("pump");
+    const resumed = h.arbiter.getPublicState().journal.find((j) => j.kind === "resumed");
+    expect(resumed?.reason).toBe("resume control");
+    expect(resumed?.running).toBe(true);
+  });
+
+  it("a comfort load (PAC) reported OFF closes its unclaimed run — the prod #535 scenario", () => {
+    // Smart Cooling starts the PAC as a raw-export fallback (no grant), the
+    // PAC reaches temperature and stops itself: a state report, never an
+    // order. The state observation must not be gated on the deferrable class.
+    const h = makeHarness();
+    h.feedMeter(-100);
+    h.order("pac", true, { kind: "recipe", instanceId: "i1" }); // unclaimed run
+    h.feedState("pac", false);
+    expect(h.arbiter.getPublicState().journal.map((j) => j.kind)).toContain("unclaimed-run-ended");
+  });
+
+  it("a comfort load's reported state never triggers a wall-switch suspension (FR-6 stays deferrable-only)", () => {
+    const h = makeHarness();
+    h.feedMeter(-100);
+    h.feedState("pac", true); // on by itself, no grant, no recipe order
+    h.run(-100, 80); // > divergenceConfirmS
+    expect(h.arbiter.getPublicState().suspensions).toHaveLength(0);
+  });
+
+  it("a boolean-valued 'power' alias is the state binding when no 'state' alias exists (prod PAC shape)", () => {
+    // The Panasonic PAC exposes its on/off switch as alias "power" (category
+    // "power", boolean value) with no "state" alias at all — a wattmeter
+    // would read numeric there, so the boolean value disambiguates.
+    const h = makeHarness({
+      bindings: {
+        pac: [
+          { alias: "power", category: "power", value: true },
+          { alias: "nanoe", category: "generic", value: "on" },
+        ],
+      },
+    });
+    h.feedMeter(-100);
+    h.order("pac", true, { kind: "recipe", instanceId: "i1" }); // unclaimed run
+    h.eventBus.emit({
+      type: "equipment.data.changed",
+      equipmentId: "pac",
+      alias: "power",
+      value: false, // the PAC reached temperature and reports its switch off
+      previous: null,
+    });
+    expect(h.arbiter.getPublicState().journal.map((j) => j.kind)).toContain("unclaimed-run-ended");
+  });
+
+  it("a boolean value on a non-state alias is not read as the run state", () => {
+    // A load can expose other boolean aliases (window detection, child lock…);
+    // only the state binding may close a run or feed the running flag.
+    const h = makeHarness();
+    h.feedMeter(-100);
+    h.order("pac", true, { kind: "recipe", instanceId: "i1" }); // unclaimed run
+    h.eventBus.emit({
+      type: "equipment.data.changed",
+      equipmentId: "pac",
+      alias: "window_detection",
+      value: "OFF",
+      previous: null,
+    });
+    expect(h.arbiter.getPublicState().journal.map((j) => j.kind)).not.toContain(
+      "unclaimed-run-ended",
+    );
   });
 
   // ── Tolerated import & slack (FR-3) ───────────────────────
