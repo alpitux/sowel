@@ -206,6 +206,19 @@ function CameraView({ equipmentId, hasSnapshot, hasStream, isMjpegStream }: Came
     let startedPlaying = false;
 
     const hls = new Hls({
+      // Test-only (2026-08-15, not yet proposed upstream, see
+      // sowel-plugin-foscam-camera spec 001): hls.js's default buffering
+      // targets ~30s ahead, which on a relay backed by go2rtc's HLS output
+      // (0.5s segments here) means it downloads dozens of segments in a
+      // burst, then goes quiet for the tens of seconds it takes to play
+      // through that buffer. go2rtc tears down its RTSP-to-HLS session
+      // ~5s after the last segment fetch (confirmed empirically against
+      // this camera's relay, not documented by go2rtc) — that quiet
+      // period kills the session, and the live view goes black shortly
+      // after starting. Capping the buffer target keeps segment requests
+      // frequent enough to never leave a gap that long.
+      maxBufferLength: 4,
+      maxMaxBufferLength: 4,
       xhrSetup: (xhr) => {
         const token = getAccessToken();
         if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
@@ -220,6 +233,14 @@ function CameraView({ equipmentId, hasSnapshot, hasStream, isMjpegStream }: Came
     // reason the ERROR event never fires for). Logging non-fatal errors
     // costs nothing and is the only lead we have without direct device
     // console access.
+    // Test-only (2026-08-15, not yet proposed upstream): a fatal hls.js
+    // error here is almost always the go2rtc relay session dying mid-view
+    // (see the buffer-size comment above) rather than something a
+    // "retry" button materially fixes differently from just going live
+    // again — falling back to the snapshot view (setLive(false), same as
+    // the user hitting "stop") is a quieter failure than an error banner,
+    // and re-enables the auto-refreshing snapshot immediately instead of
+    // leaving a dead black frame up.
     hls.on(Hls.Events.ERROR, (_event, data) => {
       console.warn("[camera] hls.js error", {
         equipmentId,
@@ -228,7 +249,7 @@ function CameraView({ equipmentId, hasSnapshot, hasStream, isMjpegStream }: Came
         fatal: data.fatal,
         reason: (data as { response?: { code?: number } }).response?.code,
       });
-      if (data.fatal) setLiveError(true);
+      if (data.fatal) setLive(false);
     });
 
     // The <video> element's own error event catches failures below
@@ -240,7 +261,7 @@ function CameraView({ equipmentId, hasSnapshot, hasStream, isMjpegStream }: Came
         code: video.error?.code,
         message: video.error?.message,
       });
-      setLiveError(true);
+      setLive(false);
     };
     video.addEventListener("error", onVideoError);
 
@@ -262,7 +283,7 @@ function CameraView({ equipmentId, hasSnapshot, hasStream, isMjpegStream }: Came
           equipmentId,
           timeoutMs: LIVE_START_TIMEOUT_MS,
         });
-        setLiveError(true);
+        setLive(false);
       }
     }, LIVE_START_TIMEOUT_MS);
 

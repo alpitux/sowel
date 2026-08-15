@@ -42,6 +42,17 @@ export function registerCameraRoutes(app: FastifyInstance, deps: CameraDeps): vo
 
   app.get<{ Params: { id: string } }>(
     "/api/v1/equipments/:id/camera/stream",
+    // Test-only (2026-08-15, not yet proposed upstream, see
+    // sowel-plugin-foscam-camera spec 001): a live-view HLS player polls
+    // the manifest roughly once per segment duration and fetches every
+    // segment individually — for sub-second segments (e.g. a go2rtc RTSP
+    // relay) that's several requests/second indefinitely for as long as
+    // the view is open, which blows through the global 300 req/min-per-IP
+    // budget (`registerRateLimit` in server.ts, sized for SPA dashboard
+    // bursts, not a sustained media feed) within seconds — confirmed via
+    // 429s in the browser console on real hardware. Both proxy routes are
+    // already auth-gated, so exempting them isn't opening anonymous abuse.
+    { config: { rateLimit: false } },
     async (request, reply) =>
       proxyCameraMedia(request, reply, request.params.id, "camera_stream_url"),
   );
@@ -53,6 +64,9 @@ export function registerCameraRoutes(app: FastifyInstance, deps: CameraDeps): vo
   // already has an authenticated session.
   app.get<{ Params: { id: string }; Querystring: { u?: string } }>(
     "/api/v1/equipments/:id/camera/stream/segment",
+    // Test-only (2026-08-15): see the rate-limit exemption note on
+    // /camera/stream above — segments are the bulk of the request volume.
+    { config: { rateLimit: false } },
     async (request, reply) => {
       const equipmentId = request.params.id;
       const target = request.query.u;
@@ -168,18 +182,30 @@ async function fetchAndPipe(
     // standard HLS mime type — Content-Type alone is not a reliable
     // signal. Sniff the body instead: `#EXTM3U` is the one thing every
     // HLS manifest starts with, regardless of vendor/Content-Type.
+    //
+    // Regression fixed 2026-08-15 (found live, broke the already-shipped
+    // Netatmo live view): this route is also used for the
+    // /camera/stream/segment sub-resource, which can be a REAL binary
+    // segment (.ts/.m4s), not just a manifest. The previous `.text()`
+    // sniff decoded the whole body as UTF-8 before checking the prefix —
+    // for binary data containing invalid UTF-8 byte sequences (routine
+    // in video segments), that silently replaces them with U+FFFD and
+    // corrupts the bytes irrecoverably once re-sent. Sniffing via a raw
+    // byte-prefix comparison on a Buffer, and only decoding-as-text the
+    // (rare) manifest case, is byte-safe for both cases.
     if (opts?.rewriteHls) {
-      const body = await upstream.text();
-      if (body.startsWith("#EXTM3U")) {
-        const rewritten = rewriteHlsManifest(body, parsed, opts.equipmentId!);
+      const buf = Buffer.from(await upstream.arrayBuffer());
+      if (buf.subarray(0, 7).toString("ascii") === "#EXTM3U") {
+        const rewritten = rewriteHlsManifest(buf.toString("utf-8"), parsed, opts.equipmentId!);
         reply.header("content-type", HLS_CONTENT_TYPE);
         return reply.send(rewritten);
       }
-      // Not actually HLS on this call (e.g. a vendor-specific fallback
-      // format) — pass the already-buffered text through as-is rather
-      // than silently dropping it.
+      // Not actually HLS on this call (e.g. a real binary segment, or a
+      // vendor-specific fallback format) — pass the already-buffered
+      // bytes through unchanged rather than silently dropping or
+      // corrupting them.
       reply.header("content-type", contentType || "application/octet-stream");
-      return reply.send(body);
+      return reply.send(buf);
     }
 
     reply.header("content-type", contentType || "application/octet-stream");
