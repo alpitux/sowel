@@ -311,6 +311,49 @@ describe("capacity arbiter", () => {
     expect(pending?.needW).toBe(300); // 600 + 100 margin - 400 tolerated
   });
 
+  it("resolves toleratedImportW from the equipment profile when the claim omits it (#550)", () => {
+    const h = makeHarness({
+      profiles: {
+        pump: {
+          class: "deferrable",
+          nominalPowerW: 600,
+          minOnS: 900,
+          minOffS: 300,
+          toleratedImportW: 400,
+        },
+      },
+    });
+    h.claim("i1", { equipmentId: "pump" }); // claim omits toleratedImportW
+    // 300 W export is short of 700 (600 + 100) without tolerance, but the
+    // profile's 400 W tolerance drops the need to 300 W → it engages.
+    h.run(-300, 300);
+    expect(h.grantedEvents()).toHaveLength(1);
+    expect(h.arbiter.getPublicState().grants[0]?.equipmentId).toBe("pump");
+  });
+
+  it("a claim's explicit toleratedImportW overrides the equipment profile (#550)", () => {
+    const h = makeHarness({
+      profiles: {
+        pump: {
+          class: "deferrable",
+          nominalPowerW: 600,
+          minOnS: 900,
+          minOffS: 300,
+          toleratedImportW: 400,
+        },
+      },
+    });
+    h.claim("i1", { equipmentId: "pump", toleratedImportW: 0 }); // override: no tolerance
+    // 500 W export WOULD engage the profile's 400 W tolerance (need 300), but the
+    // claim overrides to 0 (need 700) so it stays pending — the override wins over
+    // a would-engage profile (guards the `claim ?? profile` order, not `profile ?? claim`).
+    h.run(-500, 300);
+    expect(h.grantedEvents()).toHaveLength(0);
+    const [pending] = h.arbiter.getPublicState().pending;
+    expect(pending?.toleratedImportW).toBe(0);
+    expect(pending?.needW).toBe(700); // 600 + 100 - 0, the profile's 400 is ignored
+  });
+
   it("flags a pending claim as running when its load runs as a recipe must-run fallback (#491)", () => {
     // A recipe keeps a surplus claim but runs the load anyway (hot day). With
     // no surplus the claim stays pending, yet the load draws power — it must
