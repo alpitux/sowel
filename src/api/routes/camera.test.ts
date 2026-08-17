@@ -247,6 +247,67 @@ describe("GET /api/v1/equipments/:id/camera/stream — binding gate mirrors snap
     expect(body.split("\n")).not.toContain("segment1.ts");
   });
 
+  it("rewrites the EXT-X-MAP init-segment URI in an fMP4-packaged manifest — fMP4 points at an init.mp4 via this tag rather than a plain URI line, which the line-rewrite previously skipped as a comment", async () => {
+    const manifest = [
+      "#EXTM3U",
+      "#EXT-X-VERSION:6",
+      '#EXT-X-MAP:URI="init.mp4?id=abc123"',
+      "#EXTINF:0.5,",
+      "segment.m4s?id=abc123&n=0",
+    ].join("\n");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(manifest, {
+            status: 200,
+            headers: { "content-type": "application/vnd.apple.mpegurl" },
+          }),
+      ),
+    );
+
+    app = Fastify({ logger: false });
+    registerCameraRoutes(app, {
+      equipmentManager: makeManager({
+        cam1: cameraFixture({
+          dataBindings: [
+            {
+              id: "b2",
+              equipmentId: "cam1",
+              deviceDataId: "dd2",
+              alias: "stream",
+              deviceId: "d1",
+              deviceName: "Front door camera",
+              key: "stream_url",
+              type: "text",
+              category: "camera_stream_url",
+              value: "https://camera.example.invalid/live/index.m3u8",
+              lastUpdated: new Date().toISOString(),
+              lastChanged: new Date().toISOString(),
+              stale: false,
+            } as unknown as EquipmentWithDetails["dataBindings"][number],
+          ],
+        }),
+      }),
+      logger: createLogger("silent").logger,
+    });
+    await app.ready();
+
+    const res = await app.inject({ method: "GET", url: "/api/v1/equipments/cam1/camera/stream" });
+    expect(res.statusCode).toBe(200);
+    const body = res.body;
+    expect(body).toContain(
+      '#EXT-X-MAP:URI="/api/v1/equipments/cam1/camera/stream/segment?u=' +
+        encodeURIComponent("https://camera.example.invalid/live/init.mp4?id=abc123") +
+        '"',
+    );
+    expect(body).toContain(
+      "/api/v1/equipments/cam1/camera/stream/segment?u=" +
+        encodeURIComponent("https://camera.example.invalid/live/segment.m4s?id=abc123&n=0"),
+    );
+  });
+
   it("rewrites the manifest by sniffing the body even when Content-Type is generic — confirmed live against a real Netatmo Presence (2026-08-04), which serves its HLS manifest as application/octet-stream", async () => {
     const manifest = ["#EXTM3U", "#EXT-X-VERSION:7", "#EXTINF:2.0,", "live0001.ts"].join("\n");
 
@@ -369,5 +430,75 @@ describe("GET /api/v1/equipments/:id/camera/stream/segment — origin allowlist"
         encodeURIComponent("https://camera.example.invalid/live/segment1.ts"),
     });
     expect(res.statusCode).toBe(200);
+  });
+
+  it("recursively rewrites a child playlist fetched through this same route — a two-level relay (master -> variant -> segments) previously 404'd because only the top-level proxyCameraMedia call rewrote HLS, leaving the variant playlist's own segment URIs untouched", async () => {
+    const childPlaylist = ["#EXTM3U", "#EXT-X-VERSION:3", "#EXTINF:0.5,", "segment.ts?n=0"].join(
+      "\n",
+    );
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(childPlaylist, {
+            status: 200,
+            headers: { "content-type": "application/vnd.apple.mpegurl" },
+          }),
+      ),
+    );
+
+    app = Fastify({ logger: false });
+    registerCameraRoutes(app, {
+      equipmentManager: makeManager({ cam1: streamBoundFixture }),
+      logger: createLogger("silent").logger,
+    });
+    await app.ready();
+
+    const res = await app.inject({
+      method: "GET",
+      url:
+        "/api/v1/equipments/cam1/camera/stream/segment?u=" +
+        encodeURIComponent("https://camera.example.invalid/live/variant.m3u8"),
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toContain(
+      "/api/v1/equipments/cam1/camera/stream/segment?u=" +
+        encodeURIComponent("https://camera.example.invalid/live/segment.ts?n=0"),
+    );
+    expect(res.body.split("\n")).not.toContain("segment.ts?n=0");
+  });
+
+  it("passes a real binary segment through byte-for-byte, without corrupting bytes that aren't valid UTF-8 — a live regression (2026-08-15) that broke the already-shipped Netatmo camera plugin: the #EXTM3U sniff used to decode the whole body as UTF-8 text before checking the prefix, which silently mangles binary .ts data", async () => {
+    // 0xFF 0xFE is not valid UTF-8 — decoding-then-re-encoding this as text
+    // replaces it with U+FFFD (the replacement character), corrupting it.
+    const binarySegment = new Uint8Array([0x47, 0xff, 0xfe, 0x00, 0x01, 0x02, 0x03]);
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(new Blob([binarySegment]), {
+            status: 200,
+            headers: { "content-type": "video/mp2t" },
+          }),
+      ),
+    );
+
+    app = Fastify({ logger: false });
+    registerCameraRoutes(app, {
+      equipmentManager: makeManager({ cam1: streamBoundFixture }),
+      logger: createLogger("silent").logger,
+    });
+    await app.ready();
+
+    const res = await app.inject({
+      method: "GET",
+      url:
+        "/api/v1/equipments/cam1/camera/stream/segment?u=" +
+        encodeURIComponent("https://camera.example.invalid/live/segment1.ts"),
+    });
+    expect(res.statusCode).toBe(200);
+    expect(Buffer.from(res.rawPayload).equals(Buffer.from(binarySegment))).toBe(true);
   });
 });
