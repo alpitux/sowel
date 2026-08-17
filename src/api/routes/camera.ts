@@ -75,7 +75,16 @@ export function registerCameraRoutes(app: FastifyInstance, deps: CameraDeps): vo
         return reply.code(403).send({ error: "Segment URL origin mismatch" });
       }
 
-      return fetchAndPipe(request, reply, targetUrl.toString(), log, equipmentId);
+      // Re-apply the same #EXTM3U sniff/rewrite here: a variant/child
+      // playlist referenced by a master manifest is itself proxied through
+      // this same route, and its own relative segment URIs need rewriting
+      // too, or the browser resolves them against this route's own URL and
+      // 404s. Real segment bytes (.ts/.m4s) never start with #EXTM3U, so
+      // this is a no-op for them.
+      return fetchAndPipe(request, reply, targetUrl.toString(), log, equipmentId, {
+        rewriteHls: true,
+        equipmentId,
+      });
     },
   );
 
@@ -153,18 +162,30 @@ async function fetchAndPipe(
     // standard HLS mime type — Content-Type alone is not a reliable
     // signal. Sniff the body instead: `#EXTM3U` is the one thing every
     // HLS manifest starts with, regardless of vendor/Content-Type.
+    //
+    // Regression fixed 2026-08-15 (found live, broke the already-shipped
+    // Netatmo live view): this route is also used for the
+    // /camera/stream/segment sub-resource, which can be a REAL binary
+    // segment (.ts/.m4s), not just a manifest. The previous `.text()`
+    // sniff decoded the whole body as UTF-8 before checking the prefix —
+    // for binary data containing invalid UTF-8 byte sequences (routine
+    // in video segments), that silently replaces them with U+FFFD and
+    // corrupts the bytes irrecoverably once re-sent. Sniffing via a raw
+    // byte-prefix comparison on a Buffer, and only decoding-as-text the
+    // (rare) manifest case, is byte-safe for both cases.
     if (opts?.rewriteHls) {
-      const body = await upstream.text();
-      if (body.startsWith("#EXTM3U")) {
-        const rewritten = rewriteHlsManifest(body, parsed, opts.equipmentId!);
+      const buf = Buffer.from(await upstream.arrayBuffer());
+      if (buf.subarray(0, 7).toString("ascii") === "#EXTM3U") {
+        const rewritten = rewriteHlsManifest(buf.toString("utf-8"), parsed, opts.equipmentId!);
         reply.header("content-type", HLS_CONTENT_TYPE);
         return reply.send(rewritten);
       }
-      // Not actually HLS on this call (e.g. a vendor-specific fallback
-      // format) — pass the already-buffered text through as-is rather
-      // than silently dropping it.
+      // Not actually HLS on this call (e.g. a real binary segment, or a
+      // vendor-specific fallback format) — pass the already-buffered
+      // bytes through unchanged rather than silently dropping or
+      // corrupting them.
       reply.header("content-type", contentType || "application/octet-stream");
-      return reply.send(body);
+      return reply.send(buf);
     }
 
     reply.header("content-type", contentType || "application/octet-stream");
@@ -181,30 +202,36 @@ async function fetchAndPipe(
 }
 
 /**
- * Rewrite every URI line of an HLS manifest (segments or child playlists) to
- * go through the /camera/stream/segment sub-resource proxy, so the browser
- * never talks to the camera's real host directly.
- *
- * Known limitation: a master playlist referencing variant playlists that
- * themselves need rewriting is only rewritten one level deep — each
- * proxied child playlist is re-fetched raw by the browser via the segment
- * route without further rewriting. Revisit once tested against a real
- * camera in the sowel-plugin-netatmo-camera spec.
+ * Rewrite every URI line of an HLS manifest (segments, child playlists, and
+ * the fMP4 init segment) to go through the /camera/stream/segment
+ * sub-resource proxy, so the browser never talks to the camera's real host
+ * directly. Child playlists are proxied through this same route with
+ * `rewriteHls: true` (see the segment route above), so nested master →
+ * variant → segment chains are rewritten recursively, not just one level
+ * deep.
  */
 function rewriteHlsManifest(manifest: string, manifestUrl: URL, equipmentId: string): string {
   const base = `/api/v1/equipments/${equipmentId}/camera/stream/segment`;
+  const rewriteUri = (uri: string): string => {
+    try {
+      return `${base}?u=${encodeURIComponent(new URL(uri, manifestUrl).toString())}`;
+    } catch {
+      return uri;
+    }
+  };
   return manifest
     .split("\n")
     .map((line) => {
       const trimmed = line.trim();
-      if (trimmed === "" || trimmed.startsWith("#")) return line;
-      let absolute: string;
-      try {
-        absolute = new URL(trimmed, manifestUrl).toString();
-      } catch {
-        return line;
+      // fMP4-packaged HLS points at an init segment via an EXT-X-MAP tag
+      // rather than a plain URI line — its URI attribute needs the same
+      // rewrite or the browser resolves it against this route's own URL
+      // and 404s, exactly like an unrewritten segment line.
+      if (trimmed.startsWith("#EXT-X-MAP:")) {
+        return line.replace(/URI="([^"]+)"/, (_match, uri: string) => `URI="${rewriteUri(uri)}"`);
       }
-      return `${base}?u=${encodeURIComponent(absolute)}`;
+      if (trimmed === "" || trimmed.startsWith("#")) return line;
+      return rewriteUri(trimmed);
     })
     .join("\n");
 }
