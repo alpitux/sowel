@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { useDevices } from "../store/useDevices";
@@ -100,6 +100,22 @@ export function EquipmentDetailPage() {
   const EMPTY: EquipmentWithDetails = { id: "", name: "", type: "sensor", zoneId: "", enabled: true, createdAt: "", updatedAt: "", dataBindings: [], orderBindings: [], status: "online" };
   const equipmentState = useEquipmentState(equipment ?? EMPTY);
 
+  // `equipments` changes reference on *any* equipment's WS-pushed update
+  // (handleEquipmentStatusChanged/handleEquipmentDataChanged always produce
+  // a new array, and the coalesced fetchEquipments() list refresh replaces
+  // every entry wholesale) — depending on the array directly re-triggers
+  // this effect, and its GET /equipments/:id call, for unrelated equipment
+  // changing state anywhere in the house. Confirmed live (2026-08-17): a
+  // single flapping equipment elsewhere produced a sustained 429 storm on
+  // this endpoint while this page was open. Depending on a snapshot of
+  // just *this* equipment's own entry keeps the "refetch when server data
+  // for what we're viewing changes" behavior without firing on everything
+  // else.
+  const thisEquipmentSnapshot = useMemo(
+    () => JSON.stringify(equipments.find((eq) => eq.id === id) ?? null),
+    [id, equipments],
+  );
+
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
@@ -127,7 +143,7 @@ export function EquipmentDetailPage() {
 
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- equipment is set inside effect, adding it would cause infinite loop
-  }, [id, equipments]); // Re-fetch when store updates
+  }, [id, thisEquipmentSnapshot]); // Re-fetch when *this* equipment's store entry changes
 
   // Eagerly load history bindings so HistoryPanel can render immediately
   const loadHistoryBindings = useCallback(async () => {
