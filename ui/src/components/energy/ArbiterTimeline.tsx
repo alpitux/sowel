@@ -50,15 +50,15 @@ function hhmm(ms: number): string {
 }
 
 /** Spec 165 — the states the ribbon can paint, in reading order. `suspended`
- *  is absent on purpose: the ribbon folds it into idle/unmanaged (spec 165
- *  non-goal), so advertising it in the legend would promise a colour that
- *  never appears. */
+ *  joined them in #960: it used to borrow the slate of `unmanaged` or the idle
+ *  tint, so the ribbon could not say that the arbiter had stepped aside. */
 const LEGEND_STATES: ArbiterQuarterState[] = [
   "granted",
   "granted-idle",
   "pending",
   "revoked",
   "unmanaged",
+  "suspended",
 ];
 
 export function ArbiterTimeline() {
@@ -271,7 +271,11 @@ export function ArbiterTimeline() {
           ))}
           {selIdx >= 0 && selIdx < n && (
             <div
-              className="absolute top-0 bottom-0 bg-primary/15 border-x border-primary/40"
+              // #960 — neutral on purpose: the primary token now means "pilotage
+              // manuel" on these very cells, so keeping it here made "this
+              // column is selected" and "the arbiter stood down here" the same
+              // visual signal on the same 20 px strip.
+              className="absolute top-0 bottom-0 bg-text-secondary/10 border-x border-text-secondary/50"
               style={{
                 left: `calc(${(selIdx / n) * 100}% + 1px)`,
                 width: `calc(${(1 / n) * 100}% - 2px)`,
