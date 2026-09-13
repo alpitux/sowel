@@ -194,6 +194,12 @@ export class CapacityArbiter {
    *  state transition, so a load idle+OFF before it is granted does not read
    *  as "already diverged for minutes" the instant the grant lands. */
   private divergenceSince = new Map<string, number>();
+  /** #958 — the observed run state a `wall-switch-on` suspension was armed by.
+   *  A suspension answers an EVENT (someone flipped the switch), not a standing
+   *  condition, so the same unchanged state must never arm a second one: the
+   *  TTL would expire into an identical suspension, for ever, and the load
+   *  could never be adopted back. Cleared when the load's own state changes. */
+  private wallOnSuspendedWhile = new Map<string, boolean>();
   private recentComfortRevoke = new Map<string, { instanceId: string; at: number }>();
   /** Spec 164 — per granted load, the draw state the ribbon is CURRENTLY
    *  showing (true = consuming), and when the measurement started contradicting
@@ -473,6 +479,11 @@ export class CapacityArbiter {
     // not be read as its run state).
     if (isBooleanState(value) && this.isStateAlias(equipmentId, alias)) {
       const on = isOnLike(value);
+      // #958 — a genuine change of state re-arms the wall detector: whatever it
+      // suspended for last time is over, this is a new event.
+      if (this.reportedOnOff.get(equipmentId) !== on) {
+        this.wallOnSuspendedWhile.delete(equipmentId);
+      }
       this.reportedOnOff.set(equipmentId, on);
       // Closed on the FIRST OFF report, no confirm window (decision): a
       // boolean state report is authoritative, unlike a power reading — and
@@ -727,6 +738,7 @@ export class CapacityArbiter {
     this.recipeWantsOn.delete(equipmentId);
     this.reportedOnOff.delete(equipmentId);
     this.divergenceSince.delete(equipmentId);
+    this.wallOnSuspendedWhile.delete(equipmentId);
     this.recentComfortRevoke.delete(equipmentId);
     this.clearDrawState(equipmentId);
   }
@@ -825,6 +837,11 @@ export class CapacityArbiter {
     // Also drop any half-armed divergence timer, so a resume never re-suspends
     // on a contradiction that started before the manual override was lifted.
     this.divergenceSince.delete(equipmentId);
+    // #958 — "resume control now" is a decision to take this load back. Arming
+    // the wall detector again on the state it is already in would undo that in
+    // `divergenceConfirmS`, which is exactly what it did: resume at 11:32:26,
+    // suspended again at 11:33:28, every time.
+    this.wallOnSuspendedWhile.set(equipmentId, this.reportedOnOff.get(equipmentId) ?? false);
     this.journal({
       kind: "resumed",
       equipmentId,
@@ -1638,6 +1655,15 @@ export class CapacityArbiter {
 
   private suspend(equipmentId: string, why: string, running?: boolean): void {
     this.clearDrawState(equipmentId);
+    // #958 — remember the standing state this suspension answers, so the same
+    // unchanged state cannot arm another one when the TTL expires. Written for
+    // EVERY suspension of a load that is on, not only wall events: a manual
+    // order suspended a running load for its TTL and the detector then added a
+    // phantom `wall-switch-on` 61 s later, doubling one button press into four
+    // hours. `running === false` (a wall-off, a manual off) writes nothing —
+    // the load is not running, so there is no standing contradiction to hold.
+    const observedOn = running ?? this.reportedOnOff.get(equipmentId);
+    if (observedOn === true) this.wallOnSuspendedWhile.set(equipmentId, true);
     const until = Date.now() + this.config.overrideTtlS * 1000;
     this.overridesUntil.set(equipmentId, until);
     const granted = this.grantedClaimFor(equipmentId);
@@ -1836,7 +1862,33 @@ export class CapacityArbiter {
       // turned on but that reports off (recipeOn === true) is the actuation lag
       // the confirm window exists to absorb, not a divergence to punish.
       const wallOff = granted && !reportedOn && recipeOn !== false;
-      const wallOn = !granted && reportedOn && recipeOn !== true;
+      // #958 — a suspension answers an EVENT, not the standing state it leaves
+      // behind. The same unchanged state must never arm a second one: the TTL
+      // expired into an identical suspension a minute later, for ever, so the
+      // load could never be adopted back, and "resume control now" was undone
+      // 62 s after every press.
+      //
+      // Deliberately NOT also skipped while something is claiming the load. A
+      // recipe that claims through the whole solar day would leave a load a
+      // person switched on unprotected for the day, and the arbiter would
+      // revoke it out from under them on the first deficit — the exact fight
+      // this detector exists to avoid. The protection is deferred by one TTL,
+      // never removed.
+      const wallOnRaw = !granted && reportedOn && recipeOn !== true;
+      const alreadySuspendedForThis = this.wallOnSuspendedWhile.get(equipmentId) === reportedOn;
+      const wallOn = wallOnRaw && !alreadySuspendedForThis;
+      // Past its one suspension the load IS running outside arbitration, and
+      // nothing else says so: `unclaimedRunning` is fed by recipe ON orders
+      // only, so a load somebody started by hand left the surface painting it
+      // "en attente" — or nothing at all — while it drew from the grid.
+      if (wallOnRaw && alreadySuspendedForThis && !this.unclaimedRunning.has(equipmentId)) {
+        this.unclaimedRunning.add(equipmentId);
+        this.journal({
+          kind: "unclaimed-run",
+          equipmentId,
+          reason: "running outside arbitration",
+        });
+      }
       if (!wallOff && !wallOn) {
         this.divergenceSince.delete(equipmentId);
         continue;

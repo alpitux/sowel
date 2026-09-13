@@ -330,7 +330,16 @@ between declared flexible loads. Key invariants:
 - **The arbiter issues no orders** in phase 1: recipes act through
   `ctx.helpers.energy.claimCapacity()` callbacks; grants are runtime-only and
   rebuilt after a restart. Manual orders and wall-switch state divergences
-  suspend arbitration per equipment (TTL, "resume control now" in the UI).
+  suspend arbitration per equipment (TTL, "resume control now" in the UI). A
+  suspension answers an **event**, not a standing condition (#958): a load left
+  running outside arbitration earns one, and the same unchanged state never
+  arms another — otherwise the TTL expired into an identical suspension a
+  minute later, for ever, and the load could never be adopted back. A pending claim
+  does not exempt a load: the protection is deferred by one TTL, never removed,
+  or a recipe claiming all day would leave a load somebody switched on open to
+  being revoked out from under them. Past its one suspension the load is
+  journaled `unclaimed-run`, which is what keeps the timeline and the daily
+  metrics from reading it as idle.
 - **Everything is journaled** (bounded ring, `GET /api/v1/energy/arbiter`) and
   surfaced on Energy → Live (allocation bar, day timeline, decision journal).
   Default off: `energy.arbiter.enabled = false` means zero behavior change.
